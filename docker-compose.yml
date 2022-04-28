@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  db:
+    container_name: db
+    image: postgres:13-alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./database/database.env
+    volumes:
+      - ./database/:/docker-entrypoint-initdb.d
+      - ./database/database-data:/var/lib/postgresql/data
+    networks:
+      - database
+    extra_hosts:
+        - "host.docker.internal:host-gateway"
+    hostname: db
+    extra_hosts:
+        - "host.docker.internal:host-gateway"
+
+  pgadmin:
+    depends_on:
+      - db
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    restart: always
+    env_file:
+      - ./pgadmin/pgadmin.env
+    ports:
+      - "5050:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  backend:
+    depends_on:
+      - db
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile-backend
+    env_file:
+      - ./backend/backend.env
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app_backend
+    networks:
+      - webapp
+      - database
+    restart: always
+    container_name: backend_app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build:
+      context: ./frontend/
+      dockerfile: Dockerfile-frontend
+    depends_on:
+      - backend
+    volumes:
+    - ./frontend/:/app_frontend
+    networks:
+      - webapp
+    ports:
+      - "3005:3005"
+    restart: always
+    container_name: frontend_app
+
+networks:
+  webapp:
+    driver: bridge
+  database:
+    driver: bridge

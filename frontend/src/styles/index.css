@@ -1,0 +1,51 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+html, body {
+  margin: 0px;
+}
+
+.connectButton {
+  background-color: rgb(49, 49, 175);
+  color: white;
+}
+
+#App {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 0.2fr 0.4fr 0.4fr 0.3fr;
+  grid-column-gap: 0px;
+  grid-template-rows: 0.1fr 0.8fr 0.1fr;
+  grid-row-gap: 0px;
+}
+
+#header {
+  background-color: #8FE368;
+  grid-column: 1 / 5;
+  grid-row: 1 / 2;
+  display: flex;
+  justify-content: space-between;
+}
+
+#footer {
+  background-color: #8FE368;
+  grid-column: 1 / 5;
+  grid-row: 4 / 4;
+}
+
+#body {
+  background-color: white;
+  grid-column: 1 / 4;
+  grid-row: 2 / 4;
+}

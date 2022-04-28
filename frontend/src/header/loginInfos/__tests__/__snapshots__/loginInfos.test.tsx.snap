@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<LoginInfos /> display username if bool is set to true 1`] = `
+<p
+  className="login"
+>
+  Hello 
+  pminne
+</p>
+`;
+
+exports[`<LoginInfos /> don't display username if bool is set to false 1`] = `
+<p
+  className="login"
+>
+  No Login
+</p>
+`;

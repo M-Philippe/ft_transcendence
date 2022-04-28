@@ -1,0 +1,106 @@
+### GET ALL USERS
+GET http://localhost:3000/users
+
+### GET ONE USER
+GET http://localhost:3000/users/2
+
+### GET ONE USER BY NAME
+GET http://localhost:3000/users/name/Bridget
+
+### GET USER ACHIEVEMENTS
+GET http://localhost:3000/users/1/achievements
+
+### POST USER
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+	"name": "a",
+	"avatar": "ok"
+}
+
+###
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+	"name": "b",
+	"avatar": "ok"
+}
+
+### UPDATE USER
+PATCH http://localhost:3000/users/1
+Content-Type: application/json
+
+{
+	"name": "josé",
+	"avatar": "uglypic",
+	"lostCount": 12,
+}
+
+### DELETE USER
+DELETE http://localhost:3000/users/1
+
+######################################################################
+######################################################################
+
+### GET ALL MATCHES
+GET http://localhost:3000/matches
+
+### GET MATCH
+GET http://localhost:3000/matches/1
+
+### POST MATCH
+POST http://localhost:3000/matches
+Content-Type: application/json
+
+{
+	"winner": "a",
+	"player1": "a",
+	"player2": "b"
+}
+
+######################################################################
+######################################################################
+
+### GET ALL RELATIONSHIPS
+GET http://localhost:3000/relationships
+
+######################################################################
+######################################################################
+
+### GET ALL MatchesOnGoing
+GET http://localhost:3000/matchesOnGoing/
+
+### POST delete MatchesOnGoing
+POST http://localhost:3000/matchesOnGoing/delete
+Content-Type: application/json
+
+{
+	"id": 7
+}
+
+### POST USER
+POST http://localhost:3000/matchesOnGoing/
+Content-Type: application/json
+
+{}
+
+######################################################################
+######################################################################
+
+### GET CHAT
+GET http://localhost:3000/chat/
+
+### POST CHAT
+POST http://localhost:3000/chat/
+
+### Post Message
+POST http://localhost:3000/chat/body
+Content-Type: application/json
+
+{
+	"id": "19",
+	"message": "vth",
+	"username": "vroth"
+}
