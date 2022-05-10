@@ -5,28 +5,30 @@
 #                                                     +:+ +:+         +:+      #
 #    By: ninieddu <ninieddu@student.42lyon.fr>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2022/05/01 10:06:55 by ninieddu          #+#    #+#              #
-#    Updated: 2022/05/01 10:21:50 by ninieddu         ###   ########lyon.fr    #
+#    Created: 2022/05/10 11:17:21 by ninieddu          #+#    #+#              #
+#    Updated: 2022/05/10 11:17:22 by ninieddu         ###   ########lyon.fr    #
 #                                                                              #
 # **************************************************************************** #
 
 all:
-	docker compose -f ./docker-compose.yml up -d --build
+	docker-compose up --build
 
 stop:
-	docker compose -f ./docker-compose.yml stop
+	docker-compose -f ./docker-compose.yml stop
 
 down:
-	docker compose -f ./docker-compose.yml down
+	docker-compose -f ./docker-compose.yml down
 
 clean:	down
 	docker system prune -a --force
 
 del_useless:
-	sudo rm -rf ./backend/dist
-	sudo rm -rf ./backend/node_modules
-	sudo rm -rf ./database/database-data
-	sudo rm -rf ./frontend/node_modules
+	rm -rf ./backend/dist
+	rm -rf ./backend/node_modules
+	rm -rf ./database/database-data
+	rm -rf ./frontend/node_modules
+
+fclean:	clean del_useless
 
 re:	
 	clean all
