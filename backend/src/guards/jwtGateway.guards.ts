@@ -7,7 +7,15 @@ export function extractJwtFromCookie(cookies: string) {
 	let jwt = "";
 	for (let i = 0; i < keys.length; i++) {
 		if (keys[i].search("authentication=") != -1) {
-			jwt = keys[i].slice("authentication=".length);
+			console.error('BEFORE SLICE: ', keys[i]);
+			if (keys.length == 1) {
+				console.error("\n\n\tNO OTHER COOKIES\n\n");
+				jwt = keys[i].slice("authentication=".length);
+			} else {
+				jwt = keys[i].slice("authentication=".length + 1);
+				console.error("\n\n\tPRESENT OTHER COOKIES\n\n");
+			}
+			console.error("AFTER SLICE: ", jwt);
 			return (jwt);
 		}
 	}
