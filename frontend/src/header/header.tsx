@@ -1,7 +1,7 @@
 import SearchBar from './searchBar/searchBar';
 import {Link, Redirect} from "react-router-dom";
 import LoginInfos from './loginInfos/loginInfos';
-import styles from './link.module.css';
+import styles from '../styles/link.module.css';
 import { connect } from 'react-redux';
 import { DispatchType, storeState } from '../store/types';
 import { useEffect, useState } from 'react';

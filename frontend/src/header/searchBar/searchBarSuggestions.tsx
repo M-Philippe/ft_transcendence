@@ -1,4 +1,4 @@
-import styles from './searchBarSuggestions.module.css';
+import styles from '../styles/searchBarSuggestions.module.css';
 
 export default function SearchBarSuggestions(props: any) {
   return (
