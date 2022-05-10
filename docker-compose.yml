@@ -3,7 +3,7 @@ version: '3.8'
 services:
   db:
     container_name: db
-    image: postgres:13-alpine
+    image: postgres:14.2-alpine
     restart: always
     ports:
       - "5432:5432"
@@ -14,8 +14,6 @@ services:
       - ./database/database-data:/var/lib/postgresql/data
     networks:
       - database
-    extra_hosts:
-        - "host.docker.internal:host-gateway"
     hostname: db
     extra_hosts:
         - "host.docker.internal:host-gateway"
@@ -24,7 +22,7 @@ services:
     depends_on:
       - db
     container_name: pgadmin4_container
-    image: dpage/pgadmin4
+    image: dpage/pgadmin4:latest
     restart: always
     env_file:
       - ./pgadmin/pgadmin.env
