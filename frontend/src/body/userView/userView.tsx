@@ -1,6 +1,6 @@
 import { useLocation, Redirect } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { API_USER_VIEW, DISCONNECTING_URL, USER_MY_PROFILE } from "../../urlConstString";
+import { API_USER_VIEW, DISCONNECTING_URL } from "../../urlConstString";
 import RelationshipsDisplay from "./relationshipsDisplay";
 import InvitationGameQueryBox from "./invitationGameQueryBox";
 import chooseRelationshipButton from "./chooseRelationshipButtons";

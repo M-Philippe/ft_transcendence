@@ -24,36 +24,44 @@ body {
 }
 
 #App {
-  max-height: 100vh;
+	height: 100vh;
+  /* max-height: 100vh; */
   display: flex;
   flex-wrap: wrap;
   flex-direction:row;
   justify-content: center;
   overflow-y: hidden;
   overflow-x: hidden;
+
+  background: linear-gradient(-45deg, #ee7752, #c2839b, #23a6d5, #23d5ab);
+	background-size: 400% 400%;
+	animation: gradient 30s ease infinite;
 }
 
 #header {
   display: flex;
   padding: 2vw;
-  justify-content: space-between;
+  justify-content: space-evenly;
   align-items: center;
-  height: 3vh;
+  height: 4vh;
   flex-basis: 100%;
-  background: linear-gradient(rgb(25, 25, 26), rgba(255, 255, 255, 0));
+  border-radius: 0% 0% 5% 5%;
+  background: linear-gradient(rgba(30, 30, 31, 0.616), rgba(255, 255, 255, 0));
 }
 
 #content {
   display: flex;
   flex-grow: 1;
-  height: 87vh;
-  border-color: black;
-
+  height: 86vh;
   text-align: center;
   justify-content: center;
   align-items: center;
 }
 
+#content button {
+height: 1%;
+width: 20vw;
+}
 
 
 /* Caption = titre du tableau de ranking */
@@ -62,6 +70,8 @@ caption {
 }
 
 table, th, td {
+  position:relative;
+  bottom: 20%;
   overflow-y: auto;
   width: 50vw;
   text-align: center;
@@ -70,14 +80,45 @@ table, th, td {
 
 
 #footer {
-  height: 3vh;
+  position: fixed;
+  bottom: 0;
   flex-basis: 100%;
-  border: 1px solid;
-  border-color: black;
-  background-color: #ace1aea2;
   text-align: center;
 }
 
+#footer-padding {
+  padding-right: 20%;
+  position: fixed;
+  bottom: 0;
+  flex-basis: 100%;
+  text-align: center;
+}
+
+#avatar {
+  border: 3px;
+  border-radius: 8px;
+  /* border-color: black; */
+}
+
+#pongImg {
+  width: 20vw;
+  height: 25vh;
+}
+
+#tropheeImg {
+  width: 12vw;
+  height: 23vh;
+}
+
+#alert {
+  width: 5vw;
+  height: 9vh;
+}
+
+/* #bulleIm {
+  width: 1vw;
+  height: 1vh;
+} */
 
 /* @media screen and (max-width: 750px) {
   #content{
@@ -87,14 +128,6 @@ table, th, td {
     height: 90vh;
   }
 } */
-
-
-#App {
-	background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-	background-size: 400% 400%;
-	animation: gradient 30s ease infinite;
-	height: 100vh;
-}
 
 @keyframes gradient {
 	0% {

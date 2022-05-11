@@ -3,6 +3,8 @@ import { userState } from "../../store/userSlice/userSliceTypes";
 import { connect } from "react-redux";
 import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
+import envelopeImg from '../../../src/styles/medias/envelope.png';
+// import envelopeImgNotif from '../../../src/styles/medias/envelopeNotif.png';
 import { API_URL, API_USER_RESPONSE_ALERT, DISCONNECTING_URL, URL_INVITATION_GAME } from "../../urlConstString";
 
 interface IShowAlert {
@@ -103,8 +105,7 @@ function ShowAlert(props: IShowAlert) {
 	return (
 		<div
 			style={{backgroundColor: "lightblue", position: "absolute", border: "solid 1px", width:"150px"}}
-			onMouseLeave={() => props.setShowAlert(false)}
-		>
+			onMouseLeave={() => props.setShowAlert(false)} >
 			{assembleAlertToHtml(props.alert)}
 		</div>
 	);
@@ -182,15 +183,14 @@ function UserAlert(props: {user: userState}) {
 				showAlert &&
 				<ShowAlert alert={alert} setShowAlert={setShowAlert} />
 			}
-			{
+			{/* {
 				showPopUp.show &&
 				<p>
 					{showPopUp.message}
 				</p>
-			}
-			<button onMouseEnter={() => {
-					setShowAlert(!showAlert);
-			}}>Alert</button>
+			} */}
+			<input id = "alert" type="image" src={ envelopeImg } alt="Alert" onMouseEnter={() => {
+				setShowAlert(!showAlert); }}/>
 		</div>
 	);
 }

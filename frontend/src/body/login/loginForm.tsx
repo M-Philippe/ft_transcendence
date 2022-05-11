@@ -66,7 +66,7 @@ function LoginForm(props: ConnectFormProps) {
         <input type="text" onChange={(event) => {handleChange(event, "username") }} /><br />
 			<label>Password</label><br />
 				<input type="password" onChange={(event) => {handleChange(event, "password")} }/>
-		</form>
+		</form><br />
 		<button onClick={handleSubmit}>Login</button>
 		<br /><br />
     <a href={API_AUTH_42_LOGIN}>LOGIN WITH 42</a>

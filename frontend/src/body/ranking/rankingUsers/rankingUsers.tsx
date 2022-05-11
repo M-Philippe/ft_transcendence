@@ -5,6 +5,7 @@ import { sortingLostAscend, sortingLostDescend } from "./sortingLost";
 import { connect } from 'react-redux';
 import { storeState } from '../../../store/types';
 import { Link } from 'react-router-dom';
+import trophee from '../../../styles/medias/trophee.png';
 
 interface IRankingUsers {
   url: string;
@@ -60,10 +61,11 @@ function RankingUsers(props: any) {
     setSortLostDescend(false);
     setData(sortingLostDescend(data));
   }
+  
 
   return (
       <table>
-        <caption>Ranking Users</caption>
+        <caption> <br/> <br/> <br/> <br/> <img id = "tropheeImg" src= {trophee} alt="Trophee"></img> <br/><br/> <b> Ranking Users </b> </caption>
         <thead>
           <tr>
             <th>
@@ -89,7 +91,7 @@ function RankingUsers(props: any) {
                 <tr key={index}>
                   {
                     props.username === element.name &&
-                    <th style={{background: "red"}}>
+                    <th style={{background: "rgba(200, 200, 200, 0.7)"}}>
                       <Link
                         to={"/userView/:" + element.name}>
                           {element.name}

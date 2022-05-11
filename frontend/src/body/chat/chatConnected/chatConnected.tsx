@@ -157,6 +157,9 @@ export function ChatConnected(props: PropsChatConnected) {
         usernames: args[0].usernames,
       });
     }
+    // autoscroll down on msg receive :
+    var chatWindow = document.getElementById('chat');
+    chatWindow?.scrollTo(0, chatWindow?.scrollHeight);
   })
 
   props.socket.on("errorMessage", (...args: any) => {
@@ -214,7 +217,7 @@ export function ChatConnected(props: PropsChatConnected) {
   return (
     <div>
       {state.lstId.length !== 0 &&
-        <div>
+        <div className="buttonChanTop">
         <DisplayButtonsChat
           state={state}
           dispatch={dispatch}

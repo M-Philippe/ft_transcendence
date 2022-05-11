@@ -5,6 +5,7 @@ import Board from './board';
 import { Socket } from 'socket.io-client';
 import { SocketHandler } from './socketHandler';
 import SpectateGame from './spectateGame/spectateGame';
+import pong from '../../styles/medias/ping-pong.png';
 
 interface rules {
   scoreMax: number,
@@ -59,6 +60,7 @@ function PlayRoute(props: any) {
   else
     return (
       <div>
+        <img id = "pongImg" src= {pong} alt="pong"></img>
         <p>Points</p>
         <select onChange={(event) => {
           setRules({...rules, scoreMax: parseInt(event.target.value)});
@@ -85,9 +87,9 @@ function PlayRoute(props: any) {
           <option value="desert">Desert</option>
           <option value="jungle">Jungle</option>
         </select>
-        <br />
-        <button onClick={() => setInGame(true)}>PLAY</button>
-        <button onClick={() => setSpectate(true)}>SPECTATE</button>
+        <br /><br />
+        <button className="action-button shadow animate green" onClick={() => setInGame(true)}>PLAY</button><br /><br />
+        <button className="action-button shadow animate blue" onClick={() => setSpectate(true)}>SPECTATE</button>
       </div>
     );
 }

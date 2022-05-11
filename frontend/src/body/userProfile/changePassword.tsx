@@ -57,7 +57,10 @@ const handleChange = (event: React.ChangeEvent<HTMLInputElement>, fieldToUpdate:
 				<label>Confirm New Password</label><br />
 					<input type="password" onChange={(event) => {handleChange(event, "confirmNewPassword")}}/>
 			</form>
-			<button onClick={handleSubmit}>Submit</button>
+			<br />
+			<button className="action-button shadow animate green" onClick={handleSubmit}>Submit</button>
+			<br />
+			<br />
 		</div>
 	)
 }

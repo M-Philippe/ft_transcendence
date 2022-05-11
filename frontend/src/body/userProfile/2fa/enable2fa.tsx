@@ -79,12 +79,13 @@ export default function Enable2fa(props: any) {
 						</label>
 					</form>
 				}
+				<br />
 				<button onClick={() => {
 					fetch2fa();
 					setAskCode(true);
 				}}>
 					CLICK TO GENERATE QR CODE
-				</button>
+				</button><br /><br />
 				<canvas id="canvasQr" height="0" width="0" ></canvas>
 			</section>
 		);

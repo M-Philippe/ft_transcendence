@@ -1,4 +1,4 @@
-import "../styles/header.css"
+import "../styles/buttons.css"
 import SearchBar from './searchBar/searchBar';
 import {Link, Redirect} from "react-router-dom";
 import LoginInfos from './loginInfos/loginInfos';
@@ -33,25 +33,28 @@ function Header(props: IProps) {
     return (
       <header id = "header">
         <LoginInfos />
-        <p className="login">{props.user.username}</p> 
-        <SearchBar />
-        {props.user.isConnected && <UserAlert />}
-          <Link className="action-button shadow animate yellow" to="/ranking">Ranking</Link>
-          {/* <Link className="action-button shadow animate yellow" to="/listChat">listChat</Link> */}
-          {!props.user.isConnected && <Link className="action-button shadow animate green" to="/login">Login</Link>}
-          {!props.user.isConnected && <Link className="action-button shadow animate blue" to="/register">Register</Link> }
-          {
-            props.user.isConnected &&
-            <Link className="action-button shadow animate green" to="/play">Play</Link>
-          }
-          {
-            props.user.isConnected &&
-            <Link className="action-button shadow animate blue" to="/myProfile">My Profile</Link>
-          }
-          {
-            props.user.isConnected &&
-            <button className="action-button shadow animate red" onClick={() => {setRedirectDisconnect(true);}}> Disconnect </button>
-          }
+        <p className="login"> { props.user.username } </p> 
+        { props.user.isConnected && <SearchBar /> }
+        { props.user.isConnected && <UserAlert /> }
+        <Link className="action-button shadow animate yellow" to="/ranking">Ranking</Link>
+        {
+          props.user.isConnected &&
+          <Link className="action-button shadow animate orange" to="/listChat">Chat List</Link>
+        }
+        {!props.user.isConnected && <Link className="action-button shadow animate green" to="/login">Login</Link>}
+        {!props.user.isConnected && <Link className="action-button shadow animate blue" to="/register">Register</Link> }
+        {
+          props.user.isConnected &&
+          <Link className="action-button shadow animate green" to="/play">Play</Link>
+        }
+        {
+          props.user.isConnected &&
+          <Link className="action-button shadow animate blue" to="/myProfile">My Profile</Link>
+        }
+        {
+          props.user.isConnected &&
+          <button className="action-button shadow animate red" onClick={() => {setRedirectDisconnect(true);}}> Disconnect </button>
+        }
         </header>
     );
   }

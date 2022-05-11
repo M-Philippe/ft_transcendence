@@ -46,23 +46,25 @@ function UserProfile(props: UserProfileProps) {
 
 	return (
 		<div>
-			<p>{props.user.username}</p>
-			<img style={{width: "30vw", height: "40vh"}} src={props.user.avatar} alt="avatarUser" /><br /><br />
+			<p><b>{props.user.username} </b></p>
+			<img id = "avatar" style={{width: "25vw", height: "40vh"}} src={props.user.avatar} alt="avatarUser" /><br /><br />
 			<AvatarUpload />
-			<button onClick={() => {setShowChangePassword(true);}}>Change my password</button><br /><br />
+			<button className="action-button shadow animate blue" onClick={() => {setShowChangePassword(true); 
+				document.getElementById('avatar')?.setAttribute('style', 'height:15%');
+				document.getElementById('avatar')?.setAttribute('style', 'width:15%')}}
+				>Change my password</button><br />
 			{
 				showChangePassword &&
 				<ChangePassword />
 			}
 			{
 				status2fa &&
-				<button onClick={() => { disable2fa(); }}>Disable 2fa</button>
+				<button className="action-button shadow animate blue" onClick={() => { disable2fa(); }}>Disable 2fa</button>
 			}
 			{
 				!status2fa &&
-				<button onClick={() => { setRedirect2fa(true); }}>Enable 2fa</button>
+				<button className="action-button shadow animate blue" onClick={() => { setRedirect2fa(true); }}>Enable 2fa</button>
 			}
-			<br />
 			<UserRelationships />
 		</div>
 	);
@@ -73,5 +75,11 @@ function mapStateToProps(state: storeState) {
 		user: state.user,
 	});
 }
+
+// function modifyImageSize(state: storeState) {
+// 	return ({
+// 		user: state.user,
+// 	});
+// }
 
 export default connect(mapStateToProps)(UserProfile);

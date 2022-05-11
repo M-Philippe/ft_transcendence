@@ -40,11 +40,11 @@ function AvatarUpload(props: { user: userState, dispatch: DispatchType }) {
 
 	return (
 		<div>
-			<label>Upload your avatar (only jpg)</label>
+			<label>Upload your avatar (only jpg)</label><br />
 			<input type="file" accept=".jpg" name="avatar_upload" onChange={handleChange}/>
 			<br /><br />
-			<button onClick={handleSubmit}>Submit</button>
-			<br /><br /> <br /><br />
+			<button className="action-button shadow animate green" onClick={handleSubmit}>Submit</button>
+			<br /><br />
 		</div>
 	);
 }

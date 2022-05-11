@@ -7,14 +7,13 @@
 
 .action-button
 {
-	position: relative;
 	padding: 10px 40px;
-  margin: 0px 10px 10px 0px;
-  float: left;
+    margin: 0px 10px 10px 0px;
 	border-radius: 3px;
 	font-family: 'Lato', sans-serif;
 	font-size: 18px;
 	color: #FFF;
+	background-color: #3498db00;
 	text-decoration: none;	
 }
 
@@ -27,6 +26,7 @@
 
 .red
 {
+	/* width: 18%; */
 	background-color: #e74c3c;
 	border-bottom: 5px solid #c0392b;
 	text-shadow: 0px -2px #c0392b;
@@ -42,13 +42,31 @@
 .yellow
 {
 	background-color: #f1c40f;
-	border-bottom: 5px solid #f39c12;
-	text-shadow: 0px -2px #f39c12;
+	border-bottom: 5px solid #f3b712;
+	text-shadow: 0px -2px #b6aea1;
+}
+
+.orange
+{
+	background-color: #f18f0f;
+	border-bottom: 5px solid #df830b;
+	text-shadow: 0px -2px #cc7708;
+}
+
+.joinChat
+{
+	background-color: #ffa034;
+	border-bottom: 5px solid #df830b;
 }
 
 .action-button:active
 {
 	transform: translate(0px,5px);
-  -webkit-transform: translate(0px,5px);
+    -webkit-transform: translate(0px,5px);
 	border-bottom: 1px solid;
+}
+
+.action-button:hover
+{
+	color: #ffffffb7;
 }

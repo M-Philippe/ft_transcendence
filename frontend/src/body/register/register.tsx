@@ -53,15 +53,15 @@ function Register(props: {user: userState}) {
 	return (
 		<section>
 			{ errorMessage !== "" && <p style={{color: "red"}}>{errorMessage}</p> }
-			<p>Register Form</p>
+			<p>Register :</p>
 			<form>
 				<label>Username</label><br />
-					<input type="text" onChange={(event) => {handleChange(event ,"username")}}/><br />
+					<input type="text" onChange={(event) => {handleChange(event ,"username")}}/><br /><br />
 				<label>Password</label><br />
-					<input type="password" onChange={(event) => {handleChange(event, "password")}}/><br />
+					<input type="password" onChange={(event) => {handleChange(event, "password")}}/><br /><br />
 				<label>Confirm Password</label><br />
 					<input type="password" onChange={(event) => {handleChange(event, "confirmPassword")}}/>
-			</form>
+			</form><br />
 			<button onClick={handleSubmit}>Register</button> <br /><br />
 			<a href={API_AUTH_42_LOGIN}>REGISTER WITH 42</a>
 		</section>

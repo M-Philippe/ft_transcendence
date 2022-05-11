@@ -1,23 +1,28 @@
 #chat {
+  padding-right: 1%;
+  padding-left: 1%;
+  padding-bottom: 1%;
   height: 87vh;
-  width: 19vw;
-  border-left: 1px solid;
-  border-color: black;
+  width: 20vw;
   overflow-y: auto;
   overflow-x: hidden;
   text-align: center;
-  background-color: rgba(255, 255, 255, 0.473);
+  background: linear-gradient( rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.185));
+  /* background-color: rgba(255, 255, 255, 0.473); */
 }
 
-/* #chatForm {
-	border-radius: 3px;
-} */
+#chatForm {
+  position: absolute;
+  /* padding-bottom: 0.1%; */
+  bottom: 0;
+  width: 20vw;
+  text-align: center;
+}
 
 .buttonChanTop {
-  height: 30px;
-  width: 70px;
-  white-space: nowrap;
-  overflow: hidden;
+  /* position: absolute;
+  top: 9%; */
+  padding-right: 1%;
   text-overflow: ellipsis;
 }
 

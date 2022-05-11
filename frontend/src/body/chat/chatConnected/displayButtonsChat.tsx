@@ -33,7 +33,7 @@ export default function DisplayButtonsChat(props: Props) {
             }}>
             {props.state.lstId[i] === 1 ? "General" : "X"}
           </button>);
-      } else {
+  } else {
         buttons.push(
           <button key={i}
             style={{ backgroundColor: "grey", color: props.state.lstId[i] === 1 ? "black" : "grey" }}
