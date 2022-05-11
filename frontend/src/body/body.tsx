@@ -28,7 +28,7 @@ interface PropsBody {
 
 function Body(props: PropsBody) {
   return (
-    <div id="body">
+    <div id="content">
       <Switch>
         <Route exact path="/" render={() =>
           <RankingUsers

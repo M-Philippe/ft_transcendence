@@ -21,7 +21,7 @@ function Chat(props: IChatProps) {
   const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>();
 
   if (!props.isConnected)
-    return (<div></div>);
+    return (null);
 
   if (socket !== undefined && !props.isConnected) {
     socket.disconnect();
@@ -38,17 +38,18 @@ function Chat(props: IChatProps) {
           />
         }
         {socket !== undefined &&
-          <div style={{overflow: "scroll"}} className="tstWrap">
+          <div className= "tstWrap">
             <ChatConnected
               name={props.username}
               socket={socket}
             />
           </div>
         }
-      </div>);
+      </div>
+      );
   }
   else {
-    return (<div></div>);
+    return (null);
   }
 }
 

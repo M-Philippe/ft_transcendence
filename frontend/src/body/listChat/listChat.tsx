@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { storeState } from '../../store/types';
 import { MouseEventHandler } from 'react';
 import { API_GET_LIST_CHAT, API_SUSCRIBE_CHAT } from '../../urlConstString';
+// import { Link } from "react-router-dom";
 
 const loadData = async (data: any[], setData: React.Dispatch<SetStateAction<any[]>>, url: string) => {
   let response: Response;
@@ -57,19 +58,22 @@ function ListChat(props: any) {
     }
   }, [load, data])
 
+  // if (!props.isConnected)
+  //   return (
+  //     <div>
+  //     <img src="../../../public/medias/Forbidden.jpg" alt="Forbiden" />
+  //     <p>You need to be <Link to="/login">logged</Link> to see the chat.</p>
+  //   </div>
+  //     );
+
   return (
     <div>
       <p>CLICK ON ONE CHAT TO SUSCRIBE TO IT</p>
       {data.length !== 0 &&
         data.map((element: any, index: number) => (
           <div key={index}>
-          <p style={{display:"inline"}}>{element.chatName}</p>
-          <button
-            key={index}
-            onClick={() => wrapperSuscribeToChat(props.username, element.idChat, setLoad)}
-          >
-              JOIN
-          </button>
+          <p style={{display:"inline"}}>{element.chatName}</p>----
+          <button key={index} onClick={() => wrapperSuscribeToChat(props.username, element.idChat, setLoad)}> JOIN </button>
           <br />
           </div>
         ))

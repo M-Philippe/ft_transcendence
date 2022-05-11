@@ -1,7 +1,7 @@
+import "../styles/header.css"
 import SearchBar from './searchBar/searchBar';
 import {Link, Redirect} from "react-router-dom";
 import LoginInfos from './loginInfos/loginInfos';
-import styles from '../styles/link.module.css';
 import { connect } from 'react-redux';
 import { DispatchType, storeState } from '../store/types';
 import { useEffect, useState } from 'react';
@@ -31,33 +31,28 @@ function Header(props: IProps) {
     return (<Redirect to="/disconnect" />);
   } else {
     return (
-      <div id="header">
+      <header id = "header">
         <LoginInfos />
+        <p className="login">{props.user.username}</p> 
         <SearchBar />
         {props.user.isConnected && <UserAlert />}
-        <div className={styles.divLink}>
-          <Link className={styles.headerLink} to="/ranking">Ranking</Link>
-          <Link className={styles.headerLink} to="/listChat">listChat</Link>
-          {!props.user.isConnected && <Link className={styles.headerLink} to="/login">Login</Link>}
-          {!props.user.isConnected && <Link className={styles.headerLink} to="/register">Register</Link> }
+          <Link className="action-button shadow animate yellow" to="/ranking">Ranking</Link>
+          {/* <Link className="action-button shadow animate yellow" to="/listChat">listChat</Link> */}
+          {!props.user.isConnected && <Link className="action-button shadow animate green" to="/login">Login</Link>}
+          {!props.user.isConnected && <Link className="action-button shadow animate blue" to="/register">Register</Link> }
           {
             props.user.isConnected &&
-            <Link className={styles.headerLink} to="/play">Play</Link>
+            <Link className="action-button shadow animate green" to="/play">Play</Link>
           }
           {
             props.user.isConnected &&
-            <Link to="/myProfile">My Profile</Link>
+            <Link className="action-button shadow animate blue" to="/myProfile">My Profile</Link>
           }
           {
             props.user.isConnected &&
-            <button onClick={() => {
-              setRedirectDisconnect(true);
-            }}>
-              Disconnect
-            </button>
+            <button className="action-button shadow animate red" onClick={() => {setRedirectDisconnect(true);}}> Disconnect </button>
           }
-        </div>
-      </div>
+        </header>
     );
   }
 }

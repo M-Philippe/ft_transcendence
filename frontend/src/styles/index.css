@@ -7,14 +7,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
+/* code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+*/
 
-html, body {
+/* html, body {
+  height: 100%;
   margin: 0px;
-}
+} */
 
 .connectButton {
   background-color: rgb(49, 49, 175);
@@ -22,30 +24,86 @@ html, body {
 }
 
 #App {
-  height: 100vh;
-  display: grid;
-  grid-template-columns: 0.2fr 0.4fr 0.4fr 0.3fr;
-  grid-column-gap: 0px;
-  grid-template-rows: 0.1fr 0.8fr 0.1fr;
-  grid-row-gap: 0px;
+  max-height: 100vh;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction:row;
+  justify-content: center;
+  overflow-y: hidden;
+  overflow-x: hidden;
 }
 
 #header {
-  background-color: #8FE368;
-  grid-column: 1 / 5;
-  grid-row: 1 / 2;
   display: flex;
+  padding: 2vw;
   justify-content: space-between;
+  align-items: center;
+  height: 3vh;
+  flex-basis: 100%;
+  background: linear-gradient(rgb(25, 25, 26), rgba(255, 255, 255, 0));
 }
+
+#content {
+  display: flex;
+  flex-grow: 1;
+  height: 87vh;
+  border-color: black;
+
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+
+
+
+/* Caption = titre du tableau de ranking */
+caption {
+  margin: 5%;
+}
+
+table, th, td {
+  overflow-y: auto;
+  width: 50vw;
+  text-align: center;
+  margin: auto;
+}
+
 
 #footer {
-  background-color: #8FE368;
-  grid-column: 1 / 5;
-  grid-row: 4 / 4;
+  height: 3vh;
+  flex-basis: 100%;
+  border: 1px solid;
+  border-color: black;
+  background-color: #ace1aea2;
+  text-align: center;
 }
 
-#body {
-  background-color: white;
-  grid-column: 1 / 4;
-  grid-row: 2 / 4;
+
+/* @media screen and (max-width: 750px) {
+  #content{
+    height: 90vh;
+  }
+  #chat{
+    height: 90vh;
+  }
+} */
+
+
+#App {
+	background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+	background-size: 400% 400%;
+	animation: gradient 30s ease infinite;
+	height: 100vh;
+}
+
+@keyframes gradient {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
 }

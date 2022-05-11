@@ -62,23 +62,22 @@ function RankingUsers(props: any) {
   }
 
   return (
-    <div id="ranking">
       <table>
         <caption>Ranking Users</caption>
         <thead>
           <tr>
             <th>
-              <p className="nameHead" style={{display: "inline"}}>Name</p>
+              <p className="nameHead">Name</p>
               <button onClick={() => {setSortNameAscend(true);}}>Up</button>
               <button onClick={() => {setSortNameDescend(true);}}>Down</button>
             </th>
             <th>
-              <p style={{display: "inline"}}>Win</p>
+              <p>Win</p>
               <button onClick={() => {setSortWinAscend(true);}}>Up</button>
               <button onClick={() => {setSortWinDescend(true);}}>Down</button>
             </th>
             <th>
-              <p style={{display: "inline"}}>Lost</p>
+              <p>Lost</p>
               <button onClick={() => {setSortLostAscend(true);}}>Up</button>
               <button onClick={() => {setSortLostDescend(true);}}>Down</button>
             </th>
@@ -113,7 +112,6 @@ function RankingUsers(props: any) {
             }
         </tbody>
       </table>
-    </div>
   );
 }
 

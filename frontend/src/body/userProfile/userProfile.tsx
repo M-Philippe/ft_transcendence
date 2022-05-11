@@ -45,11 +45,11 @@ function UserProfile(props: UserProfileProps) {
 		);
 
 	return (
-		<div style={{position:"relative"}}>
+		<div>
 			<p>{props.user.username}</p>
-			<img style={{width: "80px", height: "40px"}} src={props.user.avatar} alt="avatarUser" /><br />
+			<img style={{width: "30vw", height: "40vh"}} src={props.user.avatar} alt="avatarUser" /><br /><br />
 			<AvatarUpload />
-			<button onClick={() => {setShowChangePassword(true);}}>Change my password</button><br />
+			<button onClick={() => {setShowChangePassword(true);}}>Change my password</button><br /><br />
 			{
 				showChangePassword &&
 				<ChangePassword />

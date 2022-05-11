@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Socket } from 'socket.io-client';
+import '../../../styles/chat.css';
+
 /* Keep this in case of future compatibility problem */
 //import { DefaultEventsMap } from 'socket.io-client/build/typed-events';
 /* Usual import */

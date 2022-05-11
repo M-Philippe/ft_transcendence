@@ -31,6 +31,6 @@ export function SocketHandler(props: ISocketHandler) {
   });
 
   return (
-    <div></div>
+    null
   );
 }
