@@ -70,3 +70,9 @@
 {
 	color: #ffffffb7;
 }
+
+/* @media screen and (max-width: 750px) {
+	.action-button{
+		width: 5%;
+	}
+} */
