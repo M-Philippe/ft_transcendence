@@ -18,117 +18,30 @@ body {
   margin: 0px;
 } */
 
-.connectButton {
+
+/* .connectButton {
   background-color: rgb(49, 49, 175);
   color: white;
+} */
+
+*{
+  overflow-y: hidden;
+  overflow-x: hidden;
 }
 
 #App {
-	height: 100vh;
-  /* max-height: 100vh; */
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction:row;
-  justify-content: center;
-  overflow-y: hidden;
-  overflow-x: hidden;
+  height: 100vh;
+  min-height: 100vh;
+  max-height: 100vh;
+  width: 100vw;
+  max-width: 100vw;
+  min-width: 100vw;
 
   background: linear-gradient(-45deg, #ee7752, #c2839b, #23a6d5, #23d5ab);
 	background-size: 400% 400%;
 	animation: gradient 30s ease infinite;
 }
-
-#header {
-  display: flex;
-  padding: 2vw;
-  justify-content: space-evenly;
-  align-items: center;
-  height: 4vh;
-  flex-basis: 100%;
-  border-radius: 0% 0% 5% 5%;
-  background: linear-gradient(rgba(30, 30, 31, 0.616), rgba(255, 255, 255, 0));
-}
-
-#content {
-  display: flex;
-  flex-grow: 1;
-  height: 86vh;
-  text-align: center;
-  justify-content: center;
-  align-items: center;
-}
-
-#content button {
-height: 1%;
-width: 20vw;
-}
-
-
-/* Caption = titre du tableau de ranking */
-caption {
-  margin: 5%;
-}
-
-table, th, td {
-  position:relative;
-  bottom: 20%;
-  overflow-y: auto;
-  width: 50vw;
-  text-align: center;
-  margin: auto;
-}
-
-
-#footer {
-  position: fixed;
-  bottom: 0;
-  flex-basis: 100%;
-  text-align: center;
-}
-
-#footer-padding {
-  padding-right: 20%;
-  position: fixed;
-  bottom: 0;
-  flex-basis: 100%;
-  text-align: center;
-}
-
-#avatar {
-  border: 3px;
-  border-radius: 8px;
-  /* border-color: black; */
-}
-
-#pongImg {
-  width: 20vw;
-  height: 25vh;
-}
-
-#tropheeImg {
-  width: 12vw;
-  height: 23vh;
-}
-
-#alert {
-  width: 5vw;
-  height: 9vh;
-}
-
-/* #bulleIm {
-  width: 1vw;
-  height: 1vh;
-} */
-
-/* @media screen and (max-width: 750px) {
-  #content{
-    height: 90vh;
-  }
-  #chat{
-    height: 90vh;
-  }
-} */
-
+/* Background animation : */
 @keyframes gradient {
 	0% {
 		background-position: 0% 50%;
@@ -139,4 +52,150 @@ table, th, td {
 	100% {
 		background-position: 0% 50%;
 	}
+}
+
+header {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: flex-end;
+  padding-top: 1vh;
+  height: 9vh;
+  justify-content: space-evenly;
+  align-items: center;
+  background: linear-gradient(rgba(30, 30, 31, 0.616), rgba(255, 255, 255, 0));
+}
+
+#body {
+  display: flex;
+  height: 90vh;
+  text-align: center;
+  justify-content:space-evenly;
+  align-items: center;
+}
+
+#content {
+  flex: 1;
+  order: 1;
+}
+
+footer {
+  position: absolute;
+  bottom: 0;
+  text-align: center;
+}
+
+/* #content button {
+  width: 20%;
+} */
+
+/* ------ Ranking table ------ */
+
+table {
+  width: auto;
+  min-width: 50%;
+  margin: auto;
+  overflow-y: auto;
+}
+
+th {
+  padding-top: 1%;
+  width: auto;
+  text-align: left;
+}
+
+/* ------ IMAGES ------ */
+
+#avatarMyProfil {
+  border-radius: 8px;
+  width: 15vw;
+  height: 28vh;
+}
+
+#avatarHeader {
+  border-radius: 8px;
+  width: 6vw;
+  height: 9vh;
+}
+
+#pongImgPlayMenu {
+  width: 20vw;
+  height: 25vh;
+}
+
+#RanktropheeImg {
+  width: 10vw;
+  height: 20vh;
+}
+
+#alert {
+  width: 5vw;
+  height: 9vh;
+  
+}
+
+/* issue when try to put as normal image idk why so i use a button*/
+#bulleButtonTricks {
+	border: 0;
+	background-color:#ffffff00;
+	background-image: url('../styles/medias/bulle.png');
+	height: 30vh;
+	width: 20vw;
+	background-size: 100% 100%;
+}
+
+
+
+/* MEDIA QUERIES TO BE MORE RESPONSIVE */
+@media all and (max-width: 920px) {
+  * {
+    overflow-y: auto;
+  }
+
+  table caption {
+    padding-top: 10%;
+    height: auto;
+  }
+
+  header { 
+    justify-content: space-around;
+    height: auto;
+  }
+
+  #chat {
+    min-height: 70vh;
+  }
+
+
+  #body {
+    min-height: 50vh;
+  }
+
+  footer {
+    position:relative;
+  }
+
+}
+
+@media all and (max-width: 550px) {
+    header {
+    flex-direction: column;
+  }
+
+  #body {
+    flex-direction: column;
+    height: auto;
+    width: auto;
+  }
+
+  #chat {
+    margin-top: 15%;
+    margin-bottom: 10%;
+    max-height: 80vh;
+    max-width: 100%;
+  }
+
+  footer {
+    position:relative;
+  }
+
 }

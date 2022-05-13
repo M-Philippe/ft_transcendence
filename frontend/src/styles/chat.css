@@ -1,29 +1,26 @@
 #chat {
+  flex: 0 22vw;
+  order: 2;
+  height: 100%;
   padding-right: 1%;
   padding-left: 1%;
-  padding-bottom: 1%;
-  height: 87vh;
-  width: 20vw;
   overflow-y: auto;
-  overflow-x: hidden;
-  text-align: center;
   background: linear-gradient( rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.185));
-  /* background-color: rgba(255, 255, 255, 0.473); */
 }
 
-#chatForm {
-  position: absolute;
-  /* padding-bottom: 0.1%; */
+ /* #chatForm { */
+  /* position: absolute;
+  padding-bottom: 0.5%;
   bottom: 0;
-  width: 20vw;
-  text-align: center;
-}
+  width: 20vw; */
+  /* text-align: center; */
+/* }  */
 
 .buttonChanTop {
   /* position: absolute;
   top: 9%; */
   padding-right: 1%;
-  text-overflow: ellipsis;
+  /* text-overflow: ellipsis; */
 }
 
 /* 
@@ -44,6 +41,6 @@
 } */
 
 .tstWrap {
-  margin: 1%;
+  padding-bottom: 8%;
   word-wrap: break-word;
 }

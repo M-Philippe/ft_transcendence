@@ -3,7 +3,7 @@ import { API_ADD_FRIEND, API_BLOCK_USER, API_UNBLOCK_USER, API_UNFRIEND_USER, DI
 
 function assembleUnblockButton(nameUserFetched: string, countKeys: number, setRefresh: React.Dispatch<SetStateAction<number>>) {
   return (
-    <button key={countKeys} onClick={() => {
+    <button className="action-button shadow animate orange" key={countKeys} onClick={() => {
       let headers = new Headers();
       headers.append("Content-Type", "application/json");
       fetch(API_UNBLOCK_USER, {
@@ -29,7 +29,7 @@ function assembleUnblockButton(nameUserFetched: string, countKeys: number, setRe
 
 function assembleBlockButton(nameUserFetched: string, countKeys: number, setRefresh: React.Dispatch<SetStateAction<number>>) {
   return (
-    <button key={countKeys} onClick={() => {
+    <button className="action-button shadow animate red" key={countKeys} onClick={() => {
       let headers = new Headers();
       headers.append("Content-Type", "application/json");
       fetch(API_BLOCK_USER, {
@@ -52,7 +52,7 @@ function assembleBlockButton(nameUserFetched: string, countKeys: number, setRefr
 
 function assembleAddFriendButton(nameUserFetched: string, countKeys: number, setRefresh: React.Dispatch<SetStateAction<number>>) {
   return (
-    <button key={countKeys} onClick={() => {
+    <button className="action-button shadow animate blue" key={countKeys} onClick={() => {
       // Send friend request to back.
       let headers = new Headers();
       headers.append("Content-Type", "application/json");

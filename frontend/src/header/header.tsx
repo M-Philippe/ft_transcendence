@@ -31,10 +31,10 @@ function Header(props: IProps) {
     return (<Redirect to="/disconnect" />);
   } else {
     return (
-      <header id = "header">
+      <header>
         <LoginInfos />
         <p className="login"> { props.user.username } </p> 
-        { props.user.isConnected && <SearchBar /> }
+        {/* { props.user.isConnected && <SearchBar /> } */}
         { props.user.isConnected && <UserAlert /> }
         <Link className="action-button shadow animate yellow" to="/ranking">Ranking</Link>
         {
@@ -55,7 +55,7 @@ function Header(props: IProps) {
           props.user.isConnected &&
           <button className="action-button shadow animate red" onClick={() => {setRedirectDisconnect(true);}}> Disconnect </button>
         }
-        </header>
+      </header>
     );
   }
 }

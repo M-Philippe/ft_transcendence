@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { storeState } from '../../store/types';
 import { MouseEventHandler } from 'react';
 import { API_GET_LIST_CHAT, API_SUSCRIBE_CHAT } from '../../urlConstString';
-// import bulleImg  from '../../styles/medias/bulle.png';
 // import { Link } from "react-router-dom";
 
 const loadData = async (data: any[], setData: React.Dispatch<SetStateAction<any[]>>, url: string) => {
@@ -61,8 +60,9 @@ function ListChat(props: any) {
 
   return (
     <div>
-      {/* <img id = "bulleIm" src = { bulleImg }> </img> */}
+      <button id = "bulleButtonTricks"></button>
       <p>Click on the chat button you want to join :</p>
+      {/* <img id = "bulleIm" src = { bulleImg }> </img> */}
       {data.length !== 0 &&
         data.map((element: any, index: number) => (
           <div key={index}>

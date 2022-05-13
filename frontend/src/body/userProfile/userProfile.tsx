@@ -47,9 +47,10 @@ function UserProfile(props: UserProfileProps) {
 	return (
 		<div>
 			<p><b>{props.user.username} </b></p>
-			<img id = "avatar" style={{width: "25vw", height: "40vh"}} src={props.user.avatar} alt="avatarUser" /><br /><br />
+			<img id = "avatarMyProfil" src={props.user.avatar} alt="avatarUser" /><br /><br />
 			<AvatarUpload />
-			<button className="action-button shadow animate blue" onClick={() => {setShowChangePassword(true); 
+			<button id ="ChangePasswButton" className="action-button shadow animate blue" onClick={() => {setShowChangePassword(true); 
+				document.getElementById('ChangePasswButton')?.remove();
 				document.getElementById('avatar')?.setAttribute('style', 'height:15%');
 				document.getElementById('avatar')?.setAttribute('style', 'width:15%')}}
 				>Change my password</button><br />

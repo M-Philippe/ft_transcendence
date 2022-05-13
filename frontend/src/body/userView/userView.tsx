@@ -83,11 +83,11 @@ function UserView(props: {username: string}) {
         <img style={{width: "150px", height: "80px"}} src={data.avatar} alt="Avatar"/>
         {
           data.online &&
-          <p>ONLINE</p>
+          <p style={{color:"#00FF00"}}>ONLINE</p>
         }
         {
           data.online && !showBox &&
-          <button onClick={() => {
+          <button className="action-button shadow animate green" onClick={() => {
             setShowBox(true);
           }}>Invite to play a game!</button>
         }
@@ -98,9 +98,9 @@ function UserView(props: {username: string}) {
         <br />
         {
           !data.online &&
-          <p>OFFLINE</p>
+          <p style={{color:"#FF4500"}}>OFFLINE</p>
         }
-        <p>wonCount: {data.wonCount} | lostCount: {data.lostCount}</p>
+        <p>wonCount: {data.wonCount} &emsp;&emsp; lostCount: {data.lostCount}</p>
         {
           data.achievements.length !== 0 &&
           assembleAchievements(data.achievements)

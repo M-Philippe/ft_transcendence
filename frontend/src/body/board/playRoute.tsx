@@ -60,7 +60,7 @@ function PlayRoute(props: any) {
   else
     return (
       <div>
-        <img id = "pongImg" src= {pong} alt="pong"></img>
+        <img id = "pongImgPlayMenu" src= {pong} alt="pong"></img>
         <p>Points</p>
         <select onChange={(event) => {
           setRules({...rules, scoreMax: parseInt(event.target.value)});

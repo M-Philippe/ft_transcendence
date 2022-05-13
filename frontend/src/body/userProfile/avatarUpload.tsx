@@ -11,6 +11,7 @@ function AvatarUpload(props: { user: userState, dispatch: DispatchType }) {
 	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		if (event.target.files === null)
 			return;
+		document.getElementById('submitAvatarButton')?.setAttribute('style', 'visibility:visible');
 		console.log(event.target.files[0]);
 		setSelectedFile(event.target.files[0]);
 	}
@@ -36,15 +37,16 @@ function AvatarUpload(props: { user: userState, dispatch: DispatchType }) {
 				});
 			}
 		});
+		document.getElementById('submitAvatarButton')?.remove();
 	}
 
 	return (
 		<div>
 			<label>Upload your avatar (only jpg)</label><br />
-			<input type="file" accept=".jpg" name="avatar_upload" onChange={handleChange}/>
+			<input type="file" accept=".jpg" name="avatar_upload" onChange={handleChange} />
 			<br /><br />
-			<button className="action-button shadow animate green" onClick={handleSubmit}>Submit</button>
-			<br /><br />
+			<button id = "submitAvatarButton" className="action-button shadow animate green" style={{visibility:"hidden"}} onClick={handleSubmit}>Submit</button>
+			<br />
 		</div>
 	);
 }

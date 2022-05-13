@@ -16,9 +16,8 @@ export default function InvitationGameQueryBox(props: { nameProfile: string, set
   });
 
 	return (
-		<div style={{border: "1px solid black"}}>
-			<p>Choose your rules to play against {props.nameProfile}</p>
-			<br />
+		<div>
+			<p>Choose your rules to play against : {props.nameProfile}</p>
 			<p>Points</p>
         <select onChange={(event) => {
           setRules({...rules, scoreMax: parseInt(event.target.value)});
@@ -46,7 +45,7 @@ export default function InvitationGameQueryBox(props: { nameProfile: string, set
           <option value="jungle">Jungle</option>
         </select>
 				<br /><br />
-				<button onClick={() => {
+				<button className="action-button shadow animate green" onClick={() => {
 					let headers = new Headers();
 					headers.append("Content-Type", "application/json");
 					fetch(API_USER_INVITE_MATCH, {
@@ -67,7 +66,7 @@ export default function InvitationGameQueryBox(props: { nameProfile: string, set
 				}}>
 					Invite
 				</button>
-				<button onClick={() => { props.setShowBox(false); }}>Cancel</button>
+				<button className="action-button shadow animate red" onClick={() => { props.setShowBox(false); }}>Cancel</button>
 		</div>
 	);
 }

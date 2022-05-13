@@ -1,10 +1,3 @@
-
-.animate
-{
-	transition: all 0.1s;
-	-webkit-transition: all 0.1s;
-}
-
 .action-button
 {
 	padding: 10px 40px;
@@ -16,12 +9,12 @@
 	background-color: #3498db00;
 	text-decoration: none;	
 }
-
+  
 .blue
 {
 	background-color: #3498db;
 	border-bottom: 5px solid #2980B9;
-	text-shadow: 0px -2px #2980B9;
+	/* text-shadow: 0px -2px #2980B9; */
 }
 
 .red
@@ -29,28 +22,28 @@
 	/* width: 18%; */
 	background-color: #e74c3c;
 	border-bottom: 5px solid #c0392b;
-	text-shadow: 0px -2px #c0392b;
+	/* text-shadow: 0px -2px #c0392b; */
 }
 
 .green
 {
 	background-color: #2ecc71;
 	border-bottom: 5px solid #27ae60;
-	text-shadow: 0px -2px #27ae60;
+	/* text-shadow: 0px -2px #27ae60; */
 }
 
 .yellow
 {
 	background-color: #f1c40f;
 	border-bottom: 5px solid #f3b712;
-	text-shadow: 0px -2px #b6aea1;
+	/* text-shadow: 0px -2px #b6aea1; */
 }
 
 .orange
 {
 	background-color: #f18f0f;
 	border-bottom: 5px solid #df830b;
-	text-shadow: 0px -2px #cc7708;
+	/* text-shadow: 0px -2px #cc7708; */
 }
 
 .joinChat
@@ -68,11 +61,29 @@
 
 .action-button:hover
 {
-	color: #ffffffb7;
+	transform: translate(0px, 1px);
+	/* color: #ffffffb7; */
 }
 
-/* @media screen and (max-width: 750px) {
-	.action-button{
-		width: 5%;
-	}
-} */
+
+/* ------ Ranking Sort Arrow Buttons ------ */
+
+#arrowDButton {
+	border: 5vw;
+	background-color:#ffffff00;
+	background-image: url('../styles/medias/downArrow.png');
+	height: 4vh;
+	width: 2vw;
+	background-size: 100% 100%;
+	cursor: pointer;
+}
+
+#arrowUButton {
+	border: 1vw;
+	background-color:#ffffff00;
+	background-image: url('../styles/medias/upArrow.png');
+	height: 4vh;
+	width: 2vw;
+	background-size: 100% 100%;
+	cursor: pointer;
+}

@@ -15,11 +15,13 @@ function App () {
     <Router>
       <div id = "App">
         <Header />
+      <div id="body">
         <Body />
         {
           !store.getState().isInGame &&
           <Chat />
         }
+      </div>
         <Footer />
       </div>
     </Router>

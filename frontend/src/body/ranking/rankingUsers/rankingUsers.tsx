@@ -65,23 +65,23 @@ function RankingUsers(props: any) {
 
   return (
       <table>
-        <caption> <br/> <br/> <br/> <br/> <img id = "tropheeImg" src= {trophee} alt="Trophee"></img> <br/><br/> <b> Ranking Users </b> </caption>
+        <caption><img id = "RanktropheeImg" src= {trophee} alt="Trophee"></img> <br/><br/> <b> Ranking Users </b> </caption>
         <thead>
           <tr>
             <th>
               <p className="nameHead">Name</p>
-              <button onClick={() => {setSortNameAscend(true);}}>Up</button>
-              <button onClick={() => {setSortNameDescend(true);}}>Down</button>
+              <button id = "arrowUButton" onClick={() => {setSortNameAscend(true);}}></button>
+              <button id = "arrowDButton" onClick={() => {setSortNameDescend(true);}}></button>
             </th>
             <th>
               <p>Win</p>
-              <button onClick={() => {setSortWinAscend(true);}}>Up</button>
-              <button onClick={() => {setSortWinDescend(true);}}>Down</button>
+              <button id = "arrowUButton" onClick={() => {setSortWinAscend(true);}}></button>
+              <button id = "arrowDButton" onClick={() => {setSortWinDescend(true);}}></button>
             </th>
             <th>
               <p>Lost</p>
-              <button onClick={() => {setSortLostAscend(true);}}>Up</button>
-              <button onClick={() => {setSortLostDescend(true);}}>Down</button>
+              <button id = "arrowUButton" onClick={() => {setSortLostAscend(true);}}></button>
+              <button id = "arrowDButton" onClick={() => {setSortLostDescend(true);}}></button>
             </th>
           </tr>
         </thead>
@@ -91,7 +91,8 @@ function RankingUsers(props: any) {
                 <tr key={index}>
                   {
                     props.username === element.name &&
-                    <th style={{background: "rgba(200, 200, 200, 0.7)"}}>
+                    <th style={{background: "rgba(200, 200, 200, 0.6)"}}>
+                    <img id ="miniAvat" style={{width: "3vw", height: "3vh", paddingRight: "5%"}} src={element.avatar} onError={() =>{document.getElementById('miniAvat')?.remove()}} alt="" />
                       <Link
                         to={"/userView/:" + element.name}>
                           {element.name}
@@ -101,14 +102,15 @@ function RankingUsers(props: any) {
                   {
                     props.username !== element.name &&
                     <th>
+                    <img id ="miniAvat" style={{width: "3vw", height: "3vh", paddingRight: "5%"}} src={element.avatar} onError={() =>{document.getElementById('miniAvat')?.remove()}} alt="" />
                       <Link
                         to={"/userView/:" + element.name}>
                           {element.name}
                       </Link>
                     </th>
                   }
-                  <th>{element.wonCount}</th>
-                  <th>{element.lostCount}</th>
+                  <th style={{textAlign:"center"}}>{element.wonCount}</th>
+                  <th style={{textAlign:"center"}}>{element.lostCount}</th>
                 </tr>
               ))
             }
