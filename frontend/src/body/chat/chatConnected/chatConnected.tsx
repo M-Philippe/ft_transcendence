@@ -237,12 +237,14 @@ export function ChatConnected(props: PropsChatConnected) {
         state={state}
         dispatch={dispatch}
       />
+    <div>
       <ChatInput
         socket={props.socket}
         state={state}
         dispatch={dispatch}
         username={props.name}
       />
+    </div>
     </div>
   );
 }

@@ -80,7 +80,7 @@ function UserView(props: {username: string}) {
     return (
       <div>
         <p>Name: {data.name}</p>
-        <img style={{width: "150px", height: "80px"}} src={data.avatar} alt="Avatar"/>
+        <img id = "avatarMyProfil" src={data.avatar} alt="Avatar"/>
         {
           data.online &&
           <p style={{color:"#00FF00"}}>ONLINE</p>

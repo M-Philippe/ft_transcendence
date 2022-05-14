@@ -7,7 +7,7 @@ function LoginInfos(props: any) {
       return (
         <div>
           {/* <p className="login">Hello {props.user.username}</p> */}
-          <img id = "avatarHeader" src={props.user.avatar} alt="avatarUser" />
+          <img id = "avatarHeader" className="imgHeader" src={props.user.avatar} alt="avatarUser" />
       </div>
       );
     }

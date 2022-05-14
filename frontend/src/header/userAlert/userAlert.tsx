@@ -21,7 +21,7 @@ function assembleAlertToHtml(alert: {message: string, needResponse: boolean, req
 		if (alert[i].needResponse) {
 			elementsToPush = (
 				<section key={i}>
-					<p style={{border: "solid 1px"}}>
+					<p style={{borderBottom: "solid 1px"}}>
 						{alert[i].message}
 					</p> <br />
 					<button  onClick={() => {
@@ -189,7 +189,7 @@ function UserAlert(props: {user: userState}) {
 					{showPopUp.message}
 				</p>
 			} */}
-			<input id = "alert" type="image" src={ envelopeImg } alt="Alert" onMouseEnter={() => {
+			<input id = "alert" className="imgHeader" type="image" src={ envelopeImg } alt="Alert" onMouseEnter={() => {
 				setShowAlert(!showAlert); }}/>
 		</div>
 	);

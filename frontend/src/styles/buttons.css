@@ -7,7 +7,9 @@
 	font-size: 18px;
 	color: #FFF;
 	background-color: #3498db00;
-	text-decoration: none;	
+	text-decoration: none;
+	text-align: center;
+	min-width: 5vw;
 }
   
 .blue
@@ -50,6 +52,8 @@
 {
 	background-color: #ffa034;
 	border-bottom: 5px solid #df830b;
+	min-width: 25vw;
+	min-height: 4vh;
 }
 
 .action-button:active
@@ -64,7 +68,6 @@
 	transform: translate(0px, 1px);
 	/* color: #ffffffb7; */
 }
-
 
 /* ------ Ranking Sort Arrow Buttons ------ */
 

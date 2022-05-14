@@ -92,7 +92,7 @@ function RankingUsers(props: any) {
                   {
                     props.username === element.name &&
                     <th style={{background: "rgba(200, 200, 200, 0.6)"}}>
-                    <img id ="miniAvat" style={{width: "3vw", height: "3vh", paddingRight: "5%"}} src={element.avatar} onError={() =>{document.getElementById('miniAvat')?.remove()}} alt="" />
+                    <img id ="miniAvatRanking" src={element.avatar} onError={() =>{document.getElementById('miniAvat')?.remove()}} alt="" />
                       <Link
                         to={"/userView/:" + element.name}>
                           {element.name}
@@ -102,7 +102,7 @@ function RankingUsers(props: any) {
                   {
                     props.username !== element.name &&
                     <th>
-                    <img id ="miniAvat" style={{width: "3vw", height: "3vh", paddingRight: "5%"}} src={element.avatar} onError={() =>{document.getElementById('miniAvat')?.remove()}} alt="" />
+                    <img id ="miniAvatRanking" src={element.avatar} onError={() =>{document.getElementById('miniAvat')?.remove()}} alt="" />
                       <Link
                         to={"/userView/:" + element.name}>
                           {element.name}

@@ -55,7 +55,7 @@ export default function SpectateGame(props: SpectateGameProps) {
 	return (
 		<div>
 			<p>Click on one to join game</p>
-			<button onClick={() => { props.socket.emit("fetchListGame"); }}>Refresh</button>
+			<button className="action-button shadow animate green" onClick={() => { props.socket.emit("fetchListGame"); }}>Refresh</button>
 			{listGame.length !== 0 &&
 				listGame.map((element: ListGame, index: number) => (
 					<div key={index}>

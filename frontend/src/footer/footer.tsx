@@ -12,7 +12,7 @@ export default function Footer(props: any)
     )
   }
   return (
-      <footer>
+      <footer style={{paddingRight:"22vw"}}>
       © pminne pramella vroth-di ninieddu
       </footer>
     )

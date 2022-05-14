@@ -80,11 +80,11 @@ export default function Enable2fa(props: any) {
 					</form>
 				}
 				<br />
-				<button onClick={() => {
+				<button className="action-button shadow animate green" onClick={() => {
 					fetch2fa();
 					setAskCode(true);
 				}}>
-					CLICK TO GENERATE QR CODE
+					Click here to generate a Qr code
 				</button><br /><br />
 				<canvas id="canvasQr" height="0" width="0" ></canvas>
 			</section>

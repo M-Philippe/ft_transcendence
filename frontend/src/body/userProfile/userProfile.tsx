@@ -7,7 +7,7 @@ import { Redirect } from "react-router-dom";
 import { disable2fa } from "./2fa/disable2fa";
 import AvatarUpload from "./avatarUpload";
 import UserRelationships from "./userRelationships";
-import ChangePassword from "./changePassword";
+import ChangePassword from './changePassword';
 import { DISCONNECTING_URL } from "../../urlConstString";
 
 interface UserProfileProps {
@@ -44,15 +44,15 @@ function UserProfile(props: UserProfileProps) {
 			<Redirect to="/enable2fa" push={true} />
 		);
 
-	return (
+		return (
 		<div>
-			<p><b>{props.user.username} </b></p>
+			<p><b>{props.user.username}</b></p>
 			<img id = "avatarMyProfil" src={props.user.avatar} alt="avatarUser" /><br /><br />
 			<AvatarUpload />
 			<button id ="ChangePasswButton" className="action-button shadow animate blue" onClick={() => {setShowChangePassword(true); 
 				document.getElementById('ChangePasswButton')?.remove();
-				document.getElementById('avatar')?.setAttribute('style', 'height:15%');
-				document.getElementById('avatar')?.setAttribute('style', 'width:15%')}}
+				document.getElementById('avatar')?.setAttribute('style', 'height:20%');
+				document.getElementById('avatar')?.setAttribute('style', 'width:20%')}}
 				>Change my password</button><br />
 			{
 				showChangePassword &&

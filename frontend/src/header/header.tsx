@@ -1,4 +1,3 @@
-import "../styles/buttons.css"
 import SearchBar from './searchBar/searchBar';
 import {Link, Redirect} from "react-router-dom";
 import LoginInfos from './loginInfos/loginInfos';
@@ -49,7 +48,7 @@ function Header(props: IProps) {
         }
         {
           props.user.isConnected &&
-          <Link className="action-button shadow animate blue" to="/myProfile">My Profile</Link>
+          <Link className="action-button shadow animate blue" to="/myProfile">Profile</Link>
         }
         {
           props.user.isConnected &&
