@@ -89,26 +89,13 @@ function RankingUsers(props: any) {
             {data.length !== 0 &&
               data.map((element: any, index: number) => (
                 <tr key={index}>
-                  {
-                    props.username === element.name &&
-                    <th style={{background: "rgba(200, 200, 200, 0.6)"}}>
-                    <img id ="miniAvatRanking" src={element.avatar} onError={() =>{document.getElementById('miniAvat')?.remove()}} alt="" />
+                    <th style={props.username === element.name ? {background: "rgba(200, 200, 200, 0.6)"} : {}}>
+                    <img id ="miniAvatRanking" src={element.avatar} onError={() =>{document.getElementById('miniAvatRanking')?.remove()}} alt="" />
                       <Link
                         to={"/userView/:" + element.name}>
                           {element.name}
                       </Link>
                     </th>
-                  }
-                  {
-                    props.username !== element.name &&
-                    <th>
-                    <img id ="miniAvatRanking" src={element.avatar} onError={() =>{document.getElementById('miniAvat')?.remove()}} alt="" />
-                      <Link
-                        to={"/userView/:" + element.name}>
-                          {element.name}
-                      </Link>
-                    </th>
-                  }
                   <th style={{textAlign:"center"}}>{element.wonCount}</th>
                   <th style={{textAlign:"center"}}>{element.lostCount}</th>
                 </tr>

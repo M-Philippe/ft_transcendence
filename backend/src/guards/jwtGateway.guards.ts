@@ -33,7 +33,7 @@ export class JwtGatewayGuard implements CanActivate {
 		let contextSocket = context.switchToWs().getClient();
 		//console.log("CONTEXT: ", contextSocket);
 		let cookie: string | undefined = contextSocket.handshake.headers.cookie;
-		console.error("COOKIE: ", cookie);
+		//console.error("COOKIE: ", cookie);
 		if (cookie === undefined)
 			return (false);
 		let jwt = extractJwtFromCookie(cookie);

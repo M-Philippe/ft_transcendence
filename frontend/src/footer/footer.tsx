@@ -1,19 +1,28 @@
-import store from "../store/store";
+import { connect } from "react-redux";
+import { storeState } from "../store/types";
 
 // TODO Need to avoid actualisation needed to align footer
-export default function Footer(props: any) 
+function Footer(props: { isInGame: boolean, isConnected: boolean }) 
 {
-  if(!store.getState().isInGame && !store.getState().user.isConnected)
-  {
+  if (!props.isInGame && !props.isConnected)
     return (
       <footer>
-      © pminne pramella vroth-di ninieddu
+      © pminne vroth-di ninieddu
       </footer>
-    )
-  }
-  return (
+    );
+  else
+    return (
       <footer style={{paddingRight:"22vw"}}>
-      © pminne pramella vroth-di ninieddu
+      © pminne vroth-di ninieddu
       </footer>
     )
 }
+
+function mapStateToProps(state: storeState) {
+  return ({
+    isInGame: state.user.isInGame,
+    isConnected: state.user.isConnected
+  });
+}
+
+export default connect(mapStateToProps)(Footer);

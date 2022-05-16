@@ -27,6 +27,34 @@ export class ChatService {
     @Inject(forwardRef(() => UsersService)) private readonly usersService: UsersService,
   ) {}
 
+  async onApplicationBootstrap() {
+    // We create global [id: 0]
+    // TODO -> Do nothing if chat 0 already exists.
+    const chat = this.chatRepository.create({});
+    chat.usernames = [];
+    chat.usernames.push("Admin");
+    chat.timeMessages = [];
+    chat.timeMessages.push(getTimestamp());
+    chat.messages = [];
+    chat.messages.push("Chat was created");
+    chat.usersInChat = [];
+    chat.roomName = "global";
+    // put superAdmin in owner.
+    chat.owners = [];
+    chat.admins = [];
+    chat.usersInfos = [];
+    chat.bannedUsers = [];
+    chat.mutedUsers = [];
+    chat.type = "public";
+    try {
+      await this.chatRepository.save(chat);
+    } catch (error) {
+      // Error handler
+    }
+    return chat;
+  }
+
+
   @HttpCode(201) // This function will disappear
   async create(createChat: CreateChatDto) {
     const chat = this.chatRepository.create(createChat);

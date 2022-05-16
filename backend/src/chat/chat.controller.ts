@@ -12,11 +12,6 @@ export class ChatController {
                private readonly usersService: UsersService,
                private readonly chatGateway: ChatGateway) {}
 
-  @Post()
-  async create(@Body() createChatDto: CreateChatDto) {
-    return this.chatService.create(createChatDto);
-  }
-
   @Get("suscribeAdminToGlobal")
   async suscribeAdminToGlobal(@Headers() header: Record<string, string>) {
     const id = parseInt(header["userid"]);

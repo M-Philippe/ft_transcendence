@@ -15,7 +15,7 @@ export class JwtGuard implements CanActivate {
 
 	async validateRequest(request: Request) {
 		if (!request.cookies || !request.cookies.authentication) {
-			console.error(request);
+			//console.error(request);
 			return (false);
 		}
 		let jwt = request.cookies.authentication;
