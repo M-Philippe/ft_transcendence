@@ -450,12 +450,16 @@ export class UsersService {
   */
 
   async checkUsernameExist(usernameToFind: string) {
-    try {
-      this.findOneByName(usernameToFind);
-    } catch (error) {
-      return (true);
-    }
-    return (false);
+    //const user = await this.usersRepository.findOne(usernameToFind);
+    let user = await getConnection()
+    .createQueryBuilder()
+    .select("user")
+    .from(User, "user")
+    .where("name = :id", { id: usernameToFind })
+    .getCount();
+    if (user != 0)
+      return false;
+    return true;
   }
 
   async createUser42(userToCreate: CreateUSer42Dto) {
@@ -479,7 +483,7 @@ export class UsersService {
     }
     // generate name to prevent same user.
     let count = 0;
-    while (await this.checkUsernameExist(userToCreate.name)) {
+    while (await this.checkUsernameExist(userToCreate.name) == false) {
       userToCreate.name = userToCreate.name + count.toString();
       count++;
     }
@@ -487,6 +491,7 @@ export class UsersService {
       user = this.usersRepository.create(userToCreate);
       user.online = true;
       user.inGame = false;
+      this.createUserAchievements(user);
       user = await this.usersRepository.save(user);
     } catch (error) {
       return (undefined);

@@ -6,9 +6,9 @@ export class Oauth42Guard extends AuthGuard('42') {
 	handleRequest(err: Error, profileFromValidate: any, info: any) {
     // You can throw an exception based on either "info" or "err" arguments
     console.error("GUARD_HANDLE_REQUEST");
-    //console.error("\t\terr: ", err);
-    //console.error("\t\tinfo: ", info);
-    //console.error("\t\tUSER: ", profileFromValidate);
+    console.error("\t\terr: ", err);
+    console.error("\t\tinfo: ", info);
+    console.error("\t\tUSER: ", profileFromValidate);
 		if (
       info
       && info.message ===
