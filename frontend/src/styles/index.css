@@ -132,7 +132,7 @@ th {
   height: 9vh;
 }
 
-.miniAvatRanking {
+#miniAvatRanking {
     width: 3vw;
     height: 3.5vh;
     padding-right: 5%;
