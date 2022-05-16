@@ -23,6 +23,7 @@
 .buttonChanTop {
   /* position: absolute;
   top: 9%; */
+  padding-top: 1vh;
   padding-right: 1%;
   /* text-overflow: ellipsis; */
 }
