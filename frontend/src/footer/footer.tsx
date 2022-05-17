@@ -12,7 +12,7 @@ function Footer(props: { isInGame: boolean, isConnected: boolean })
     );
   else
     return (
-      <footer style={{paddingRight:"22vw"}}>
+      <footer style={{paddingRight:"24vw"}}>
       © pminne vroth-di ninieddu
       </footer>
     )

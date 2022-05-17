@@ -60,6 +60,7 @@ header {
   padding-top: 1vh;
   justify-content: space-evenly;
   align-items: center;
+  text-align: center;
   background: linear-gradient(rgba(30, 30, 31, 0.616), rgba(255, 255, 255, 0));
 }
 
@@ -88,13 +89,33 @@ footer {
   text-align: center;
 }
 
+#chatListeDiv
+{
+  overflow:hidden;
+  overflow-y: scroll;
+  height: 87vh;
+}
+
 /* ------ Ranking table ------ */
+#RankingArrayDiv
+{
+  overflow:hidden;
+  overflow-y: scroll;
+  height: 87vh;
+  padding-top: 1%;
+}
+
 table {
+  overflow:hidden;
+  overflow-y: scroll;
   width: auto;
-  height: auto;
+  height: 87vh;
   min-width: 30%;
   margin: auto;
-  overflow-y: auto;
+  /* overflow-y: auto; */
+  text-align: left;
+  overflow-y:scroll;
+  /* display:block; */
   /* min-width: 70vw; */
 }
 
@@ -113,7 +134,8 @@ th {
 
 #avatarHeader {
   border-radius: 8px;
-  width: 6vw;
+  max-width: 5vw;
+  min-width: 6vw;
   height: 9vh;
 }
 
@@ -133,10 +155,11 @@ th {
 }
 
 #miniAvatRanking {
-    width: 3vw;
-    height: 3.5vh;
     padding-right: 5%;
-    min-height: 6vh;
+    min-height: 5vh;
+    max-height: 6vh;
+    min-width: 5vw;
+    max-width: 5vw;
 }
 
 /* issue when try to put as normal image idk why so i use a button*/
@@ -261,4 +284,9 @@ th {
 #RanktropheeImg {
   min-height: 40vh;
 }
+
+#avatarHeader {
+  min-width: 18vw;
+}
+
 }

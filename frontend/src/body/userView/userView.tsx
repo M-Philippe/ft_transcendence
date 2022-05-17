@@ -83,7 +83,7 @@ function UserView(props: {username: string}) {
         <img id = "avatarMyProfil" src={data.avatar} alt="Avatar"/>
         {
           data.online &&
-          <p style={{color:"#00FF00"}}>ONLINE</p>
+          <b><p style={{color:"#00FF00"}}>ONLINE</p></b>
         }
         {
           data.online && !showBox &&
@@ -98,7 +98,7 @@ function UserView(props: {username: string}) {
         <br />
         {
           !data.online &&
-          <p style={{color:"#FF4500"}}>OFFLINE</p>
+          <b><p style={{color:"#FF4500"}}>OFFLINE</p></b>
         }
         <p>wonCount: {data.wonCount} &emsp;&emsp; lostCount: {data.lostCount}</p>
         {

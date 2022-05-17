@@ -64,6 +64,7 @@ function RankingUsers(props: any) {
   
 
   return (
+    <div id = "RankingArrayDiv">
       <table>
         <caption><img id = "RanktropheeImg" src= {trophee} alt="Trophee"></img> <br/><br/> <b> Ranking Users </b> </caption>
         <thead>
@@ -103,6 +104,7 @@ function RankingUsers(props: any) {
             }
         </tbody>
       </table>
+      </div>
   );
 }
 

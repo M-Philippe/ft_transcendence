@@ -59,7 +59,7 @@ function ListChat(props: any) {
   }, [load, data])
 
   return (
-    <div>
+    <div id = "chatListeDiv">
       <button id = "bulleButtonTricks"></button>
       <p>Click on the chat button you want to join :</p>
       {/* <img id = "bulleIm" src = { bulleImg }> </img> */}
