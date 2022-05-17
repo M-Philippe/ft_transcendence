@@ -76,8 +76,10 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 
 	async sendUserNewAlert(userAlert: UserAlert) {
 		console.error("\n\n\n\tSEND_USER_NEW_ALERT\n\n\n");
-		if (userAlert.socket === "")
+		if (userAlert.socket === "") {
+			console.error("\n\n\t\tTHE SOCKET IS EMPTY\n\n");
 			return;
+		}
 		this.server.to(userAlert.socket).emit("getUserAlert", {
 			data: userAlert.alert,
 		});

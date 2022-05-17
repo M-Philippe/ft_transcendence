@@ -149,6 +149,7 @@ function UserAlert(props: {user: userState}) {
 			socket.on("getUserAlert", (...args) => {
 				//console.log("RECEIVED ALERT: ", args[0].data);
 				setAlert(args[0].data);
+				/* CHANGE ICON HERE */
 			})
 
 			socket.off("messageReceived");
@@ -183,12 +184,12 @@ function UserAlert(props: {user: userState}) {
 				showAlert &&
 				<ShowAlert alert={alert} setShowAlert={setShowAlert} />
 			}
-			{/* {
+			{
 				showPopUp.show &&
 				<p>
 					{showPopUp.message}
 				</p>
-			} */}
+			}
 			<input id = "alert" className="imgHeader" type="image" src={ envelopeImg } alt="Alert" onMouseEnter={() => {
 				setShowAlert(!showAlert); }}/>
 		</div>

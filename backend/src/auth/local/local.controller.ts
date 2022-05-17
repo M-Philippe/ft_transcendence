@@ -1,6 +1,7 @@
 import { Body, Controller, HttpException, HttpStatus, Post, Res } from "@nestjs/common";
 import { IsNotEmpty } from "class-validator";
 import { Response } from "express";
+import { FRONT_LOGIN_SUCCESS, FRONT_QUERY_2FA_CODE } from "src/urlConstString";
 import { UsersService } from "src/users/users.service";
 import { JwtAuthService } from "../jwt/jwt-auth.service";
 
@@ -80,12 +81,12 @@ export class LocalController {
 		response.append("Access-Control-Expose-Headers", "Location");
 		response.cookie("authentication", jwtToken.access_token, { httpOnly: true, sameSite: "strict" });
 		if (payload.twoFactorIsEnabled) {
-			response.location("http://localhost:3005/query2faCode");
+			response.location(FRONT_QUERY_2FA_CODE);
 		} else {
 			console.error("AVATAR_RETURNED: ", payload.avatar);
 			let queryString = "?id=" + payload.idUser + "&username=" + payload.username + "&avatar=" + payload.avatar;
 			console.error("QUERY_STRING: ", queryString);
-			response.location("http://localhost:3005/loginSuccess" + queryString);
+			response.location(FRONT_LOGIN_SUCCESS + queryString);
 		}
 		response.send(JSON.stringify({
 			username: payload.username,

@@ -1,5 +1,6 @@
 import { Controller, Get, HttpCode, Req, Res, UseGuards } from "@nestjs/common";
 import { Response } from "express";
+import { FRONT_42_FIRST_LOGIN_CHANGE_NAME, FRONT_42_LOGIN_FAILED, FRONT_LOGIN_SUCCESS, FRONT_QUERY_2FA_CODE } from "src/urlConstString";
 import { UsersService } from "src/users/users.service";
 import { JwtAuthService } from "../jwt/jwt-auth.service";
 import { Oauth42Guard } from "./42-oauth.guard";
@@ -30,7 +31,7 @@ export class OAuth42Controller {
         avatar: request.user.avatar,
       });
       if (userReturned === undefined) {
-        response.redirect("http://localhost:3005/loginFailed");
+        response.redirect(FRONT_42_LOGIN_FAILED);
         return response;
       }
       let jwt = await this.jwtAuthService.getAccessToken(userReturned.user.id, userReturned.user.twoFactorIsEnabled);
@@ -38,11 +39,11 @@ export class OAuth42Controller {
       console.error("JWT_REDIRECT: ", jwt);
       if (userReturned.state === "exist" && !userReturned.user.twoFactorIsEnabled) {
         let queryString = "?id=" + userReturned.user.id + "&username=" + userReturned.user.name + "&avatar=" + userReturned.user.avatar;
-        response.redirect("http://localhost:3005/loginSuccess" + queryString);
+        response.redirect(FRONT_LOGIN_SUCCESS + queryString);
       } else if (userReturned.state === "exist" && userReturned.user.twoFactorIsEnabled) {
-        response.redirect("http://localhost:3005/query2faCode");
+        response.redirect(FRONT_QUERY_2FA_CODE);
       } else {
-        response.redirect("http://localhost:3005/firstLogin?generatedUsername=" + userReturned.user.name);
+        response.redirect(FRONT_42_FIRST_LOGIN_CHANGE_NAME + userReturned.user.name);
       }
       console.error("auth42_REDIRECT");
       return response;

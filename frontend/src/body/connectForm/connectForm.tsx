@@ -3,6 +3,7 @@ import { DispatchType, storeState } from '../../store/types';
 import { connect } from 'react-redux';
 import { userState } from '../../store/userSlice/userSliceTypes';
 import { CONNECTION_SERVER_APPROVED, UPDATE_USERNAME } from '../../store/userSlice/userSliceActionTypes';
+import { API_AUTH_42_LOGIN, API_USER_CONNECT } from '../../urlConstString';
 
 interface ConnectFormProps {
   user: userState;
@@ -24,7 +25,7 @@ function ConnectForm(props: ConnectFormProps) {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     let req = new XMLHttpRequest();
-    req.open("put", "http://localhost:3000/users/connectUser");
+    req.open("put", API_USER_CONNECT);
     req.onreadystatechange = function() {
       if (req.readyState === XMLHttpRequest.DONE && req.status === 200) {
         let response = JSON.parse(req.responseText);
@@ -60,7 +61,7 @@ function ConnectForm(props: ConnectFormProps) {
         <input type="text" onChange={(event) => {handleChange(event) }} />
       </label>
     </form>
-    <a href="http://localhost:3000/auth/42/login">LOGIN WITH 42</a>
+    <a href={API_AUTH_42_LOGIN}>LOGIN WITH 42</a>
     </div>
   );
 }

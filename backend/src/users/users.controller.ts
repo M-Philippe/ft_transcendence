@@ -15,6 +15,7 @@ import { join } from 'path';
 import { RelationshipsService } from 'src/relationships/relationships.service';
 import { Relationship, RelationshipStatus } from 'src/relationships/entities/relationship.entity';
 import { ChangePasswordDto } from './users.types';
+import { API_USER_AVATAR } from 'src/urlConstString';
 
 @Controller('users')
 export class UsersController {
@@ -35,15 +36,20 @@ export class UsersController {
   @Post("/responseAlert")
   async responseAlert(@Body() body: {message: string, requesterId: number, requesteeId: number, response: string}) {
     let response = await this.usersService.findAlertByMessageAndExecute(body.requesterId, body.requesteeId, body.message, body.response);
-    if (response === undefined)
+    console.error("\n\n\t PASS HERE?\n\n");
+    if (response === undefined) {
+      console.error("\n\n\tRESPONSE === UNDEFINED\n\n");
       return;
+    }
     else if (typeof(response) === "object") {
       // If type(object) we check that no error is provided, and then contact two socket to start game. (socket will check availability)
       // if !online || inGame error, contact socket and remove.
+      console.error("\n\n\tWE CHECK TYPE OF RESPONSE : ", typeof(response), "\n\n");
       if (response.message)
         this.usersService.contactSocketUser(body.requesteeId, response.message);
       else if (response.redirection) {
         // send redirection to two socket, if any error throw we delete created match.
+        console.error("\n\n\tREDIRECTION WILL OCCURS\n\n");
         await this.usersService.sendRedirectionBothSocket(body.requesterId, body.requesteeId);
       }
     }
@@ -59,14 +65,14 @@ export class UsersController {
     let fileToDelete = await this.usersService.updateAvatar(idUser, file.filename);
     // delete old avatar in filename.
     if (fileToDelete !== undefined) {
-      let domain = "http://localhost:3000/users/avatar/";
+      let domain = API_USER_AVATAR;
       let fileNameToDelete = fileToDelete.slice(domain.length);
       console.error("FILE_TO_DELETE: ", fileNameToDelete);
       fs.unlink("./uploads/" + fileNameToDelete, (error) => {
         console.error("ERROR_DELETE_FILE: ", error);
       });
     }
-    return (JSON.stringify("http://localhost:3000/users/avatar/" + file.filename));
+    return (JSON.stringify(API_USER_AVATAR + file.filename));
   }
 
   @UseGuards(JwtGuard)

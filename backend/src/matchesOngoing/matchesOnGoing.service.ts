@@ -516,8 +516,8 @@ export class MatchesOnGoingService {
     if (coord.puckX + coord.puckVX <= 0.0 || coord.puckX + coord.puckVX >= game.width)
       await this.goal(game, coord.puckX < game.width / 2 ? "right" : "left");
     else {
-      if (game.powerUpState == 0)
-        this.powerUpCollisions(game, coord);
+      // if (game.powerUpState == 0)
+      //   this.powerUpCollisions(game, coord);
       if (coord.puckY + coord.puckVY <= 0.0 || coord.puckY + coord.puckVY >= game.height)
         this.roof(game, coord);
       else if (coord.puckX + coord.puckVX <= (game.palletAX + game.palletAWidth) && coord.puckY >= game.palletAY - game.puckHeight && coord.puckY <= game.palletAY + game.palletAHeight)

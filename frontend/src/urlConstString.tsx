@@ -2,10 +2,10 @@
 **	FRONT_URL
 */
 
-const domain = "localhost";
+const domain = "10.1.1.4";
 const port = "3005";
 export const BASE_URL = "http://" + domain + ":" + port;
-
+export const BASE_API_URL = "http://" + domain + ":3000";
 
 /*
 **	USER
@@ -48,6 +48,8 @@ export const API_URL = "http://" + domain + ":" + apiPort;
 export const API_USER_RANKING = API_URL + "/users";
 export const API_USER_DISCONNECT = API_URL + "/users/disconnectUser";
 //	http://localhost:3000/users/disconnectUser
+export const API_USER_CONNECT = API_URL + "/users/connectUser";
+// http://localhost:3000/users/connectUser
 export const API_SET_USERNAME_42 = API_URL + "/users/setUsernameFirstConnection42";
 //	http://localhost:3000/users/setUsernameFirstConnection42
 export const API_FIRST_CONNECTION_42_NO_CHANGE = API_URL + "/users/usernameFirstConnection42NoChange";
@@ -66,6 +68,8 @@ export const API_USER_LIST_CHAT = API_URL + "/users/listChat/";
 //	http://localhost:3000/users/listChat/ + {username}
 export const API_USER_CHANGE_PASSWORD = API_URL + "/users/changePassword";
 //	http://localhost:3000/users/changePassword
+export const API_USER_2FA_ENABLED = API_URL + "/users/is2faEnabled";
+// http://localhost:3000/users/is2faEnabled
 
 /*
 **	AUTH

@@ -8,7 +8,7 @@ import { disable2fa } from "./2fa/disable2fa";
 import AvatarUpload from "./avatarUpload";
 import UserRelationships from "./userRelationships";
 import ChangePassword from './changePassword';
-import { DISCONNECTING_URL } from "../../urlConstString";
+import { API_USER_2FA_ENABLED, DISCONNECTING_URL } from "../../urlConstString";
 
 interface UserProfileProps {
 	user: userState;
@@ -22,7 +22,7 @@ function UserProfile(props: UserProfileProps) {
 
 	useEffect(() => {
 		const controller = new AbortController();
-		fetch("http://localhost:3000/users/is2faEnabled", {
+		fetch(API_USER_2FA_ENABLED, {
 			method: "get",
 			credentials: "include",
 			signal: controller.signal

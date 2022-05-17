@@ -4,7 +4,7 @@
 import { DefaultEventsMap } from '@socket.io/component-emitter/index';
 import { io, Socket } from 'socket.io-client';
 import { useEffect } from 'react';
-import { SOCKET_MATCHESONGOING } from '../../urlConstString';
+import { BASE_API_URL, SOCKET_MATCHESONGOING } from '../../urlConstString';
 
 interface ISocketHandler {
   setSocket: (input: Socket<DefaultEventsMap, DefaultEventsMap>) => void,
@@ -14,7 +14,7 @@ interface ISocketHandler {
 export function SocketHandler(props: ISocketHandler) {
 
   useEffect(() => {
-    const socket = io("localhost:3000", {
+    const socket = io(BASE_API_URL, {
       path: SOCKET_MATCHESONGOING,
       transports: ["websocket"],
       withCredentials: true,

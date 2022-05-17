@@ -10,7 +10,7 @@ import { extractJwtFromCookie, JwtGatewayGuard } from "src/guards/jwtGateway.gua
 import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
 import { UsersService } from "src/users/users.service";
 
-const FPS = 60;
+const FPS = 40;
 
 @WebSocketGateway({ transports: ['websocket'] })
 @Injectable()
@@ -172,7 +172,7 @@ export class MatchesOnGoingGateway {
       let payload = this.jwtService.verify(jwt);
       idUser = payload.idUser;
     } catch (error) {
-      console.error("TOKEN EXPIRED / NOT VALID");
+      console.error("\n\n\tUSEREADYTOPLAY   TOKEN EXPIRED / NOT VALID\n\n\n");
       this.server.to(socket.id).emit("disconnectManual");
       return;
     }

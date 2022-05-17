@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { Request, Response } from "express";
 import { JwtGuard, JwtGuardWaiting2faCode } from "src/guards/jwt.guards";
+import { FRONT_DISCONNECTING, FRONT_LOGIN_SUCCESS } from "src/urlConstString";
 import { UsersService } from "src/users/users.service";
 import { JwtAuthService } from "../jwt/jwt-auth.service";
 import { TwoFactorAuthCodeDto } from "./dto/two-factor-code.dto";
@@ -40,7 +41,7 @@ export class TwoFactorAuthController {
       let queryString = "?id=" + user.id + "&username=" + user.name + "&avatar=" + user.avatar;
       response.status(302);
       //console.log("NEW_TOKEN: ", newJwtToken.access_token);
-      response.send(JSON.stringify({ location: "http://localhost:3005/loginSuccess" + queryString }));
+      response.send(JSON.stringify({ location: FRONT_LOGIN_SUCCESS + queryString }));
       return (response);
     }
 
@@ -56,13 +57,13 @@ export class TwoFactorAuthController {
         console.error("ERROR_AUTHENTICATE_2FA: ", error);
         response.cookie("authentication", "");
         response.status(302);
-        response.send(JSON.stringify({ location: "http://localhost:3005/disconnecting" }));
+        response.send(JSON.stringify({ location: FRONT_DISCONNECTING }));
         return (response);
       }
       response.status(302);
       response.cookie("authentication", (await this.jwtAuthService.getAccessTokenTwoFactor(idUser, true)).access_token);
       let queryString = "?id=" + user.id + "&username=" + user.name + "&avatar=" + user.avatar;
-      response.send(JSON.stringify({ location: "http://localhost:3005/loginSuccess" + queryString }));
+      response.send(JSON.stringify({ location: FRONT_LOGIN_SUCCESS + queryString }));
       return (response);
     }
 

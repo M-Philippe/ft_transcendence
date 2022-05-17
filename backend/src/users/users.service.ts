@@ -12,6 +12,7 @@ import { UsersGateway } from './users.gateway';
 import { RelationshipStatus } from 'src/relationships/entities/relationship.entity';
 import { MatchesOnGoingService } from 'src/matchesOngoing/matchesOnGoing.service';
 import { ChangePasswordDto } from './users.types';
+import { API_USER_AVATAR, FRONT_GENERIC_AVATAR } from 'src/urlConstString';
 
 const WIN10 = 0;
 const WIN100 = 1;
@@ -69,7 +70,7 @@ export class UsersService {
   }
 
   async createUserLocal(createUserLocalDto: CreateUserLocalDto) {
-    let avatar = "http://localhost:3000/users/avatar/genericAvatar"; // Should implement generic avatar.
+    let avatar = FRONT_GENERIC_AVATAR; // Should implement generic avatar.
     const user = this.usersRepository.create({
       name: createUserLocalDto.name,
       avatar: avatar,
@@ -206,6 +207,9 @@ export class UsersService {
     if (user === undefined) {
       return;
     }
+    if (user.userAlert.alert === undefined)
+      user.userAlert.alert = [];
+    console.error("\n\n\tBEFORE: ", user.userAlert);
     user.userAlert.alert.unshift({
       message: message,
       needResponse: needResponse,
@@ -213,6 +217,7 @@ export class UsersService {
       requesteeId: idUserToAlert,
       type: type
     });
+    console.error("\n\n\tAFTER: ", user.userAlert);
     await this.usersRepository.save(user);
     await this.usersGateway.sendUserNewAlert(user.userAlert);
   }
@@ -345,6 +350,7 @@ export class UsersService {
       return;
     if (userOne.userAlert.socket === "" || userTwo.userAlert.socket === "")
       return;
+    console.error("\n\n\tSEND REDIRECTIONTOBOQRDEVENT \n\n");
     this.usersGateway.contactUsers(userOne.userAlert.socket, userTwo.userAlert.socket, "redirectionToBoard");
   }
 
@@ -545,11 +551,11 @@ export class UsersService {
     await getConnection()
       .createQueryBuilder()
       .update(User)
-      .set({ avatar: "http://localhost:3000/users/avatar/" + avatar })
+      .set({ avatar: API_USER_AVATAR + avatar })
       .where("id = :id", {id: idUser})
       .execute();
     console.error("UPDATE_AVATAR");
-    if (user.avatar === "http://localhost:3000/users/avatar/genericAvatar")
+    if (user.avatar === FRONT_GENERIC_AVATAR)
       return (undefined);
     else
       return (user.avatar);
