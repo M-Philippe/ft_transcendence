@@ -30,6 +30,9 @@ export class ChatService {
   async onApplicationBootstrap() {
     // We create global [id: 0]
     // TODO -> Do nothing if chat 0 already exists.
+    const checkChatGlobalExist = await this.chatRepository.findOne(1);
+    if (checkChatGlobalExist !== undefined)
+      return;
     const chat = this.chatRepository.create({});
     chat.usernames = [];
     chat.usernames.push("Admin");

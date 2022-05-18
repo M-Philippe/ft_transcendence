@@ -102,11 +102,14 @@ function assembleAlertToHtml(alert: {message: string, needResponse: boolean, req
 }
 
 function ShowAlert(props: IShowAlert) {
+	// detect if mouse is here.
 	return (
 		<div
 			style={{backgroundColor: "lightblue", position: "absolute", border: "solid 1px", width:"150px"}}
-			onMouseLeave={() => props.setShowAlert(false)} >
+			//onMouseLeave={() => props.setShowAlert(false)}
+			>
 			{assembleAlertToHtml(props.alert)}
+			<button onClick={() => props.setShowAlert(false)}>CLOSE</button>
 		</div>
 	);
 }
@@ -190,8 +193,9 @@ function UserAlert(props: {user: userState}) {
 					{showPopUp.message}
 				</p>
 			}
-			<input id = "alert" className="imgHeader" type="image" src={ envelopeImg } alt="Alert" onMouseEnter={() => {
-				setShowAlert(!showAlert); }}/>
+			<input id = "alert" className="imgHeader" type="image" src={ envelopeImg } alt="Alert"
+				onMouseEnter={() => { setShowAlert(!showAlert); }}
+			/>
 		</div>
 	);
 }
