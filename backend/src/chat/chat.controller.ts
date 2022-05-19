@@ -16,16 +16,9 @@ export class ChatController {
                private readonly chatGateway: ChatGateway,
                private readonly jwtService: JwtAuthService) {}
 
-  @Get("suscribeAdminToGlobal")
-  async suscribeAdminToGlobal(@Headers() header: Record<string, string>) {
-    const id = parseInt(header["userid"]);
-    await this.chatService.suscribeAdminToGlobal(id);
-  }
-
   @UseGuards(JwtGuard)
   @Get("suscribeChat")
   async suscribeChat(@Headers() header: Record<string, string>, @Req() request: Request) {
-    console.error("\n\tSUSCRIBE_TO_CHAT\n");
     let idUser = this.getIdUserFromCookie(request.cookies.authentication);
     if (header["username"] === undefined || header["idchat"] === undefined)
       return;

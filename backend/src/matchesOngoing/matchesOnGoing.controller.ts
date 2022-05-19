@@ -18,7 +18,6 @@ export class MatchesOnGoingController {
 
   @Post("/delete")
   async deleteMatches(@Body() body: { id: number}) {
-    console.error("\nID_RECEIVED: ", body.id);
     await this.matchesOnGoingService.deleteGame(body.id);
   }
 

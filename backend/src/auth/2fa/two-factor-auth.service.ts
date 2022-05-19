@@ -29,7 +29,6 @@ export class TwoFactorAuthService {
     async generateSecret(idUser: number) {
         const secret = authenticator.generateSecret();
         const user = await this.usersService.findOne(idUser);
-        console.error("USER: ", user);
         const otpAuthUrl = authenticator.keyuri(
             user.name!,
             this.configService.get<string>("TWO_FACTOR_AUTH_APP_NAME")!,

@@ -150,7 +150,6 @@ export class MatchesOnGoingGateway {
     try {
       response = await this.matchesOnGoingService.createMatchFromGateway(data, socket.id);
     } catch (error) {
-      console.error(error);
       return;
     }
     this.server.to(response.players[0].socket).emit("idGame", {
@@ -162,8 +161,7 @@ export class MatchesOnGoingGateway {
   @UseGuards(JwtGatewayGuard)
   @SubscribeMessage("userReadyToPlay")
   async userReadyToPlay(@ConnectedSocket() socket: Socket) {
-    console.error("\n\n\tUSER IS READY TO PLAY\n\n");
-    console.error("\n\nSOCKET: ", socket);
+    console.error("userReadyToPlay");
     if (socket.handshake.headers.cookie === undefined)
       return;
     let jwt = extractJwtFromCookie(socket.handshake.headers.cookie);
@@ -172,11 +170,9 @@ export class MatchesOnGoingGateway {
       let payload = this.jwtService.verify(jwt);
       idUser = payload.idUser;
     } catch (error) {
-      console.error("\n\n\tUSEREADYTOPLAY   TOKEN EXPIRED / NOT VALID\n\n\n");
       this.server.to(socket.id).emit("disconnectManual");
       return;
     }
-    console.error("\n\n\tID: ", idUser, "\n\n");
     let matchOrId = await this.matchesOnGoingService.updatePlayerInvitationGame(idUser, socket.id);
     if (matchOrId === undefined) {
       return;

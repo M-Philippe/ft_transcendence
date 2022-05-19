@@ -77,15 +77,12 @@ export class LocalController {
 		}
 		// generate Jwt.
 		const jwtToken = await this.jwtAuthService.getAccessToken(payload.idUser, payload.twoFactorIsEnabled);
-		//console.error("\n\nTOKEN: ", jwtToken.access_token, "\n\n");
 		response.append("Access-Control-Expose-Headers", "Location");
 		response.cookie("authentication", jwtToken.access_token, { httpOnly: true, sameSite: "strict" });
 		if (payload.twoFactorIsEnabled) {
 			response.location(FRONT_QUERY_2FA_CODE);
 		} else {
-			console.error("AVATAR_RETURNED: ", payload.avatar);
 			let queryString = "?id=" + payload.idUser + "&username=" + payload.username + "&avatar=" + payload.avatar;
-			console.error("QUERY_STRING: ", queryString);
 			response.location(FRONT_LOGIN_SUCCESS + queryString);
 		}
 		response.send(JSON.stringify({

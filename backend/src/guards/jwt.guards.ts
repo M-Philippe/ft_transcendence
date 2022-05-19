@@ -19,13 +19,10 @@ export class JwtGuard implements CanActivate {
 			return (false);
 		}
 		let jwt = request.cookies.authentication;
-		console.error("JWT: ", jwt);
 		let payload;
 		try {
 			payload = this.jwtService.verify(jwt);
-			console.error("VERIFY: ", payload);
 		} catch (error) {
-			console.error("Token Expired");
 			return (false);
 		}
 		if (payload.isTwoFactorAuthenticated && !payload.hasProvidedTwoFactorCode) {
@@ -46,18 +43,14 @@ export class JwtGuardWaiting2faCode implements CanActivate {
 	}
 
 	async validateRequest(request: Request) {
-		//console.error(request);
 		if (!request.cookies || !request.cookies.authentication) {
 			return (false);
 		}
 		let jwt = request.cookies.authentication;
-		console.error("JWT: ", jwt);
 		let payload;
 		try {
 			payload = this.jwtService.verify(jwt);
-			//console.error("VERIFY_WAITING: ", payload);
 		} catch (error) {
-			console.error("Token Expired");
 			return (false);
 		}
 		// isTwoFactorAuthenticated

@@ -59,55 +59,6 @@ export class ChatService {
     return chat;
   }
 
-
-  @HttpCode(201) // This function will disappear
-  async create(createChat: CreateChatDto) {
-    const chat = this.chatRepository.create(createChat);
-    chat.usernames = [];
-    chat.usernames.push("Admin");
-    chat.timeMessages = [];
-    chat.timeMessages.push(getTimestamp());
-    chat.messages = [];
-    chat.messages.push("Chat was created");
-    chat.usersInChat = [];
-    chat.roomName = "global";
-    // put superAdmin in owner.
-    chat.owners = [];
-    chat.admins = [];
-    chat.usersInfos = [];
-    chat.bannedUsers = [];
-    chat.mutedUsers = [];
-    chat.type = "public";
-    try {
-      await this.chatRepository.save(chat);
-    } catch (error) {
-      // Error handler
-    }
-    return chat;
-  }
-
-  // This function too
-  async suscribeAdminToGlobal(userId: number) {
-    let chat;
-
-    try {
-      chat = await this.chatRepository.findOne(1);
-    } catch (error) {
-      console.error("NO CHAT!: ", error);
-    }
-    if (chat === undefined)
-      return;
-    if (!isUserPresent(chat.usersInfos, userId)
-    || chat.admins.indexOf(userId) >= 0)
-      return;
-    chat.admins.push(userId);
-    try {
-      await this.chatRepository.save(chat);
-    } catch (error) {
-      console.error("CAN'T SAVE: ", error);
-    }
-  }
-
   async getListPublicChat(idUser: number) {
     let response: Array<any> = [];
     let arrayChat = await this.findAll();
@@ -796,7 +747,6 @@ export class ChatService {
     try {
       await this.chatRepository.remove(chat);
     } catch (error) {
-      console.error("\nERROR HERE\n");
       throw new Error(error);
     }
     return (arraySocketsToEmit);

@@ -36,20 +36,16 @@ export class UsersController {
   @Post("/responseAlert")
   async responseAlert(@Body() body: {message: string, requesterId: number, requesteeId: number, response: string}) {
     let response = await this.usersService.findAlertByMessageAndExecute(body.requesterId, body.requesteeId, body.message, body.response);
-    console.error("\n\n\t PASS HERE?\n\n");
     if (response === undefined) {
-      console.error("\n\n\tRESPONSE === UNDEFINED\n\n");
       return;
     }
     else if (typeof(response) === "object") {
       // If type(object) we check that no error is provided, and then contact two socket to start game. (socket will check availability)
       // if !online || inGame error, contact socket and remove.
-      console.error("\n\n\tWE CHECK TYPE OF RESPONSE : ", typeof(response), "\n\n");
       if (response.message)
         this.usersService.contactSocketUser(body.requesteeId, response.message);
       else if (response.redirection) {
         // send redirection to two socket, if any error throw we delete created match.
-        console.error("\n\n\tREDIRECTION WILL OCCURS\n\n");
         await this.usersService.sendRedirectionBothSocket(body.requesterId, body.requesteeId);
       }
     }
@@ -67,9 +63,7 @@ export class UsersController {
     if (fileToDelete !== undefined) {
       let domain = API_USER_AVATAR;
       let fileNameToDelete = fileToDelete.slice(domain.length);
-      console.error("FILE_TO_DELETE: ", fileNameToDelete);
       fs.unlink("./uploads/" + fileNameToDelete, (error) => {
-        console.error("ERROR_DELETE_FILE: ", error);
       });
     }
     return (JSON.stringify(API_USER_AVATAR + file.filename));
@@ -91,7 +85,6 @@ export class UsersController {
       userWhoInvite = await this.usersService.findOne(idUser);
       userToInvite = await this.usersService.findOneByName(body.usernameToInvite);
     } catch (error) {
-      console.error("ERROR [INVITE_MATCH]: ", error);
       throw new HttpException({
         code: "e2300",
         type: "Invalid name.",
@@ -119,7 +112,6 @@ export class UsersController {
     try {
     file = createReadStream(join(process.cwd(), "./uploads/" + filename));
     } catch (error) {
-      console.error("ERROR_SERVER: ", error);
       return;
     }
     file.on("error", () => {
@@ -266,7 +258,6 @@ export class UsersController {
   @Post("/changePassword")
   async changePassword(@Req() request: Request, @Body() changePasswordDto: ChangePasswordDto) {
     let idUser: number = this.getIdUserFromCookie(request.cookies.authentication);
-    console.error("\n\n\tDTO: ", changePasswordDto, "\n\n");
     try {
       await this.usersService.updatePassword(idUser, changePasswordDto);
     } catch (error) {

@@ -31,9 +31,6 @@ export class OAuth42Strategy extends PassportStrategy(Strategy, '42') {
         profile: any,
         done: VerifyCallback,
     ) {
-        console.error("VALIDATE: ", accessToken);
-        console.error("REFRESH: ", refreshToken);
-        //console.error(profile);
         return ({
           id42: profile.id,
           username: profile.username,

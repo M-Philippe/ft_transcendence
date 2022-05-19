@@ -80,7 +80,6 @@ export class RelationshipsService {
   }*/
 
   async checkRelationshipExistWithId(requesteeId: number, requesterId: number) {
-    console.error("IDS: \nrequester:", requesterId, "\nrequestee", requesteeId);
     let checkRelationship = await getConnection()
       .getRepository(Relationship)
       .createQueryBuilder("relationship")
@@ -91,7 +90,6 @@ export class RelationshipsService {
         OR (requester.id = :requesteeId AND requestee.id = :requesterId)",
         {requesteeId: requesteeId, requesterId: requesterId})
       .getOne();
-    console.error("RELATIONSHIP_FOUND: ", checkRelationship);
     return (checkRelationship);
   }
 

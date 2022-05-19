@@ -21,7 +21,6 @@ export class OAuth42Controller {
     @Get('redirect')
     @UseGuards(Oauth42Guard)
     async auth42Redirect(@Req() request: any, @Res() response: Response) {
-      console.error("\t\tUser: ", request.user);
       /*
         Create user if necessary
       */
@@ -36,7 +35,6 @@ export class OAuth42Controller {
       }
       let jwt = await this.jwtAuthService.getAccessToken(userReturned.user.id, userReturned.user.twoFactorIsEnabled);
       response.cookie("authentication", jwt.access_token);
-      console.error("JWT_REDIRECT: ", jwt);
       if (userReturned.state === "exist" && !userReturned.user.twoFactorIsEnabled) {
         let queryString = "?id=" + userReturned.user.id + "&username=" + userReturned.user.name + "&avatar=" + userReturned.user.avatar;
         response.redirect(FRONT_LOGIN_SUCCESS + queryString);
@@ -45,7 +43,6 @@ export class OAuth42Controller {
       } else {
         response.redirect(FRONT_42_FIRST_LOGIN_CHANGE_NAME + userReturned.user.name);
       }
-      console.error("auth42_REDIRECT");
       return response;
     }
 }

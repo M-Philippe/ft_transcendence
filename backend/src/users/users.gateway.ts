@@ -21,7 +21,6 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 		// UseGuards support on handleConnection isn't implemented in nest.js, so we check jwt manually.
 		if (client.handshake.headers.cookie) {
 			let jwt = extractJwtFromCookie(client.handshake.headers.cookie);
-			console.error("JWT_TOKEN: ", jwt);
 			if (jwt === "") {
 				this.server.to(client.id).emit("disconnectManual");
 				return;
@@ -29,29 +28,24 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 			let payload;
 			try {
 				payload = this.jwtService.verify(jwt);
-				console.error("TOKEN IS GOOD");
 			} catch (error) {
-				console.error("TOKEN EXPIRED / NOT VALID");
 				this.server.to(client.id).emit("disconnectManual");
 				return;
 			}
 			await this.usersService.setUserOnline(payload.idUser, true);
 			// send UserAlert
 			let userAlert = await this.usersService.updateSocketAndGetUserAlert(payload.idUser, client.id);
-			console.error("\n\n\n\n\tSOCKET ID FOR USER: ", client.id, "   ", payload.idUser, "\n\n\n\n");
 			if (userAlert === undefined || userAlert.alert === undefined || userAlert.alert.length === 0)
 				return;
 			this.server.to(userAlert.socket).emit("getUserAlert", {
 				data: userAlert.alert
 			});
 		} else {
-			console.error("\nDISCONNECT SOCKET BY SERVER\n");
 			this.server.to(client.id).emit("disconnectManual");
 		}
 	}
 
 	async handleDisconnect(client: any) {
-		console.error("DISCONNECT: ", client.id);
 		if (client.handshake.headers.cookie) {
 			//console.error("COOKIES: ", typeof(client.handshake.headers.cookie));
 			let cookie: string = client.handshake.headers.cookie;
@@ -70,25 +64,15 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	}
 
 	async contactUsers(socketOne: string, socketTwo: string, event: string) {
-		console.error("\n\n\n\tCONTACT SOCKETS:\n", socketOne, " | ", socketTwo, "\n\n\n");
 		this.server.to([socketOne, socketTwo]).emit(event);
 	}
 
 	async sendUserNewAlert(userAlert: UserAlert) {
-		console.error("\n\n\n\tSEND_USER_NEW_ALERT\n\n\n");
 		if (userAlert.socket === "") {
-			console.error("\n\n\t\tTHE SOCKET IS EMPTY\n\n");
 			return;
 		}
 		this.server.to(userAlert.socket).emit("getUserAlert", {
 			data: userAlert.alert,
 		});
-		console.error("\n\n\n\tSEND_USER_NEW_ALERT AFTER REAL SEND\n\n\n");
 	}
-
-	@SubscribeMessage("tst")
-	async tst(@ConnectedSocket() socket: Socket) {
-		console.error("\n\n\n\n\n\n\t HAVE RECEIVED FROM: ", socket.id, "\n\n\n");
-	}
-
 }

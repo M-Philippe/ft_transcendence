@@ -413,7 +413,6 @@ export class ChatGateway {
   async wrapperCommand(command: string, idChat: number, idUser: number, socketId: string) {
     // add more than one space?
     const arrayCommand = command.split(" ");
-    console.error("\n\n\n\tCOMMAND_LENGTH: ", arrayCommand.length, "\n\n\n");
     switch (arrayCommand[0]) {
       case "/invite":
         await this.commandInvite(arrayCommand, idChat, idUser, socketId);
@@ -502,12 +501,11 @@ export class ChatGateway {
       console.error(error);
     }
     if (chat === undefined) {
-      console.error("UNDEFINED");
       return;
     }
     await this.sendToAllSocketsIntoChat(chat);
     const dateEnd = new Date();
-    console.error("TIME: ", dateEnd.valueOf() - dateStart.valueOf());
+    //console.error("TIME: ", dateEnd.valueOf() - dateStart.valueOf());
   }
 
   async sendToAllSocketsIntoChat(chat: Chat) {
@@ -634,7 +632,6 @@ export class ChatGateway {
         try {
           tmpUser = await this.usersService.findOne(mutedPerso[i]);
         } catch (error) {
-          console.error("Can't pull user");
         }
         if (tmpUser === undefined)
           return;
@@ -693,7 +690,6 @@ export class ChatGateway {
     } catch (error) {
       throw new Error("No User");
     }
-    console.error("\n\n\tCHAT_FETCHED: ", chat, "\n\n");
     if (chat.id == 1) {
       try {
         tmpChat = await this.chatService.suscribeUserToGlobal(user, socket.id);

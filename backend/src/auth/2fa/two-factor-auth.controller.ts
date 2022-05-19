@@ -48,13 +48,12 @@ export class TwoFactorAuthController {
     @Post("/authenticate")
     @UseGuards(JwtGuardWaiting2faCode)
     async authenticate(@Req() req: Request, @Body() { twoFactorCode }: TwoFactorAuthCodeDto, @Res() response: Response) {
-      console.error("\n\n\t\tAUTHENTICATE\n\n");
+      console.error("[2fa]: AUTHENTICATE");
       let idUser = this.jwtAuthService.verify(req.cookies.authentication).idUser;
       const user = await this.usersService.findOne(idUser);
       try {
         this.twoFactorAuthService.validateCodeOrThrow(twoFactorCode!, user.twoFactorSecret || "");
       } catch (error) {
-        console.error("ERROR_AUTHENTICATE_2FA: ", error);
         response.cookie("authentication", "");
         response.status(302);
         response.send(JSON.stringify({ location: FRONT_DISCONNECTING }));

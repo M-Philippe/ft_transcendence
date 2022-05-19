@@ -219,7 +219,6 @@ export class UsersService {
     }
     if (user.userAlert.alert === undefined)
       user.userAlert.alert = [];
-    console.error("\n\n\tBEFORE: ", user.userAlert);
     user.userAlert.alert.unshift({
       message: message,
       needResponse: needResponse,
@@ -227,7 +226,6 @@ export class UsersService {
       requesteeId: idUserToAlert,
       type: type
     });
-    console.error("\n\n\tAFTER: ", user.userAlert);
     await this.usersRepository.save(user);
     await this.usersGateway.sendUserNewAlert(user.userAlert);
   }
@@ -271,14 +269,11 @@ export class UsersService {
     try {
       requester = await this.usersRepository.findOne(requesterId);
     } catch (error) {
-      console.error("ERROR [HANDLE_ALERT_INVITATION_GAME]: ", error);
       return (undefined);
     }
-    console.error("\n\n\tREQUESTER: ", requester, "\n\n");
     if (requester === undefined)
       return (undefined)
     else if (!requester.online /* || requester.inGame*/ ) {
-      console.error("\n\n\tTHIS USER ISN'T ONLINE\n\n");
       await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
       return ({
         message: requester.name + " isn't connected!"
@@ -311,7 +306,6 @@ export class UsersService {
       try {
         await this.matchesOnGoingService.createMatchFromInvitation(requester, requestee, parsedRules);
       } catch (error) {
-        console.error("ERROR [CREATE_MATCH_FROM_INVITATION]: ", error);
         // Send error Message?
         await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
         return (undefined);
@@ -322,7 +316,6 @@ export class UsersService {
   }
 
   async findAlertByMessageAndExecute(requesterId: number, requesteeId: number, message: string, response: string) {
-    console.error("\n\n\tFINDALERTBYMESSAGEANDEXECUTE\n\n");
     let requestee = await this.usersRepository.findOne(requesteeId);
     if (requestee === undefined || requestee.userAlert.alert === undefined || requestee.userAlert.alert.length === 0)
       return (undefined);
@@ -353,14 +346,12 @@ export class UsersService {
       userOne = await this.usersRepository.findOne(requesterId);
       userTwo = await this.usersRepository.findOne(requesteeId);
     } catch (error) {
-      console.error("");
       return;
     }
     if (userOne === undefined || userTwo === undefined)
       return;
     if (userOne.userAlert.socket === "" || userTwo.userAlert.socket === "")
       return;
-    console.error("\n\n\tSEND REDIRECTIONTOBOQRDEVENT \n\n");
     this.usersGateway.contactUsers(userOne.userAlert.socket, userTwo.userAlert.socket, "redirectionToBoard");
   }
 
@@ -529,7 +520,6 @@ export class UsersService {
       try {
         user = await this.usersRepository.save(user);
       } catch (error) {
-        console.error(error);
         return ({ message: "Error intern." });
       }
       return ({
@@ -564,7 +554,6 @@ export class UsersService {
       .set({ avatar: API_USER_AVATAR + avatar })
       .where("id = :id", {id: idUser})
       .execute();
-    console.error("UPDATE_AVATAR");
     if (user.avatar === FRONT_GENERIC_AVATAR)
       return (undefined);
     else
