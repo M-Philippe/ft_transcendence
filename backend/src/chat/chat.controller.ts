@@ -1,16 +1,20 @@
-import { Body, Controller, Post, Get, Param, ParseIntPipe, Header } from "@nestjs/common";
+import { Body, Controller, Post, Get, Param, ParseIntPipe, Header, UseGuards, Req } from "@nestjs/common";
 import { ChatService } from "./chat.service";
 import { CreateChatDto } from "./dto/create-chat";
 import { UsersService } from "src/users/users.service";
 import { Headers } from '@nestjs/common';
 import { ChatGateway } from "./chat.gateway";
 import { isUserPresent } from "./utils/chat.usersInfos.utils";
+import { JwtGuard } from "src/guards/jwt.guards";
+import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
+import { Request } from 'express';
 
 @Controller('chat')
 export class ChatController {
   constructor (private readonly chatService: ChatService,
                private readonly usersService: UsersService,
-               private readonly chatGateway: ChatGateway) {}
+               private readonly chatGateway: ChatGateway,
+               private readonly jwtService: JwtAuthService) {}
 
   @Get("suscribeAdminToGlobal")
   async suscribeAdminToGlobal(@Headers() header: Record<string, string>) {
@@ -18,14 +22,17 @@ export class ChatController {
     await this.chatService.suscribeAdminToGlobal(id);
   }
 
+  @UseGuards(JwtGuard)
   @Get("suscribeChat")
-  async suscribeChat(@Headers() header: Record<string, string>) {
+  async suscribeChat(@Headers() header: Record<string, string>, @Req() request: Request) {
+    console.error("\n\tSUSCRIBE_TO_CHAT\n");
+    let idUser = this.getIdUserFromCookie(request.cookies.authentication);
     if (header["username"] === undefined || header["idchat"] === undefined)
       return;
     let chat = await this.chatService.findOne(parseInt(header["idchat"]));
     if (chat === undefined || chat.type !== "public")
       return ("Chat not availaible");
-    let user = await this.usersService.findOneByName(header["username"]);
+    let user = await this.usersService.findOne(idUser);
     if (user === undefined)
       return;
     if (isUserPresent(chat.usersInfos, user.id))
@@ -37,9 +44,25 @@ export class ChatController {
     });
   }
 
+  getIdUserFromCookie(jwt: string) {
+    if (jwt === undefined)
+      return undefined;
+    let jwtDecrypted;
+    try {
+      jwtDecrypted = this.jwtService.verify(jwt);
+    } catch (error) {
+      return (undefined);
+    }
+    if (jwtDecrypted === null)
+      return (undefined);
+    return (jwtDecrypted.idUser);
+  }
+
+  @UseGuards(JwtGuard)
   @Get("getListChat")
-  async getListChat() {
-    return (this.chatService.getListPublicChat());
+  async getListChat(@Req() request: Request) {
+    let idUser = this.getIdUserFromCookie(request.cookies.authentication);
+    return (this.chatService.getListPublicChat(idUser));
   }
 
   @Get()

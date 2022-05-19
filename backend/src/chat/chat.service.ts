@@ -12,6 +12,7 @@ import { getIndexUser, isUserPresent } from "./utils/chat.usersInfos.utils";
 import { isPasswordEmpty } from "./utils/chat.password.utils";
 import { comparePassword, encryptPasswordToStoreInDb } from "src/passwordEncryption/passwordEncryption";
 import { BANNED_MESSAGE, INVITE_MESSAGE, JOINED_MESSAGE, LACK_ADMIN_RIGHT, LACK_OWNER_RIGHT, MUTED_MESSAGE, QUIT_MESSAGE, RESOLVED_PASSWORD, SET_CHAT_PRIVATE, SET_CHAT_PUBLIC, SET_PASSWORD, UNBANNED_MESSAGE, UNMUTED_MESSAGE, UNSET_PASSWORD } from "./chat.constMessages";
+import { ChatGateway } from "./chat.gateway";
 
 function getTimestamp() : string {
   let time = new Date();
@@ -25,6 +26,7 @@ export class ChatService {
     @InjectRepository(Chat)
     private chatRepository: Repository<Chat>,
     @Inject(forwardRef(() => UsersService)) private readonly usersService: UsersService,
+    @Inject(forwardRef(() => ChatGateway)) private readonly chatGateway: ChatGateway,
   ) {}
 
   async onApplicationBootstrap() {
@@ -106,13 +108,13 @@ export class ChatService {
     }
   }
 
-  async getListPublicChat() {
+  async getListPublicChat(idUser: number) {
     let response: Array<any> = [];
     let arrayChat = await this.findAll();
     if(arrayChat === undefined)
       return;
     for (let i = 0; i < arrayChat.length; i++) {
-      if (arrayChat[i].type === "public") {
+      if (arrayChat[i].type === "public" && !isUserPresent(arrayChat[i].usersInfos, idUser) && !isUserBanned(arrayChat[i].bannedUsers, idUser)) {
         response.push({
           chatName: arrayChat[i].roomName,
           idChat: arrayChat[i].id,
@@ -1076,11 +1078,14 @@ export class ChatService {
       socket: "",
     });
     chat.usersInChat.push(user);
+    chat = await this.addMessageInArray(chat, user.name, JOINED_MESSAGE);
     try {
       await this.chatRepository.save(chat);
     } catch (error) {
       return;
     }
+    this.chatGateway.sendToAllSocketsIntoChat(chat);
+    // We pull user's socket from global to update his chat.
     let globalChat = await this.chatRepository.findOne(1);
     if (globalChat === undefined)
       return;

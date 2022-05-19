@@ -8,7 +8,7 @@ import { API_GET_LIST_CHAT, API_SUSCRIBE_CHAT } from '../../urlConstString';
 const loadData = async (data: any[], setData: React.Dispatch<SetStateAction<any[]>>, url: string) => {
   let response: Response;
   try {
-    response = await fetch(url);
+    response = await fetch(url, {credentials: "include"});
     if (!response.ok)
       return null;
     data = await response.json();
@@ -24,6 +24,7 @@ const suscribeToChat = async (username: string, idChat: number, setLoad: React.D
   myHeaders.append("idChat", idChat.toString());
   var myInit: RequestInit = { method: 'GET',
                headers: myHeaders,
+               credentials: "include",
                mode: 'cors',
                cache: 'default' };
 
@@ -33,8 +34,8 @@ const suscribeToChat = async (username: string, idChat: number, setLoad: React.D
     if (!response.ok)
       return null;
     let returnedBody = await response.text();
-    if (returnedBody === "Chat not availaible")
-      setLoad(false);
+    //if (returnedBody === "Chat not availaible")
+    setLoad(false);
   } catch (error) {
     console.log("Problem connecting with backend");
   }
@@ -65,13 +66,17 @@ function ListChat(props: any) {
       {/* <img id = "bulleIm" src = { bulleImg }> </img> */}
       {data.length !== 0 &&
         data.map((element: any, index: number) => (
+          //index != 0 && Put this line to remove chat 0.
           <div key={index}>
-          {/* <p style={{display:"inline"}}>{element.chatName}</p> */}
           <button className="shadow animate joinChat" key={index} onClick={() => wrapperSuscribeToChat(props.username, element.idChat, setLoad)}> {element.chatName} </button>
           <br />
           <br />
           </div>
         ))
+      }
+      {
+        data.length === 0 &&
+        <p>No chat available</p>
       }
     </div>
   );
