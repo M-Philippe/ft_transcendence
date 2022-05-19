@@ -112,7 +112,6 @@ export class UsersController {
     await this.usersService.addEventToUserAlert(idUser, userToInvite.id, userWhoInvite.name + " invited you to play a game. " + assembledRulesString, true, "invitationGame");
   }
 
-  @UseGuards(JwtGuard)
   @Get("avatar/:avatarName")
   async getAvatar(@Param('avatarName') filename: string) {
     //console.log("\nREQUEST FILENAME: ", filename, "\n");
