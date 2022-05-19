@@ -25,6 +25,7 @@ import {
   POWERUP_HEIGHT,
   POWERUP_WIDTH,
 } from "./matchesOnGoing.constBoard";
+import { Interface } from "readline";
 
 function delay(ms: number) {
   return new Promise( resolve => setTimeout(resolve, ms) );
@@ -500,18 +501,24 @@ export class MatchesOnGoingService {
   }
   /*                                  Move Puck                                 */
 
-  async movePuck(gameId: number) {
+  async movePuck(gameId: number, updatePlayers: Map<string, any>) {
     let game: MatchesOnGoing = await getConnection()
         .getRepository(MatchesOnGoing)
         .createQueryBuilder('matches')
         .where("id = :id", { id: gameId})
         .getOneOrFail();
-    if (game.finishedGame || game.playerDisconnected)
+  
+    let p1 = updatePlayers.get(game.players[0].username);
+    let p2 = updatePlayers.get(game.players[1].username);
+    if (game.finishedGame || p1.disconnect || p2.disconnect)
       return  game.finishedGame ? undefined : game;
+  
     let collisionPallet: boolean = false;
     let coord: Coord = {puckX: Number(game.puckX), puckY: Number(game.puckY), puckVX: Number(game.puckVX), puckVY:  Number(game.puckVY)};
-    game.palletAY = game.palletAYFromUser;
-    game.palletBY = game.palletBYFromUser;
+    game.palletAY += (p1.move * SPEED_PALLET);
+    game.palletBY += (p2.move * SPEED_PALLET);
+    // game.palletAY = game.palletAYFromUser;
+    // game.palletBY = game.palletBYFromUser;
     // console.error("\n--> PuckX = ", coord.puckX, " and puckVX = ", coord.puckVX, ", puckY = ", coord.puckY, ", puckVY = ", coord.puckVY,);
     if (coord.puckX + coord.puckVX <= 0.0 || coord.puckX + coord.puckVX >= game.width)
       await this.goal(game, coord.puckX < game.width / 2 ? "right" : "left");
@@ -545,6 +552,8 @@ export class MatchesOnGoingService {
           })
           .where("id = :id", {id: game.id})
           .execute();
+          p1.move = 0;
+          p2.move = 0;
     }
     return (game);
   }

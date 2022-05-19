@@ -17,6 +17,8 @@ services:
     hostname: db
     extra_hosts:
         - "host.docker.internal:host-gateway"
+    # logging:
+    #     - error
 
   pgadmin:
     depends_on:

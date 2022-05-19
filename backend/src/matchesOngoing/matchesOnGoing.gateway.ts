@@ -9,8 +9,18 @@ import { Injectable, UseGuards, Inject, forwardRef } from "@nestjs/common";
 import { extractJwtFromCookie, JwtGatewayGuard } from "src/guards/jwtGateway.guards";
 import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
 import { UsersService } from "src/users/users.service";
+import internal from "stream";
+import { join } from "path";
 
 const FPS = 40;
+
+interface match {
+  move: number;
+  powerUp: boolean;
+  disconnect: boolean;
+}
+
+let updatePlayers = new Map<string, match>();
 
 @WebSocketGateway({ transports: ['websocket'] })
 @Injectable()
@@ -104,15 +114,43 @@ export class MatchesOnGoingGateway {
     await this.matchesOnGoingService.cancelMatch(data.username);
   }
 
+  // @SubscribeMessage("movePallet")
+  // async movePallet(
+  // @MessageBody() data: any,
+  // @ConnectedSocket() socket: Socket) {
+  //   // Check that user is a player, check which pallet is assigned
+  //   let response;
+  //   if (data.direction !== "down" && data.direction !== "up")
+  //     return;
+  //   await this.matchesOnGoingService.movePalletPlayer(data.idGame, data.username, data.direction);
+  // }
+
+  // async handleDisconnect(client: any) {
+	// 	console.error("DISCONNECT: ", client.id);
+	// 	if (client.handshake.headers.cookie) {
+	// 		//console.error("COOKIES: ", typeof(client.handshake.headers.cookie));
+	// 		let cookie: string = client.handshake.headers.cookie;
+	// 		let jwt = extractJwtFromCookie(client.handshake.headers.cookie);
+	// 		try {
+	// 			let payload = this.jwtService.verify(jwt);
+	// 			//await this.usersService.setUserOfflineAndSocketToNull(payload.idUser);
+  //       // updatePlayers.
+  //     } catch (error) {}
+	// 	}
+	// }
+
   @SubscribeMessage("movePallet")
   async movePallet(
   @MessageBody() data: any,
   @ConnectedSocket() socket: Socket) {
-    // Check that user is a player, check which pallet is assigned
-    let response;
-    if (data.direction !== "down" && data.direction !== "up")
+    let p = updatePlayers.get(data.username);
+    if (p == undefined)
       return;
-    await this.matchesOnGoingService.movePalletPlayer(data.idGame, data.username, data.direction);
+    if (data.direction == "up")
+      ++p.move;
+    else if (data.direction == "down")
+      --p.move;
+    // await this.matchesOnGoingService.movePalletPlayer(data.idGame, data.username, data.direction);
   }
 
   @UseGuards(JwtGatewayGuard)
@@ -143,6 +181,10 @@ export class MatchesOnGoingGateway {
         idGame: joinPendingGame.id,
       });
       this.usersService.setUserInGame(joinPendingGame.players[0].username, joinPendingGame.players[1].username);
+      let m1: match = {move: 0, powerUp: false, disconnect: false};
+      let m2: match = {move: 0, powerUp: false, disconnect: false};
+      updatePlayers.set(joinPendingGame.players[0].username, m1);
+      updatePlayers.set(joinPendingGame.players[1].username, m2);
       this.gameLoop(joinPendingGame);
       return;
     }
@@ -195,7 +237,7 @@ export class MatchesOnGoingGateway {
     let pid: NodeJS.Timer;
     pid = setInterval(async () => {
       let game;
-      game = await this.matchesOnGoingService.movePuck(match.id);
+      game = await this.matchesOnGoingService.movePuck(match.id, updatePlayers);
       // see comments in movePuck why the undefined
       if (game === undefined)
         return;

@@ -45,7 +45,7 @@ export function draw(ctx: CanvasRenderingContext2D | null, coordinates: BoardPos
   // second racket
   ctx.fillRect(coordinates.palletBX, coordinates.palletBY, coordinates.palletBWidth, coordinates.palletBHeight);
   // puck
-  if (coordinates.powerUpShrink || (coordinates.powerUpInvisible && coordinates.powerUpState !== 1))
+  if (coordinates.powerUpShrink || (coordinates.powerUpInvisible && coordinates.powerUpState !== 1) || coordinates.powerUpState == -1)
     ctx.fillRect(coordinates.puckX, coordinates.puckY, coordinates.puckWidth, coordinates.puckHeight);
   // middle line
   ctx.fillRect(coordinates.width / 2, 0, 1, coordinates.height);

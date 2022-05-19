@@ -182,6 +182,7 @@ export class UsersService {
   }
 
   async setUserInGame(usernameOne: string, usernameTwo: string) {
+    
     await getConnection()
       .createQueryBuilder()
       .update(User)
