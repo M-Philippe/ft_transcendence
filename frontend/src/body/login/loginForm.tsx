@@ -3,6 +3,8 @@ import { DispatchType, storeState } from '../../store/types';
 import { connect } from 'react-redux';
 import { userState } from '../../store/userSlice/userSliceTypes';
 import { API_AUTH_42_LOGIN, API_AUTH_LOCAL_LOGIN } from '../../urlConstString';
+import store from '../../store/store';
+import { Navigate } from 'react-router-dom';
 
 interface ConnectFormProps {
   user: userState;
@@ -20,6 +22,10 @@ function LoginForm(props: ConnectFormProps) {
 		username: "",
 		password: "",
 	});
+
+	if (store.getState().user.isConnected) {
+		return (<Navigate to="/" replace={true}/>);
+	}
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>, fieldToUpdate: "username" | "password") => {
 		event.preventDefault();
@@ -59,7 +65,7 @@ function LoginForm(props: ConnectFormProps) {
     <div>
     {
       errorMessage !== "" &&
-      <p style={{color:"red"}}>{errorMessage}</p>
+      <p className='errorMessage'>{errorMessage}</p>
     }
     <form id="className">
       <label>Username</label><br />

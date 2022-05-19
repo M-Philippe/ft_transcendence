@@ -28,11 +28,12 @@ function Body(props: PropsBody) {
   return (
     <div id="content">
       <Routes>
+        <Route path="*" element={<Navigate replace to="/" />}/>
         <Route path="/" element={ <RankingUsers url={API_USER_RANKING} /> } />
         <Route path="/ranking" element={ <RankingUsers url={API_USER_RANKING} /> } />
         <Route path="/listChat" element={<ListChat />} />
         <Route path="/play" element={ <PlayRoute />} />
-        { !props.user.isConnected && <Route path="/login" element={ <LoginForm {...props} />} /> }
+        <Route path="/login" element={ <LoginForm {...props} />} />
         { props.user.isConnected && <Route path="/connectionForm" element={<Navigate replace to="/" />} /> } 
         <Route path="/register" element={<Register />} />
         <Route path="/userView/:username" element={<UserView />} />
