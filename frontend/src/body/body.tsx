@@ -24,8 +24,6 @@ interface PropsBody {
   user: userState,
 }
 
-// Add route GameByInvite
-
 function Body(props: PropsBody) {
   return (
     <div id="content">
