@@ -35,6 +35,16 @@ export class UsersService {
     @Inject(forwardRef(() => RelationshipsService)) private readonly relationshipsService: RelationshipsService,
     @Inject(forwardRef(() => MatchesOnGoingService)) private readonly matchesOnGoingService: MatchesOnGoingService) {}
 
+  async onApplicationBootstrap() {
+    // We create sudo user [id: 0]
+    const checkSudoExist = await this.usersRepository.findOne(1);
+    if (checkSudoExist !== undefined)
+      return;
+    try {
+      const sudo = await this.createUserLocal({ name: "sudo", password: "sudo" });
+    } catch (error) {}
+  }
+
   @HttpCode(201)
   async create(createUserDto: CreateUserDto) {
     const user = this.usersRepository.create(createUserDto);
