@@ -30,7 +30,6 @@ export default function Enable2fa(props: any) {
 			event.preventDefault();
 			if (input === "")
 				return;
-			console.error("I'VE DONE ENABLE");
 			let headers = new Headers();
 			headers.append("Content-Type", "application/json");
 			fetch(API_AUTH_ENABLE_2FA, {
@@ -41,7 +40,6 @@ export default function Enable2fa(props: any) {
 			})
 			.then(async response => {
 				let ret = await response.json();
-				console.error("return: ", response.json());
 				if (response.status === 401) {
 					setErrorMessage(ret.type);
 					return;
