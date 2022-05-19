@@ -3,7 +3,7 @@ import { DispatchType, storeState } from "../../store/types";
 import { connect } from "react-redux";
 import /*React,*/ { useEffect, useState } from "react";
 //import pencil from "./pencil.jpg";
-import { Redirect } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { disable2fa } from "./2fa/disable2fa";
 import AvatarUpload from "./avatarUpload";
 import UserRelationships from "./userRelationships";
@@ -41,7 +41,8 @@ function UserProfile(props: UserProfileProps) {
 
 	if (redirect2fa)
 		return(
-			<Redirect to="/enable2fa" push={true} />
+			<Navigate to="/enable2fa" />
+			// <Navigate to="/enable2fa" push={true} /> 
 		);
 
 		return (

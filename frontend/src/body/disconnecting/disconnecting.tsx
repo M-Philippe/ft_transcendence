@@ -1,4 +1,4 @@
-import { Redirect } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import store from "../../store/store";
 import { DISCONNECT_USER } from "../../store/userSlice/userSliceActionTypes";
 import { API_USER_DISCONNECT } from "../../urlConstString";
@@ -17,7 +17,7 @@ export default function Disconnecting(props: any) {
 		});
 	}
 	if (!store.getState().user.isConnected) {
-		return (<Redirect to="/" />);
+		return (<Navigate replace to="/" /> )
 	}
 	return (
 		<div>

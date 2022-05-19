@@ -1,10 +1,10 @@
 import { useCanvas } from "./boardHooks";
 import { Socket } from 'socket.io-client';
-import {  useState } from "react";
+import { useState } from "react";
 import { connect } from 'react-redux';
 import { DispatchType, storeState } from '../../store/types';
 import { SET_ID_GAME, SET_USER_INGAME, UNSET_USER_INGAME } from "../../store/userSlice/userSliceActionTypes";
-import { Redirect } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { userState } from "../../store/userSlice/userSliceTypes";
 import { API_MATCHES_PLAYER_LEAVING } from "../../urlConstString";
 
@@ -54,7 +54,7 @@ function Board(props: BoardProps) {
 
 	if (cancelGame)
 		return (
-			<Redirect to="/ranking" />
+			<Navigate replace to="/ranking" />
 		);
 
 	const moveRacket = (event: React.KeyboardEvent<HTMLCanvasElement>) => {

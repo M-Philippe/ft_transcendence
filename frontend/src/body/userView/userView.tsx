@@ -1,4 +1,4 @@
-import { useLocation, Redirect } from "react-router-dom";
+import { useLocation, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { API_USER_VIEW, DISCONNECTING_URL } from "../../urlConstString";
 import RelationshipsDisplay from "./relationshipsDisplay";
@@ -72,7 +72,8 @@ function UserView(props: {username: string}) {
 
   if (props.username === username) {
     return (
-      <Redirect to="/myProfile" />
+			<Navigate replace to="/myProfile" />
+
     )
   }
 

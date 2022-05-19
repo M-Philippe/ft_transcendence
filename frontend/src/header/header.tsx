@@ -1,5 +1,5 @@
 import SearchBar from './searchBar/searchBar';
-import {Link, Redirect} from "react-router-dom";
+import {NavLink, Navigate} from "react-router-dom";
 import LoginInfos from './loginInfos/loginInfos';
 import { connect } from 'react-redux';
 import { DispatchType, storeState } from '../store/types';
@@ -17,51 +17,57 @@ function Header(props: IProps) {
   const [redirectDisconnect, setRedirectDisconnect] = useState(false);
 
   useEffect(() => {
-    if (redirectDisconnect) {
-      props.dispatch({
-        type: DISCONNECT_USER,
-        user: props.user,
-      });
-      setRedirectDisconnect(false);
-    }
+	if (redirectDisconnect) {
+	  props.dispatch({
+		type: DISCONNECT_USER,
+		user: props.user,
+	  });
+	  setRedirectDisconnect(false);
+	}
   }, [redirectDisconnect, props]);
 
   if (redirectDisconnect) {
-    return (<Redirect to="/disconnect" />);
+	return (<Navigate replace to="/disconnect" />);
   } else {
-    return (
-      <header>
-        <LoginInfos />
-        <p className="login"> { props.user.username } </p> 
-        {/* { props.user.isConnected && <SearchBar /> } */}
-        { props.user.isConnected && <UserAlert /> }
-        <Link className="action-button shadow animate yellow" to="/ranking">Ranking</Link>
-        {
-          props.user.isConnected &&
-          <Link className="action-button shadow animate orange" to="/listChat">Chat List</Link>
-        }
-        {!props.user.isConnected && <Link className="action-button shadow animate green" to="/login">Login</Link>}
-        {!props.user.isConnected && <Link className="action-button shadow animate blue" to="/register">Register</Link> }
-        {
-          props.user.isConnected &&
-          <Link className="action-button shadow animate green" to="/play">Play</Link>
-        }
-        {
-          props.user.isConnected &&
-          <Link className="action-button shadow animate blue" to="/myProfile">Profile</Link>
-        }
-        {
-          props.user.isConnected &&
-          <button className="action-button shadow animate red" onClick={() => {setRedirectDisconnect(true);}}> Disconnect </button>
-        }
-      </header>
-    );
+	return (
+	<header>
+		<div id="LogInfoAvatAlert">
+			<LoginInfos />
+			<h3 className="login"> { props.user.username } </h3> 
+			{/* { props.user.isConnected && <SearchBar /> } */}
+			{ props.user.isConnected && <UserAlert /> }
+		</div>
+		<nav>
+			<ul>
+				<li><NavLink to="/ranking">Ranking</NavLink> </li>
+				{
+				props.user.isConnected &&
+				<li><NavLink  to="/listChat">Chat List</NavLink> </li>
+				}
+				{!props.user.isConnected && <li><NavLink to="/login">Login</NavLink> </li>} 
+				{!props.user.isConnected && <li><NavLink to="/register">Register</NavLink> </li>} 
+				{
+				props.user.isConnected &&
+				<li><NavLink to="/play">Play</NavLink> </li>
+				}
+				{
+				props.user.isConnected &&
+				<li><NavLink to="/myProfile">Profile</NavLink> </li>
+				}
+				{
+					props.user.isConnected &&
+					<li><NavLink id = "disconnectButton" to="/" onClick={() => {setRedirectDisconnect(true);}}> Disconnect </NavLink> </li>
+				}
+			</ul>
+  		</nav>
+	  </header>
+	);
   }
 }
 
 function mapStateToProps(state: storeState) {
   return ({
-    user: state.user,
+	user: state.user,
   });
 }
 

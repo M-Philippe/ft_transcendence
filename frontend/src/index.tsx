@@ -1,4 +1,4 @@
-import ReactDOM from 'react-dom';
+import ReactDOM from "react-dom/client";
 import Header from './header/header';
 import Chat from './body/chat/chat';
 import Body from './body/body';
@@ -29,9 +29,16 @@ function App () {
   );
 }
 
-ReactDOM.render(
+// ReactDOM.render(
+//   <Provider store={store}>
+//   <App />
+//   </Provider>,
+//   document.getElementById('root')
+// );
+
+const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
+root.render(
   <Provider store={store}>
   <App />
-  </Provider>,
-  document.getElementById('root')
+  </Provider>
 );

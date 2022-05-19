@@ -1,6 +1,6 @@
 import '../styles/index.css';
 import '../styles/chat.css';
-import {Switch, Route, Redirect} from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import PlayRoute from './board/playRoute';
 import RankingUsers from './ranking/rankingUsers/rankingUsers';
 import UserView from "./userView/userView";
@@ -29,41 +29,25 @@ interface PropsBody {
 function Body(props: PropsBody) {
   return (
     <div id="content">
-      <Switch>
-        <Route exact path="/" render={() =>
-          <RankingUsers
-            url={API_USER_RANKING}
-          />}
-        />
-        <Route exact path="/ranking" render={() =>
-          <RankingUsers
-            url={API_USER_RANKING}
-          />
-          }
-        />
-        <Route exact path="/listChat" component={ListChat} />
-        <Route exact path="/play" render={() => <PlayRoute />} />
-        {!props.user.isConnected &&
-          <Route
-            exact path="/login"
-            render={() => <LoginForm {...props} />}
-          />
-        }
-        {props.user.isConnected &&
-          <Redirect from ="/connectionForm" to="/" />
-        }
-        <Route exact path="/register" component={Register} />
-        <Route exact path="/userView/:username" component={UserView} />
-        <Route exact path="/myProfile" component={UserProfile}/>
-        <Route exact path="/loginFailed" component={LoginFail} />
-        <Route exact path="/loginSuccess" component={LoginSuccess} />
-        <Route exact path="/firstLogin" component={FirstLogin} />
-        <Route exact path="/disconnecting" component={Disconnecting} />
-        <Route exact path="/enable2fa" component={Enable2fa}/>
-        <Route exact path="/query2faCode" component={Query2faCode} />
-        <Route exact path="/disconnect" component={Disconnecting} />
-        <Route exact path="/invitationGame" render={() => <InvitationGame />} />
-      </Switch>
+      <Routes>
+        <Route path="/" element={ <RankingUsers url={API_USER_RANKING} /> } />
+        <Route path="/ranking" element={ <RankingUsers url={API_USER_RANKING} /> } />
+        <Route path="/listChat" element={<ListChat />} />
+        <Route path="/play" element={ <PlayRoute />} />
+        { !props.user.isConnected && <Route path="/login" element={ <LoginForm {...props} />} /> }
+        { props.user.isConnected && <Route path="/connectionForm" element={<Navigate replace to="/" />} /> } 
+        <Route path="/register" element={<Register />} />
+        <Route path="/userView/:username" element={<UserView />} />
+        <Route path="/myProfile" element={<UserProfile />}/>
+        <Route path="/loginFailed" element={<LoginFail />} />
+        <Route path="/loginSuccess" element={<LoginSuccess />} />
+        <Route path="/firstLogin" element={<FirstLogin />} />
+        <Route path="/disconnecting" element={<Disconnecting />} />
+        <Route path="/enable2fa" element={<Enable2fa />}/>
+        <Route path="/query2faCode" element={<Query2faCode />} />
+        <Route path="/disconnect" element={<Disconnecting />} />
+        <Route path="/invitationGame" element={ <InvitationGame />} />
+      </Routes>
     </div>
   );
 }

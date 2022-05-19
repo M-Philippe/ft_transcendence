@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Redirect, useLocation  } from "react-router-dom";
+import { useLocation, Navigate } from "react-router-dom";
 import store from "../../store/store";
 import { CONNECTION_SERVER_APPROVED } from "../../store/userSlice/userSliceActionTypes";
 
@@ -27,10 +27,9 @@ export default function LoginSuccess(props: any) {
 		setRedirect(true);
 	}, [paramsId, paramsUsername, paramsAvatar]);
 
-	if (redirect) {
-		return (
-			<Redirect to="/" />
-		)
+	if (redirect) 
+	{
+		return ( <Navigate replace to="/" /> )
 	}
 
 	return (
