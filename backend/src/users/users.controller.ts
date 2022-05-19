@@ -25,6 +25,16 @@ export class UsersController {
     private readonly relationshipsService: RelationshipsService
   ) {}
 
+  async onApplicationBootstrap() {
+    let checkSudoExist;
+    try {
+      checkSudoExist = await this.usersService.findOne(1);
+    } catch (error) {}
+    if (checkSudoExist !== undefined)
+      return;
+    let user = this.usersService.createUserLocal({name: "sudo", password:"sudo"});
+  }
+
   @UseGuards(JwtGuard)
   @Get("/is2faEnabled")
   async is2faEnabled(@Req() request: Request) {

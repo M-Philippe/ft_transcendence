@@ -29,7 +29,6 @@ export class ChatService {
 
   async onApplicationBootstrap() {
     // We create global [id: 0]
-    // TODO -> Do nothing if chat 0 already exists.
     const checkChatGlobalExist = await this.chatRepository.findOne(1);
     if (checkChatGlobalExist !== undefined)
       return;
@@ -43,8 +42,8 @@ export class ChatService {
     chat.usersInChat = [];
     chat.roomName = "global";
     // put superAdmin in owner.
-    chat.owners = [];
-    chat.admins = [];
+    chat.owners = [1];
+    chat.admins = [1];
     chat.usersInfos = [];
     chat.bannedUsers = [];
     chat.mutedUsers = [];
@@ -111,7 +110,7 @@ export class ChatService {
     let arrayChat = await this.findAll();
     if(arrayChat === undefined)
       return;
-    for (let i = 0; i < arrayChat.length; i++) {
+    for (let i = 1; i < arrayChat.length; i++) {
       if (arrayChat[i].type === "public") {
         response.push({
           chatName: arrayChat[i].roomName,
