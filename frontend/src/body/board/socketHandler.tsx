@@ -15,7 +15,7 @@ export function SocketHandler(props: ISocketHandler) {
 
   useEffect(() => {
     const socket = io(BASE_API_URL, {
-      path: SOCKET_MATCHESONGOING,
+      path: "/matchesOnGoing",
       transports: ["websocket"],
       withCredentials: true,
       reconnection: false

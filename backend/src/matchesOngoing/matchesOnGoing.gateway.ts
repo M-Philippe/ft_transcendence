@@ -9,14 +9,15 @@ import { Injectable, UseGuards, Inject, forwardRef } from "@nestjs/common";
 import { extractJwtFromCookie, JwtGatewayGuard } from "src/guards/jwtGateway.guards";
 import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
 import { UsersService } from "src/users/users.service";
+import { User } from "src/users/entities/user.entity";
 import internal from "stream";
 import { join } from "path";
+import { getConnection } from "typeorm";
 
 const FPS = 60;
 
 interface match {
   move: number;
-  powerUp: boolean;
   disconnect: boolean;
 }
 
@@ -26,7 +27,7 @@ const updatePlayers: HashMap<match> = {};
 
 // let updatePlayers = new Map<string, match>();
 
-@WebSocketGateway({ transports: ['websocket'] })
+@WebSocketGateway({ path:"/matchesOnGoing", transports: ['websocket'] })
 @Injectable()
 export class MatchesOnGoingGateway {
   constructor(private readonly matchesOnGoingService: MatchesOnGoingService,
@@ -129,19 +130,61 @@ export class MatchesOnGoingGateway {
   //   await this.matchesOnGoingService.movePalletPlayer(data.idGame, data.username, data.direction);
   // }
 
-  // async handleDisconnect(client: any) {
-	// 	console.error("DISCONNECT: ", client.id);
-	// 	if (client.handshake.headers.cookie) {
-	// 		//console.error("COOKIES: ", typeof(client.handshake.headers.cookie));
-	// 		let cookie: string = client.handshake.headers.cookie;
-	// 		let jwt = extractJwtFromCookie(client.handshake.headers.cookie);
-	// 		try {
-	// 			let payload = this.jwtService.verify(jwt);
-	// 			//await this.usersService.setUserOfflineAndSocketToNull(payload.idUser);
-  //       // updatePlayers.
-  //     } catch (error) {}
-	// 	}
-	// }
+  async handleDisconnect(client: any) {
+		if (client.handshake.headers.cookie) {
+      console.error("\n-----> PLAYER DISCONNECTED IN GAME <----- " + Date.now());
+			// console.error("COOKIES: ", typeof(client.handshake.headers.cookie));
+			let cookie: string = client.handshake.headers.cookie;
+			let jwt = extractJwtFromCookie(client.handshake.headers.cookie);
+			try {
+				let payload = this.jwtService.verify(jwt);
+        let usr: User = await getConnection()
+          .getRepository(User)
+          .createQueryBuilder('user')
+          .where("id = :id", { id: payload.idUser})
+          .getOneOrFail();
+
+        /*
+          CHANGE TO SEEARCH WITH THE PLAYERS'S ID
+          ADD PLAYER'S ID IN THE MATCHESONGOING ENTITY
+          AND DELETE USER'S QUERYBUILDER
+        */
+
+        let game: MatchesOnGoing = await getConnection()
+          .getRepository(MatchesOnGoing)
+          .createQueryBuilder('game')
+          .where("players[0].username = :name", { name: usr.name })
+          .orWhere("players[1].username = :name", { name: usr.name })
+          .getOneOrFail();
+
+        if (game.pending) {
+          await getConnection()
+                .createQueryBuilder()
+                .delete()
+                .from(MatchesOnGoing)
+                .where("id = :id", { id: game.id })
+                .execute();
+        }
+        else {
+          await getConnection()
+                .createQueryBuilder()
+                .update(MatchesOnGoing)
+                .set({
+                  playerDisconnected: true,
+                  usernameDisconnectedPlayer: usr.name,
+                  timeOfDisconnection: Date.now(),
+                })
+                .where("id = :id", { id: game.id })
+                .execute();
+        }
+          // .where("id = :id", {id: user.listChat[i].id})
+
+        // let p = updatePlayers[usr.name];
+        console.error("----->" + usr.name + "<-----\n");
+        // p.disconnect = true;
+      } catch (error) {}
+		}
+	}
 
   @SubscribeMessage("movePallet")
   async movePallet(
@@ -187,8 +230,8 @@ export class MatchesOnGoingGateway {
       });
       this.usersService.setUserInGame(joinPendingGame.players[0].username, joinPendingGame.players[1].username);
 
-      let m1: match = {move: 0, powerUp: false, disconnect: false};
-      let m2: match = {move: 0, powerUp: false, disconnect: false};
+      let m1: match = {move: 0, disconnect: false};
+      let m2: match = {move: 0, disconnect: false};
 
       updatePlayers[joinPendingGame.players[0].username] = m1;
       updatePlayers[joinPendingGame.players[1].username] = m2;
@@ -248,13 +291,24 @@ export class MatchesOnGoingGateway {
     await this.sendToAllSockets(match);
     let pid: NodeJS.Timer;
     pid = setInterval(async () => {
-      // let p1 = updatePlayers.get(match.players[0].username);
-      // let p2 = updatePlayers.get(match.players[1].username);
       let p1 = updatePlayers[match.players[0].username];
       let p2 = updatePlayers[match.players[1].username];
       let game = await this.matchesOnGoingService.movePuck(match.id, p1, p2);
       if (game === undefined)
         return;
+
+      /*          Disconnection         */
+      // if (p1.disconnect) {
+      //   await this.matchesOnGoingService.playerDisconnected(game.id, game.players[0].username);
+      //   p1.disconnect = false;
+      // } else if (p2.disconnect) {
+      //   await this.matchesOnGoingService.playerDisconnected(game.id, game.players[1].username);
+      //   p2.disconnect = false;
+      // }
+      if (game.playerDisconnected)
+        game = await this.matchesOnGoingService.checkTimeoutDisconnectedUser(game);
+
+      /*          Finished Game         */
       if (game.finishedGame) {
         clearInterval(pid);
         await this.sendToAllSockets(game);
@@ -275,10 +329,9 @@ export class MatchesOnGoingGateway {
         }
         await this.usersService.checkUserAchievements(game.players[0].username);
         await this.usersService.checkUserAchievements(game.players[1].username);
-        // updatePlayers.delete(game.players[0].username);
-        // updatePlayers.delete(game.players[1].username);
         return;
       }
+
       if (p1 !== undefined && p2 !== undefined) {
         p1.move = 0;
         p2.move = 0;

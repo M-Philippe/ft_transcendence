@@ -8,8 +8,8 @@ export const START_PALLET_WIDTH = 10;
 export const BOARD_WIDTH = 900 + 100 + 2 * START_PALLET_WIDTH;
 export const BOARD_HEIGHT = 600;
 
-export const START_PUCK_VEL = 8;
-export const START_MAX_VEL_Y = 2;
+export const START_PUCK_VEL = 2;
+export const START_MAX_VEL_Y = 3;
 export const START_PUCK_HEIGHT = 8;
 export const START_PUCK_WIDTH = 8;
 export const START_PUCKX = BOARD_WIDTH / 2 - START_PUCK_WIDTH / 2;

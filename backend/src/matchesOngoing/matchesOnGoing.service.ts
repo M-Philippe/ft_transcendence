@@ -167,16 +167,16 @@ export class MatchesOnGoingService {
 
   async playerDisconnected(idGame: number, username: string) {
     let game: MatchesOnGoing | undefined;
+    console.error("-> Player Disconnected <- " + Date.now());
     try {
       game = await this.matchesOnGoingRepository.findOne(idGame);
     } catch (error) {
       console.error(error);
       return;
     }
-    if (game === undefined)
+    if (game === undefined || game.players[0].username !== username && game.players[1].username !== username)
       return;
-    if (game.players[0].username !== username && game.players[1].username !== username)
-      return;
+
     // If pending game just delete it.
     if (game.pending) {
       await getConnection()
@@ -202,10 +202,9 @@ export class MatchesOnGoingService {
   }
 
   async checkTimeoutDisconnectedUser(game: MatchesOnGoing) {
-    console.error("\n--> DECONNECTION <--\n");
-    let timeoutDisconnected = 10000;
     let timeElapsed = Date.now() - game.timeOfDisconnection;
-    if (timeElapsed > timeoutDisconnected) {
+    console.error("-> Check Timeout Disconnected User. Time elapsed: " + timeElapsed + ", time of disconnection: " +  game.timeOfDisconnection + ", date.now(): "+ Date.now() +") <-");
+    if (timeElapsed > 30000) {
       if (game.usernameDisconnectedPlayer === game.players[0].username)
         game.winnerUsername = game.players[1].username;
       else
@@ -528,9 +527,7 @@ export class MatchesOnGoingService {
       game.palletBY = BOARD_HEIGHT - game.palletBHeight;
     else if (game.palletBY < 0)
       game.palletBY = 0;
-    // console.error("Add move to pallet");
-    // game.palletAY = game.palletAYFromUser;
-    // game.palletBY = game.palletBYFromUser;
+
     // console.error("\n--> PuckX = ", coord.puckX, " and puckVX = ", coord.puckVX, ", puckY = ", coord.puckY, ", puckVY = ", coord.puckVY,);
     if (coord.puckX + coord.puckVX <= 0.0 || coord.puckX + coord.puckVX >= game.width)
       await this.goal(game, coord.puckX < game.width / 2 ? "right" : "left");

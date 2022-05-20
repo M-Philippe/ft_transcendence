@@ -70,23 +70,23 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	}
 
 	async contactUsers(socketOne: string, socketTwo: string, event: string) {
-		console.error("\n\n\n\tCONTACT SOCKETS:\n", socketOne, " | ", socketTwo, "\n\n\n");
+		// console.error("\n\n\n\tCONTACT SOCKETS:\n", socketOne, " | ", socketTwo, "\n\n\n");
 		this.server.to([socketOne, socketTwo]).emit(event);
 	}
 
 	async sendUserNewAlert(userAlert: UserAlert) {
-		console.error("\n\n\n\tSEND_USER_NEW_ALERT\n\n\n");
+		// console.error("\n\n\n\tSEND_USER_NEW_ALERT\n\n\n");
 		if (userAlert.socket === "")
 			return;
 		this.server.to(userAlert.socket).emit("getUserAlert", {
 			data: userAlert.alert,
 		});
-		console.error("\n\n\n\tSEND_USER_NEW_ALERT AFTER REAL SEND\n\n\n");
+		// console.error("\n\n\n\tSEND_USER_NEW_ALERT AFTER REAL SEND\n\n\n");
 	}
 
 	@SubscribeMessage("tst")
 	async tst(@ConnectedSocket() socket: Socket) {
-		console.error("\n\n\n\n\n\n\t HAVE RECEIVED FROM: ", socket.id, "\n\n\n");
+		// console.error("\n\n\n\n\n\n\t HAVE RECEIVED FROM: ", socket.id, "\n\n\n");
 	}
 
 }
