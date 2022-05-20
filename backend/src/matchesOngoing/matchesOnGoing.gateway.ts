@@ -20,7 +20,11 @@ interface match {
   disconnect: boolean;
 }
 
-let updatePlayers = new Map<string, match>();
+type HashMap<T> = { [key: string]: T };
+
+const updatePlayers: HashMap<match> = {};
+
+// let updatePlayers = new Map<string, match>();
 
 @WebSocketGateway({ transports: ['websocket'] })
 @Injectable()
@@ -143,7 +147,7 @@ export class MatchesOnGoingGateway {
   async movePallet(
   @MessageBody() data: any,
   @ConnectedSocket() socket: Socket) {
-    let p = updatePlayers.get(data.username);
+    let p = updatePlayers[data.username];
     if (p == undefined)
       return;
     if (data.direction == "up")
@@ -161,7 +165,7 @@ export class MatchesOnGoingGateway {
       data.map = "original";
     if (data.scoreMax != 3 && data.scoreMax != 5 && data.scoreMax != 7)
       data.scoreMax = 3;
-  
+
     // Check if user has a pending or disconnected game
     let existingGame = await this.matchesOnGoingService.checkUserAlreadyInGame(data.username, socket.id);
     if (existingGame !== undefined) {
@@ -182,11 +186,16 @@ export class MatchesOnGoingGateway {
         idGame: joinPendingGame.id,
       });
       this.usersService.setUserInGame(joinPendingGame.players[0].username, joinPendingGame.players[1].username);
-      
+
       let m1: match = {move: 0, powerUp: false, disconnect: false};
       let m2: match = {move: 0, powerUp: false, disconnect: false};
-      updatePlayers.set(joinPendingGame.players[0].username, m1);
-      updatePlayers.set(joinPendingGame.players[1].username, m2);
+
+      updatePlayers[joinPendingGame.players[0].username] = m1;
+      updatePlayers[joinPendingGame.players[1].username] = m2;
+      // updatePlayers[joinPendingGame.players[0].username] = { move = 0, powerUp = false, disconnect = false}
+
+      // updatePlayers.set(joinPendingGame.players[0].username, m1);
+      // updatePlayers.set(joinPendingGame.players[1].username, m2);
       console.error("Add the two players in the map");
       this.gameLoop(joinPendingGame);
       return;
@@ -239,9 +248,10 @@ export class MatchesOnGoingGateway {
     await this.sendToAllSockets(match);
     let pid: NodeJS.Timer;
     pid = setInterval(async () => {
-      let p1 = updatePlayers.get(match.players[0].username);
-      let p2 = updatePlayers.get(match.players[1].username);
-
+      // let p1 = updatePlayers.get(match.players[0].username);
+      // let p2 = updatePlayers.get(match.players[1].username);
+      let p1 = updatePlayers[match.players[0].username];
+      let p2 = updatePlayers[match.players[1].username];
       let game = await this.matchesOnGoingService.movePuck(match.id, p1, p2);
       if (game === undefined)
         return;
@@ -265,6 +275,8 @@ export class MatchesOnGoingGateway {
         }
         await this.usersService.checkUserAchievements(game.players[0].username);
         await this.usersService.checkUserAchievements(game.players[1].username);
+        // updatePlayers.delete(game.players[0].username);
+        // updatePlayers.delete(game.players[1].username);
         return;
       }
       if (p1 !== undefined && p2 !== undefined) {
