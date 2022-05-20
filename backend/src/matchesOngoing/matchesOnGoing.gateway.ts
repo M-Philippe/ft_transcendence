@@ -12,7 +12,7 @@ import { UsersService } from "src/users/users.service";
 import internal from "stream";
 import { join } from "path";
 
-const FPS = 40;
+const FPS = 60;
 
 interface match {
   move: number;
@@ -147,10 +147,9 @@ export class MatchesOnGoingGateway {
     if (p == undefined)
       return;
     if (data.direction == "up")
-      ++p.move;
-    else if (data.direction == "down")
       --p.move;
-    // await this.matchesOnGoingService.movePalletPlayer(data.idGame, data.username, data.direction);
+    else if (data.direction == "down")
+      ++p.move;
   }
 
   @UseGuards(JwtGatewayGuard)
@@ -162,6 +161,7 @@ export class MatchesOnGoingGateway {
       data.map = "original";
     if (data.scoreMax != 3 && data.scoreMax != 5 && data.scoreMax != 7)
       data.scoreMax = 3;
+  
     // Check if user has a pending or disconnected game
     let existingGame = await this.matchesOnGoingService.checkUserAlreadyInGame(data.username, socket.id);
     if (existingGame !== undefined) {
@@ -174,6 +174,7 @@ export class MatchesOnGoingGateway {
         await this.sendToAllSockets(existingGame);
       return;
     }
+
     // Check if game pending with same rules (except map)
     let joinPendingGame = await this.matchesOnGoingService.checkSimilarGamePending(data, socket.id);
     if (joinPendingGame !== undefined) {
@@ -181,10 +182,12 @@ export class MatchesOnGoingGateway {
         idGame: joinPendingGame.id,
       });
       this.usersService.setUserInGame(joinPendingGame.players[0].username, joinPendingGame.players[1].username);
+      
       let m1: match = {move: 0, powerUp: false, disconnect: false};
       let m2: match = {move: 0, powerUp: false, disconnect: false};
       updatePlayers.set(joinPendingGame.players[0].username, m1);
       updatePlayers.set(joinPendingGame.players[1].username, m2);
+      console.error("Add the two players in the map");
       this.gameLoop(joinPendingGame);
       return;
     }
@@ -236,13 +239,12 @@ export class MatchesOnGoingGateway {
     await this.sendToAllSockets(match);
     let pid: NodeJS.Timer;
     pid = setInterval(async () => {
-      let game;
-      game = await this.matchesOnGoingService.movePuck(match.id, updatePlayers);
-      // see comments in movePuck why the undefined
+      let p1 = updatePlayers.get(match.players[0].username);
+      let p2 = updatePlayers.get(match.players[1].username);
+
+      let game = await this.matchesOnGoingService.movePuck(match.id, p1, p2);
       if (game === undefined)
         return;
-      if (game.playerDisconnected)
-        game = await this.matchesOnGoingService.checkTimeoutDisconnectedUser(game);
       if (game.finishedGame) {
         clearInterval(pid);
         await this.sendToAllSockets(game);
@@ -264,6 +266,10 @@ export class MatchesOnGoingGateway {
         await this.usersService.checkUserAchievements(game.players[0].username);
         await this.usersService.checkUserAchievements(game.players[1].username);
         return;
+      }
+      if (p1 !== undefined && p2 !== undefined) {
+        p1.move = 0;
+        p2.move = 0;
       }
       await this.sendToAllSockets(game);
     }, 1000 / FPS);

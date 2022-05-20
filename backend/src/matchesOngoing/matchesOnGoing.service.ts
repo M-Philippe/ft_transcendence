@@ -260,63 +260,63 @@ export class MatchesOnGoingService {
 
   /*                                  Move Pallet                                 */
 
-  async movePalletPlayerB(board: MatchesOnGoing, direction: 0 | 1) {
-    if (direction == 0 && board.palletBYFromUser <= 0)
-      return (undefined);
-    if (direction == 1 && board.palletBYFromUser + board.palletBHeight >= board.height)
-      return (undefined);
-    direction == 0 ?
-      board.palletBYFromUser -= SPEED_PALLET:
-      board.palletBYFromUser += SPEED_PALLET;
-    await getConnection()
-          .createQueryBuilder()
-          .update(MatchesOnGoing)
-          .set(
-            {
-              palletBYFromUser: board.palletBYFromUser,
-            })
-          .where("id = :id", { id: board.id})
-          .execute();
-    return (board);
-  }
+  // async movePalletPlayerB(board: MatchesOnGoing, direction: 0 | 1) {
+  //   if (direction == 0 && board.palletBYFromUser <= 0)
+  //     return (undefined);
+  //   if (direction == 1 && board.palletBYFromUser + board.palletBHeight >= board.height)
+  //     return (undefined);
+  //   direction == 0 ?
+  //     board.palletBYFromUser -= SPEED_PALLET:
+  //     board.palletBYFromUser += SPEED_PALLET;
+  //   await getConnection()
+  //         .createQueryBuilder()
+  //         .update(MatchesOnGoing)
+  //         .set(
+  //           {
+  //             palletBYFromUser: board.palletBYFromUser,
+  //           })
+  //         .where("id = :id", { id: board.id})
+  //         .execute();
+  //   return (board);
+  // }
 
-  async movePalletPlayerA(board: MatchesOnGoing, direction: 0 | 1) {
-    if (direction == 0 && board.palletAYFromUser <= 0)
-      return (undefined);
-    if (direction == 1 && board.palletAYFromUser + board.palletAHeight >= board.height)
-      return (undefined);
-    direction == 0 ?
-      board.palletAYFromUser -= SPEED_PALLET:
-      board.palletAYFromUser += SPEED_PALLET;
-    await getConnection()
-          .createQueryBuilder()
-          .update(MatchesOnGoing)
-          .set(
-            {
-              palletAYFromUser: board.palletAYFromUser,
-            })
-          .where("id = :id", { id: board.id})
-          .execute();
-    return (board);
-  }
+  // async movePalletPlayerA(board: MatchesOnGoing, direction: 0 | 1) {
+  //   if (direction == 0 && board.palletAYFromUser <= 0)
+  //     return (undefined);
+  //   if (direction == 1 && board.palletAYFromUser + board.palletAHeight >= board.height)
+  //     return (undefined);
+  //   direction == 0 ?
+  //     board.palletAYFromUser -= SPEED_PALLET:
+  //     board.palletAYFromUser += SPEED_PALLET;
+  //   await getConnection()
+  //         .createQueryBuilder()
+  //         .update(MatchesOnGoing)
+  //         .set(
+  //           {
+  //             palletAYFromUser: board.palletAYFromUser,
+  //           })
+  //         .where("id = :id", { id: board.id})
+  //         .execute();
+  //   return (board);
+  // }
 
-  async movePalletPlayer(idGame: number, username: string, direction: "up" | "down") {
-    let board;
+  // async movePalletPlayer(idGame: number, username: string, direction: "up" | "down") {
+  //   let board;
 
-    try {
-      board = await this.findOne(idGame);
-    } catch (error) {
-      throw new Error(error);
-    }
-    if (board.playerDisconnected)
-      return;
-    if (board.players[0].username === username)
-      await this.movePalletPlayerA(board, direction === "up" ? 0 : 1);
-    else if (board.players[1].username === username)
-      await this.movePalletPlayerB(board, direction === "up" ? 0 : 1);
-    else
-      return;
-  }
+  //   try {
+  //     board = await this.findOne(idGame);
+  //   } catch (error) {
+  //     throw new Error(error);
+  //   }
+  //   if (board.playerDisconnected)
+  //     return;
+  //   if (board.players[0].username === username)
+  //     await this.movePalletPlayerA(board, direction === "up" ? 0 : 1);
+  //   else if (board.players[1].username === username)
+  //     await this.movePalletPlayerB(board, direction === "up" ? 0 : 1);
+  //   else
+  //     return;
+  // }
 
   /*                                   Power Up                                  */
 
@@ -501,30 +501,42 @@ export class MatchesOnGoingService {
   }
   /*                                  Move Puck                                 */
 
-  async movePuck(gameId: number, updatePlayers: Map<string, any>) {
+  async movePuck(gameId: number, p1: any, p2: any) {
     let game: MatchesOnGoing = await getConnection()
         .getRepository(MatchesOnGoing)
         .createQueryBuilder('matches')
         .where("id = :id", { id: gameId})
         .getOneOrFail();
-  
-    let p1 = updatePlayers.get(game.players[0].username);
-    let p2 = updatePlayers.get(game.players[1].username);
-    if (game.finishedGame || p1.disconnect || p2.disconnect)
-      return  game.finishedGame ? undefined : game;
-  
+    if (p1 === undefined || p2 == undefined) {
+      console.error("player undefined");
+      return undefined;
+    }
+    if (game.finishedGame)
+      return  undefined;
+    if (p1.disconnect || p2.disconnect)
+      this.checkTimeoutDisconnectedUser(game);
+
     let collisionPallet: boolean = false;
     let coord: Coord = {puckX: Number(game.puckX), puckY: Number(game.puckY), puckVX: Number(game.puckVX), puckVY:  Number(game.puckVY)};
     game.palletAY += (p1.move * SPEED_PALLET);
+    if (game.palletAY + game.palletAHeight > BOARD_HEIGHT)
+      game.palletAY = BOARD_HEIGHT - game.palletAHeight;
+    else if (game.palletAY < 0)
+      game.palletAY = 0;
     game.palletBY += (p2.move * SPEED_PALLET);
+    if (game.palletBY + game.palletBHeight > BOARD_HEIGHT)
+      game.palletBY = BOARD_HEIGHT - game.palletBHeight;
+    else if (game.palletBY < 0)
+      game.palletBY = 0;
+    // console.error("Add move to pallet");
     // game.palletAY = game.palletAYFromUser;
     // game.palletBY = game.palletBYFromUser;
     // console.error("\n--> PuckX = ", coord.puckX, " and puckVX = ", coord.puckVX, ", puckY = ", coord.puckY, ", puckVY = ", coord.puckVY,);
     if (coord.puckX + coord.puckVX <= 0.0 || coord.puckX + coord.puckVX >= game.width)
       await this.goal(game, coord.puckX < game.width / 2 ? "right" : "left");
     else {
-      // if (game.powerUpState == 0)
-      //   this.powerUpCollisions(game, coord);
+      if (game.powerUpState == 0)
+        this.powerUpCollisions(game, coord);
       if (coord.puckY + coord.puckVY <= 0.0 || coord.puckY + coord.puckVY >= game.height)
         this.roof(game, coord);
       else if (coord.puckX + coord.puckVX <= (game.palletAX + game.palletAWidth) && coord.puckY >= game.palletAY - game.puckHeight && coord.puckY <= game.palletAY + game.palletAHeight)
@@ -552,8 +564,8 @@ export class MatchesOnGoingService {
           })
           .where("id = :id", {id: game.id})
           .execute();
-          p1.move = 0;
-          p2.move = 0;
+          // p1.move = 0;
+          // p2.move = 0;
     }
     return (game);
   }
