@@ -97,6 +97,13 @@ export const API_MATCHES_PLAYER_LEAVING = API_URL + "/matchesOnGoing/playerLeavi
 
 
 /*
+**  MATCHES
+*/
+export const API_MATCH_HISTORY = API_URL + "/matches/getMatchHistory";
+// http://localhost:3000/matches/getMatchHistory
+
+
+/*
 **	CHAT
 */
 export const API_GET_LIST_CHAT = API_URL + "/chat/getListChat";

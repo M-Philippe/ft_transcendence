@@ -9,6 +9,7 @@ import AvatarUpload from "./avatarUpload";
 import UserRelationships from "./userRelationships";
 import ChangePassword from './changePassword';
 import { API_USER_2FA_ENABLED, DISCONNECTING_URL } from "../../urlConstString";
+import { Link } from "react-router-dom";
 
 interface UserProfileProps {
 	user: userState;
@@ -68,6 +69,7 @@ function UserProfile(props: UserProfileProps) {
 				<button className="action-button shadow animate blue" onClick={() => { setRedirect2fa(true); }}>Enable 2fa</button>
 			}
 			<UserRelationships />
+			<Link to="/matchHistory" state={{username: props.user.username}}>Match History</Link>
 		</div>
 	);
 }

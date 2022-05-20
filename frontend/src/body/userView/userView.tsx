@@ -6,6 +6,7 @@ import InvitationGameQueryBox from "./invitationGameQueryBox";
 import chooseRelationshipButton from "./chooseRelationshipButtons";
 import { connect } from "react-redux";
 import { storeState } from "../../store/types";
+import { Link } from "react-router-dom";
 
 function assembleAchievements(achievements: any[]) {
   let retJsx = [];
@@ -108,6 +109,7 @@ function UserView(props: {username: string}) {
         }
         {chooseRelationshipButton(data.relationshipStatus, data.name, setRefresh)}
         {data.name !== "" && <RelationshipsDisplay nameProfile={data.name} />}
+        <Link to="/matchHistory" state={{username: username}}>Match History</Link>
       </div>
     )
   }

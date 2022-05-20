@@ -19,6 +19,7 @@ import Register from './register/register';
 import LoginForm from './login/loginForm';
 import InvitationGame from './board/invitationGame/invitationGame';
 import { API_USER_RANKING } from "../urlConstString";
+import MatchHistory from './userView/matchHistory';
 
 interface PropsBody {
   user: userState,
@@ -34,6 +35,7 @@ function Body(props: PropsBody) {
         <Route path="/listChat" element={<ListChat />} />
         <Route path="/play" element={ <PlayRoute />} />
         <Route path="/login" element={ <LoginForm {...props} />} />
+        <Route path="/matchHistory" element={ <MatchHistory /> } />
         { props.user.isConnected && <Route path="/connectionForm" element={<Navigate replace to="/" />} /> } 
         <Route path="/register" element={<Register />} />
         <Route path="/userView/:username" element={<UserView />} />

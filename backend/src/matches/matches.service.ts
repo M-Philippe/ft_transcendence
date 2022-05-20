@@ -1,6 +1,7 @@
-import { HttpCode, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { forwardRef, HttpCode, HttpException, HttpStatus, Injectable, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
+import { UsersService } from 'src/users/users.service';
 import { getConnection, Repository } from 'typeorm';
 import { CreateMatchDto } from './dto/create-match.dto';
 import { Match } from './entities/match.entity';
@@ -10,6 +11,7 @@ export class MatchesService {
   constructor (
     @InjectRepository(Match)
     private matchesRepository: Repository<Match>,
+    @Inject(forwardRef(() => UsersService)) private readonly usersService: UsersService
   ) {}
 
   @HttpCode(201)
@@ -53,5 +55,20 @@ export class MatchesService {
     throw new HttpException({
       description: "Please provide a valid match id."
     }, HttpStatus.NOT_FOUND);
+  }
+
+  async getMatchHistory(usernameToFetch: string) {
+    let user = await this.usersService.findOneByName(usernameToFetch);
+    if (user === undefined)
+      return "No such user.";
+    let ret: Array<{opponent: string, winner: string, date: Date}> = [];
+    for (let i = 0; i < user.matches.length; i++) {
+      ret.push({
+        opponent: user.matches[i].player1 === usernameToFetch ? user.matches[i].player2 : user.matches[i].player1,
+        winner: user.matches[i].winner,
+        date: user.matches[i].date,
+      });
+    }
+    return ret;
   }
 }
