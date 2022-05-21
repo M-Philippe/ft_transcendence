@@ -37,8 +37,8 @@ export class UsersService {
 
   async onApplicationBootstrap() {
     // We create sudo user [id: 0]
-    const checkSudoExist = await this.usersRepository.findOne(1);
-    if (checkSudoExist !== undefined)
+    const checkSudoExist = await this.usersRepository.findOne({where: { id: 0}});
+    if (checkSudoExist !== null)
       return;
     try {
       const sudo = await this.createUserLocal({ name: "sudo", password: "sudo" });
@@ -343,12 +343,12 @@ export class UsersService {
     let userOne;
     let userTwo;
     try {
-      userOne = await this.usersRepository.findOne(requesterId);
-      userTwo = await this.usersRepository.findOne(requesteeId);
+      userOne = await this.usersRepository.findOne({where: {id: requesterId}});
+      userTwo = await this.usersRepository.findOne({where: {id: requesteeId}});
     } catch (error) {
       return;
     }
-    if (userOne === undefined || userTwo === undefined)
+    if ((userOne === null || userTwo === null) || (userOne === undefined || userTwo === undefined))
       return;
     if (userOne.userAlert.socket === "" || userTwo.userAlert.socket === "")
       return;
@@ -477,7 +477,7 @@ export class UsersService {
           .from(User, "user")
           .where("id42 = :id", { id: userToCreate.id42 })
           .getOne();
-    if (user !== undefined) {
+    if (user !== null && user !== undefined) {
       user.online = true;
       user.inGame = false;
       user.userAlert = {socket: "", alert: []};
@@ -507,8 +507,8 @@ export class UsersService {
   }
 
   async changeUsername42(idUser: number, newName: string) {
-    let user = await this.usersRepository.findOne(idUser);
-    if (user === undefined)
+    let user = await this.usersRepository.findOne({where: {id: idUser}});
+    if (user === null || user === undefined)
       return ({ message: "Error intern." });
     if (user.hasAlreadyChanged42Name) {
       return ({ message: "You already have changed your username" });
@@ -545,8 +545,8 @@ export class UsersService {
   }
 
   async updateAvatar(idUser: number, avatar: string) {
-    let user = await this.usersRepository.findOne(idUser);
-    if (user === undefined)
+    let user = await this.usersRepository.findOne({ where: {id: idUser}});
+    if (user === null || user === undefined)
       return (undefined);
     await getConnection()
       .createQueryBuilder()
@@ -578,7 +578,8 @@ export class UsersService {
   }
 
   async findOne(id: number) {
-    const user = await this.usersRepository.findOne(id, { relations: ["matches", "listChat"] });
+    //const user = await this.usersRepository.findOne(id, { relations: ["matches", "listChat"] });
+    const user = await this.usersRepository.findOne({ where: {id: id}, relations: ["matches", "listChat"]});//id, { relations: ["matches", "listChat"] });
     if (user) {
       return user;
     }
@@ -590,7 +591,8 @@ export class UsersService {
   }
 
   async findOneByName(name: string) {
-    const user = await this.usersRepository.findOne({name}, { relations: ["matches", "listChat", "requestedRelationships", "requesteeRelationships"] });
+    //const user = await this.usersRepository.findOne({name}, { relations: ["matches", "listChat", "requestedRelationships", "requesteeRelationships"] });
+    const user = await this.usersRepository.findOne({ where: {name: name}, relations: ["matches", "listChat", "requestedRelationships", "requesteeRelationships"] });
     if (user) {
       return user;
     }
@@ -602,7 +604,8 @@ export class UsersService {
   }
 
   async getListChatUser(name: string) {
-    const user = await this.usersRepository.findOne({name}, { relations: ["matches", "listChat"]});
+    //const user = await this.usersRepository.findOne({name}, { relations: ["matches", "listChat"]});
+    const user = await this.usersRepository.findOne({ where: {name: name}, relations: ["matches", "listChat"]});
     if (user) {
       return JSON.stringify(user.listChat);
     }
