@@ -7,6 +7,7 @@ import chooseRelationshipButton from "./chooseRelationshipButtons";
 import { connect } from "react-redux";
 import { storeState } from "../../store/types";
 import { Link } from "react-router-dom";
+import Button from '@mui/material/Button';
 
 function assembleAchievements(achievements: any[]) {
   let retJsx = [];
@@ -81,7 +82,7 @@ function UserView(props: {username: string}) {
   if (load) {
     return (
       <div>
-        <p>Name: {data.name}</p>
+        <b><p>{data.name}</p></b>
         <img id = "avatarMyProfil" src={data.avatar} alt="Avatar"/>
         {
           data.online &&
@@ -89,9 +90,9 @@ function UserView(props: {username: string}) {
         }
         {
           data.online && !showBox &&
-          <button className="action-button shadow animate green" onClick={() => {
+          <Button variant="contained" color="success" onClick={() => {
             setShowBox(true);
-          }}>Invite to play a game!</button>
+          }}>Invite to play a game!</Button>
         }
         {
           data.online && showBox &&
@@ -109,7 +110,7 @@ function UserView(props: {username: string}) {
         }
         {chooseRelationshipButton(data.relationshipStatus, data.name, setRefresh)}
         {data.name !== "" && <RelationshipsDisplay nameProfile={data.name} />}
-        <Link to="/matchHistory" state={{username: username}}>Match History</Link>
+  			<Button component={Link} to="/matchHistory" variant="contained" state={{username: username}}>Match History</Button>
       </div>
     )
   }

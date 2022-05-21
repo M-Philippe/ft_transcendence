@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { API_USER_CHANGE_PASSWORD, DISCONNECTING_URL } from "../../urlConstString";
+import Button from '@mui/material/Button';
 
 interface UserInput {
 	currentPassword: string,
@@ -58,7 +59,7 @@ const handleChange = (event: React.ChangeEvent<HTMLInputElement>, fieldToUpdate:
 					<input type="password" onChange={(event) => {handleChange(event, "confirmNewPassword")}}/>
 			</form>
 			<br />
-			<button id = "ChangePassForm" className="action-button shadow animate green" onClick={handleSubmit}>Change my password</button>
+			<Button id = "ChangePassForm" variant="contained" color="success"  onClick={handleSubmit}>Change my password</Button>
 			<br />
 		</div>
 	)

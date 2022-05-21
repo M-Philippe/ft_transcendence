@@ -1,5 +1,6 @@
 import { storeState } from '../../store/types';
 import {connect} from "react-redux";
+import Avatar from '@mui/material/Avatar';
 
 function LoginInfos(props: any) {
 //console.log("AVATAR: ", props.user.avatar);
@@ -7,13 +8,12 @@ function LoginInfos(props: any) {
       return (
         <div>
           {/* <p className="login">Hello {props.user.username}</p> */}
-          <img id = "avatarHeader" className="imgHeader" src={props.user.avatar} alt="avatarUser" />
+				<Avatar alt="avatar" src={props.user.avatar} />
+          {/* <img id = "avatarHeader" className="imgHeader" src={props.user.avatar} alt="avatarUser" /> */}
       </div>
       );
     }
-    return (
-      <p className="login">FT_TRANSCENDENCE</p>
-    );
+    return (null);
 }
 
 function mapStateToProps(state: storeState) {

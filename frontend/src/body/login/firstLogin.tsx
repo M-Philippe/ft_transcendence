@@ -83,7 +83,7 @@ export default function FirstLogin(props: any) {
 		<div>
 			{
 				errorMessage.length > 0 &&
-				<p style={{color:"red"}} >{errorMessage}</p>
+				<p className="errorMessage" >{errorMessage}</p>
 			}
 			<form id="className" onSubmit={(event) => { handleSubmit(event) }}>
 				<label>

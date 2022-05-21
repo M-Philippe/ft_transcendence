@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { API_USER_INVITE_MATCH, DISCONNECTING_URL } from "../../urlConstString";
+import Button from '@mui/material/Button';
 
 interface rules {
   scoreMax: number,
@@ -45,7 +46,7 @@ export default function InvitationGameQueryBox(props: { nameProfile: string, set
           <option value="jungle">Jungle</option>
         </select>
 				<br /><br />
-				<button className="action-button shadow animate green" onClick={() => {
+				<Button variant="contained" color="success" onClick={() => {
 					let headers = new Headers();
 					headers.append("Content-Type", "application/json");
 					fetch(API_USER_INVITE_MATCH, {
@@ -65,8 +66,9 @@ export default function InvitationGameQueryBox(props: { nameProfile: string, set
 					props.setShowBox(false);
 				}}>
 					Invite
-				</button>
-				<button className="action-button shadow animate red" onClick={() => { props.setShowBox(false); }}>Cancel</button>
+			 </Button>
+        
+				<Button variant="contained" color="error" onClick={() => { props.setShowBox(false); }}>Cancel</Button>
 		</div>
 	);
 }

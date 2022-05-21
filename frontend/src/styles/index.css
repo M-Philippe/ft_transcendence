@@ -7,32 +7,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
-*/
-
-/* html, body {
-  height: 100%;
-  margin: 0px;
-} */
-
-
-/* .connectButton {
-  background-color: rgb(49, 49, 175);
-  color: white;
-} */
-
-/* *{
-  overflow-y: hidden;
-  overflow-x: hidden;
-} */
-
 #App {
-  background: linear-gradient(-45deg, #ee7752, #c2839b, #23a6d5, #23d5ab);
+  background: linear-gradient(-45deg, #b95c40, #c2839b, #23a6d5, #23d5ab);
 	background-size: 400% 400%;
 	animation: gradient 30s ease infinite;
+  min-height: 100vh;
+  min-width: 100vw;
+  max-height: 100vh;
+  max-width: 100vw;
+  overflow-y: hidden;
+  overflow-x: hidden;
 }
 /* Background animation : */
 @keyframes gradient {
@@ -47,18 +31,47 @@ body {
 	}
 }
 
+/* p {
+  color: white;
+} */
+
+label {
+  color: white;
+}
+
+.userAlertP{
+  color: black;
+}
 
 /*---------- HEADER ----------*/
-
+/* 
 header {
   display: flex;
   align-items: center;
   text-align: center;
   padding: 5px 10px;
+  color:antiquewhite;
+  background: linear-gradient(rgba(30, 30, 31, 0.616), rgba(255, 255, 255, 0));
+} */
+
+#navBar {
+  /* color:antiquewhite; */
   background: linear-gradient(rgba(30, 30, 31, 0.616), rgba(255, 255, 255, 0));
 }
 
-header #LogInfoAvatAlert {
+
+/* .reductLinkNavbar {
+  text-decoration:none;
+  color: black;
+} */
+
+/* .ButtonLinkNavbar  {
+  text-decoration:none;
+  color: rgb(255, 255, 255);
+} */
+
+
+/* header #LogInfoAvatAlert {
   display: flex;
 }
 
@@ -81,7 +94,7 @@ header li {
 nav a {
   text-decoration: none;
   color: #0e151d;
-  padding: 10px 20px;
+  padding: 10px 3vw;
   border-radius: 5px;
   background: #fff;
   transition: all ease-in-out 0.2s;
@@ -102,13 +115,13 @@ nav .active {
 #disconnectButton
 {
   background: #ce1414;
-}
+} */
 
 /*---------- BODY ----------*/
 
 #body {
   display: flex;
-  height: 88.5vh;
+  height: 89.5vh;
   text-align: center;
   justify-content:space-evenly;
   align-items: center;
@@ -128,16 +141,18 @@ nav .active {
 
 footer {
   bottom: 0;
-  /* min-height: 5vh; */
-  background-color: #ffffff00;
+  min-height: 2vh;
+  max-height: 2vh;
+  background: linear-gradient(rgba(255, 255, 255, 0), rgba(30, 30, 31, 0.616));
   text-align: center;
 }
 
-#chatListeDiv
+#chatListStack
 {
   overflow:hidden;
   overflow-y: scroll;
-  height: 87vh;
+  max-height: 50vh;
+  /* padding-top: 1%; */
 }
 
 /* ------ Ranking table ------ */
@@ -146,7 +161,7 @@ footer {
   overflow:hidden;
   overflow-y: scroll;
   height: 87vh;
-  /* padding-top: 1%; */
+
 }
 
 table {
@@ -155,11 +170,8 @@ table {
   width: auto;
   min-width: 30vw;
   margin: auto;
-  /* overflow-y: auto; */
   text-align: left;
   overflow-y:scroll;
-  /* display:block; */
-  /* min-width: 70vw; */
   max-height: 1vh;
   padding-top: 1%;
 }
@@ -169,47 +181,61 @@ th {
   padding-bottom: 1%;
 }
 
+/* #AvatNameRanking {
+  display: inline-block;
+  white-space: nowrap;
+} */
+
 caption {
   padding-top: 15%;
+  color:white;
 }
 
 /* ------ IMAGES ------ */
 
 #avatarMyProfil {
   border-radius: 8px;
-  width: 13vw;
+  width: 20w;
   height: 24vh;
+  min-width: 200px;
+  min-height: 200px;
 }
-
+/* 
 #avatarHeader {
   border-radius: 8px;
   max-width: 5vw;
   min-width: 6vw;
   height: 9vh;
-}
+} */
 
 #pongImgPlayMenu {
-  width: 20vw;
+  width: 18vw;
   height: 25vh;
+  min-width: 200px;
+  min-height: 200px;
 }
 
 #RanktropheeImg {
-  width: 10vw;
-  height: 20vh;
+	height: 15vh;
+	width: 10vw;
+  min-width: 170px;
+  max-width: 200px;
+  min-height: 200px;
+
 }
 
-#alert {
+/* #alert {
   width: 5vw;
   height: 9vh;
-}
+} */
 
-#miniAvatRanking {
+/* #miniAvatRanking {
     padding-right: 5%;
     min-height: 5vh;
     max-height: 6vh;
     min-width: 5vw;
     max-width: 5vw;
-}
+} */
 
 /* issue when try to put as normal image idk why so i use a button*/
 #bulleButtonTricks {
@@ -218,9 +244,16 @@ caption {
 	background-image: url('../styles/medias/bulle.png');
 	height: 30vh;
 	width: 15vw;
+  min-width: 200px;
+  min-height: 200px;
 	background-size: 100% 100%;
 }
 
+#board {
+  height: 80vh;
+  width: 70vw;
+  border-radius: 15px;
+}
 
 /* MEDIA QUERIES TO BE MORE RESPONSIVE */
 @media all and (min-width: 550px) {
@@ -231,18 +264,16 @@ caption {
 
 @media all and (max-height: 600px) {
   * {
-    overflow-y: auto;
+    overflow-y: scroll;
   }
 
-  img {
+  /* img {
     min-height: 5vh;
-  }
+  } */
 
-  #RanktropheeImg {
+  /* #RanktropheeImg {
     min-height: 25vh;
-  }
-  
-
+  } */
 }
 
   @media all and (max-width: 920px) {
@@ -256,10 +287,10 @@ caption {
     min-width: 75vw;
   }
 
-  header { 
+  /* header { 
     justify-content: space-around;
     height: auto;
-  }
+  } */
 
   #chat {
     min-height: 70vh;
@@ -269,27 +300,33 @@ caption {
     min-height: 50vh;
   }
 
-  .imgHeader {
+  /* .imgHeader {
     margin: 5px;
     min-width: 60px;
     min-height: 60px;
-  }
-
+  } */
+/* 
   img {
     min-width: 25%;
-  }
+  } */
 
 }
 
 @media all and (max-width: 550px) {
-  header {
+  
+  #App {
+    overflow-y: scroll;
+  }
+
+  /* header {
     flex-direction: column;
   }
+  
 
   header .action-button {
     min-width: 40vw;
   }
-  
+   */
   #body {
     margin-top: 10%;
     flex-direction: column;
@@ -315,7 +352,7 @@ caption {
     padding-top: 5vw
   }
 
-  .imgHeader {
+  /* .imgHeader {
     padding-right: 3vw;
     min-width: 100px;
     min-height: 100px;
@@ -324,25 +361,28 @@ caption {
   img {
     min-width: 45%;
     min-height: 6vh;
-  }
+  } */
 
-#pongImgPlayMenu {
+/* #pongImgPlayMenu {
   min-width: 100%;
-}
+} */
 
-#RanktropheeImg {
+/* #RanktropheeImg {
   min-height: 40vh;
-}
+} */
 
-#avatarHeader {
+/* #avatarHeader {
   min-width: 18vw;
-}
+} */
 
 }
 
-.errorMessage {
+#errorMessage {
   color: red;
   font-size: x-large;
+  font-family:Verdana, Geneva, Tahoma, sans-serif;
+  /* background-color:transparent; */
+  /* margin: auto; */
   /* background-color: white; */
   /* border: solid black 1px; */
   /* max-width: fit-content; */

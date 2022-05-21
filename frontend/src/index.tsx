@@ -23,7 +23,7 @@ function App () {
           <Chat />
         }
       </div>
-        <Footer />
+        {/* <Footer /> */}
       </div>
     </Router>
   );

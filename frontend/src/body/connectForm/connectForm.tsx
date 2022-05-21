@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 import { userState } from '../../store/userSlice/userSliceTypes';
 import { CONNECTION_SERVER_APPROVED, UPDATE_USERNAME } from '../../store/userSlice/userSliceActionTypes';
 import { API_AUTH_42_LOGIN, API_USER_CONNECT } from '../../urlConstString';
+import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
 
 interface ConnectFormProps {
   user: userState;
@@ -53,7 +55,7 @@ function ConnectForm(props: ConnectFormProps) {
     <div>
     {
       errorMessage !== "" &&
-      <p>{errorMessage}</p>
+      <p className="errorMessage">{errorMessage}</p>
     }
     <form id="className" onSubmit={(event) => { handleSubmit(event) }}>
       <label>

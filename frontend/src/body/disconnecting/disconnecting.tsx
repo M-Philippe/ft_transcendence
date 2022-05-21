@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
 import store from "../../store/store";
 import { DISCONNECT_USER } from "../../store/userSlice/userSliceActionTypes";
 import { API_USER_DISCONNECT, BASE_URL } from "../../urlConstString";
+import { Navigate } from "react-router-dom";
 
 export default function Disconnecting(props: any) {
 	const [leaving, setLeaving] = useState(false);
@@ -24,8 +24,9 @@ export default function Disconnecting(props: any) {
 		});
 	} 
 	if (leaving) {
-		window.location.assign(BASE_URL);
-		return(<p>Redirecting to /</p>);
+			return(<Navigate to={BASE_URL} />
+		);
 	}
-	return (<p>LEAVING THE SITE</p>);
+		return (<Navigate to={BASE_URL} />
+	);
 }

@@ -10,6 +10,9 @@ import UserRelationships from "./userRelationships";
 import ChangePassword from './changePassword';
 import { API_USER_2FA_ENABLED, DISCONNECTING_URL } from "../../urlConstString";
 import { Link } from "react-router-dom";
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
 
 interface UserProfileProps {
 	user: userState;
@@ -47,30 +50,33 @@ function UserProfile(props: UserProfileProps) {
 		);
 
 		return (
-		<div>
+		<Box sx={{ width: '100%', minWidth: '400px'}}>
 			<p><b>{props.user.username}</b></p>
 			<img id = "avatarMyProfil" src={props.user.avatar} alt="avatarUser" /><br /><br />
 			<AvatarUpload />
-			<button id ="ChangePasswButton" className="action-button shadow animate blue" onClick={() => {setShowChangePassword(true); 
+      		<Stack margin="auto" sx={{ width: '35%', }} spacing={2}>
+			<Button id ="ChangePasswButton" variant="contained" onClick={() => {setShowChangePassword(true); 
 				document.getElementById('ChangePasswButton')?.remove();
 				document.getElementById('avatar')?.setAttribute('style', 'height:20%');
 				document.getElementById('avatar')?.setAttribute('style', 'width:20%')}}
-				>Change my password</button><br />
+				>Change my password</Button>
 			{
 				showChangePassword &&
 				<ChangePassword />
 			}
 			{
 				status2fa &&
-				<button className="action-button shadow animate blue" onClick={() => { disable2fa(); }}>Disable 2fa</button>
+				<Button variant="contained" onClick={() => { disable2fa(); }}>Disable 2fa</Button>
 			}
 			{
 				!status2fa &&
-				<button className="action-button shadow animate blue" onClick={() => { setRedirect2fa(true); }}>Enable 2fa</button>
+				<Button variant="contained" onClick={() => { setRedirect2fa(true); }}>Enable 2fa</Button>
 			}
 			<UserRelationships />
-			<Link to="/matchHistory" state={{username: props.user.username}}>Match History</Link>
-		</div>
+			<Button component={Link} to="/matchHistory" variant="contained" state={{username: props.user.username}}>Match History</Button>
+
+			</Stack>
+    	</Box>
 	);
 }
 

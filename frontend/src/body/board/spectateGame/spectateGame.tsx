@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
 import { useCanvas } from "../boardHooks";
+import Button from '@mui/material/Button';
 
 interface SpectateGameProps {
 	socket: Socket;
@@ -55,7 +56,7 @@ export default function SpectateGame(props: SpectateGameProps) {
 	return (
 		<div>
 			<p>Choose a game to spectate :</p>
-			<button className="action-button shadow animate green" onClick={() => { props.socket.emit("fetchListGame"); }}>Refresh</button>
+			<Button variant="contained" onClick={() => { props.socket.emit("fetchListGame"); }}>Refresh</Button>
 			{listGame.length !== 0 &&
 				listGame.map((element: ListGame, index: number) => (
 					<div key={index}>

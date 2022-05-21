@@ -3,6 +3,10 @@ import { connect } from "react-redux";
 import { storeState } from "../../store/types";
 import { userState } from "../../store/userSlice/userSliceTypes";
 import { API_AUTH_42_LOGIN, API_AUTH_LOCAL_REGISTER, BASE_URL, CONNECT_FORM_URL } from "../../urlConstString";
+import Button from '@mui/material/Button';
+// import TextField from '@mui/material/TextField';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
 
 interface UserInput {
 	username: string,
@@ -50,20 +54,33 @@ function Register(props: {user: userState}) {
 		});
 	}
 
+	const paperStyle={padding :20,height:'45vh',width:280, margin:"20px auto", backgroundColor:'transparent'}
+	const btnstyle={margin:'8px 0'}
+  
 	return (
 		<section>
-			{ errorMessage !== "" && <p style={{color: "red"}}>{errorMessage}</p> }
-			<p>Register :</p>
-			<form>
+        <Grid>
+            <Paper elevation={0} style={paperStyle}>
+                <Grid >
+                     {/* <Avatar style={avatarStyle}><LockOutlinedIcon/></Avatar> */}
+                    <h2>Register</h2>
+                </Grid>
+				{ errorMessage !== "" && <p className="errorMessage" >{errorMessage}</p> }
+				<form>
+                	{/* <TextField label='Username' placeholder='Enter username' fullWidth required /><br /><br /> */}
+                	{/* <TextField label='Password' placeholder='Enter password' type='password' fullWidth required /> */}
 				<label>Username</label><br />
 					<input type="text" onChange={(event) => {handleChange(event ,"username")}}/><br /><br />
 				<label>Password</label><br />
 					<input type="password" onChange={(event) => {handleChange(event, "password")}}/><br /><br />
 				<label>Confirm Password</label><br />
-					<input type="password" onChange={(event) => {handleChange(event, "confirmPassword")}}/>
-			</form><br />
-			<button onClick={handleSubmit}>Register</button> <br /><br />
-			<a href={API_AUTH_42_LOGIN}>REGISTER WITH 42</a>
+					<input type="password" onChange={(event) => {handleChange(event, "confirmPassword")}}/> <br /><br />
+				</form><br />
+                <Button type='submit' color='primary' variant="contained" style={btnstyle} fullWidth onClick={handleSubmit}>Register</Button><br />
+				<Button variant="contained" href={API_AUTH_42_LOGIN} style={btnstyle} fullWidth >LOGIN WITH 42</Button>
+
+		</Paper>
+        </Grid>
 		</section>
 	);
 }

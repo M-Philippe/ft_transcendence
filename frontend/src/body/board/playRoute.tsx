@@ -6,6 +6,7 @@ import { Socket } from 'socket.io-client';
 import { SocketHandler } from './socketHandler';
 import SpectateGame from './spectateGame/spectateGame';
 import pong from '../../styles/medias/ping-pong.png';
+import Button from '@mui/material/Button';
 
 interface rules {
   scoreMax: number,
@@ -88,8 +89,8 @@ function PlayRoute(props: any) {
           <option value="jungle">Jungle</option>
         </select>
         <br /><br />
-        <button className="action-button shadow animate green" onClick={() => setInGame(true)}>PLAY</button><br /><br />
-        <button className="action-button shadow animate blue" onClick={() => setSpectate(true)}>SPECTATE</button>
+        <Button color='success' variant="contained" onClick={() => setInGame(true)}>PLAY</Button><br /><br />
+        <Button variant="contained" onClick={() => setSpectate(true)}>SPECTATE</Button>
       </div>
     );
 }

@@ -11,6 +11,7 @@ import { DefaultEventsMap } from '@socket.io/component-emitter/index';
 import { SocketHandler } from './socketHandler';
 import { ChatConnected } from './chatConnected/chatConnected';
 
+
 interface IChatProps {
   isConnected: boolean,
   username: string,
@@ -41,7 +42,7 @@ function Chat(props: IChatProps) {
           />
         }
         {socket !== undefined &&
-          <div className= "tstWrap">
+          <div >
             <ChatConnected
               name={props.username}
               socket={socket}

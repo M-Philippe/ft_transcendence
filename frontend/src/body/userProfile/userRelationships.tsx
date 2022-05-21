@@ -29,7 +29,7 @@ function renderListRelationships(listRelationships: listRelationships[]) {
 	let pathLink = "/userView/:";
 	let countKeys: number = 0;
 	if (acceptedFriendships.length > 0) {
-		ret.push(<p key={countKeys++} style={{border: "1px solid black"}}>FRIENDS</p>);
+		ret.push(<p key={countKeys++}>FRIENDS :</p>);
 		for (let i = 0; i < acceptedFriendships.length; i++) {
 			ret.push(<Link key={countKeys++} to={pathLink + acceptedFriendships[i]}>{acceptedFriendships[i]}</Link>);
 			ret.push(<br key={countKeys++}/>);

@@ -4,7 +4,12 @@ import { connect } from 'react-redux';
 import { userState } from '../../store/userSlice/userSliceTypes';
 import { API_AUTH_42_LOGIN, API_AUTH_LOCAL_LOGIN } from '../../urlConstString';
 import store from '../../store/store';
-import { Navigate } from 'react-router-dom';
+import { Navigate, NavLink } from 'react-router-dom';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+// import Alert from '@mui/material/Alert';
+// import TextField from '@mui/material/TextField';
 
 interface ConnectFormProps {
   user: userState;
@@ -61,21 +66,36 @@ function LoginForm(props: ConnectFormProps) {
 		return (<div><p>You're already connected</p></div>);
 	}
 
-  return (
+	const paperStyle={padding :20,height:'45vh',width:280, margin:"20px auto", backgroundColor:'transparent'}
+	const btnstyle={margin:'8px 0'}
+
+	return (
     <div>
-    {
-      errorMessage !== "" &&
-      <p className='errorMessage'>{errorMessage}</p>
-    }
-    <form id="className">
-      <label>Username</label><br />
-        <input type="text" onChange={(event) => {handleChange(event, "username") }} /><br />
-			<label>Password</label><br />
-				<input type="password" onChange={(event) => {handleChange(event, "password")} }/>
-		</form><br />
-		<button onClick={handleSubmit}>Login</button>
-		<br /><br />
-    <a href={API_AUTH_42_LOGIN}>LOGIN WITH 42</a>
+        <Grid>
+            <Paper elevation={0} style={paperStyle}>
+                <Grid >
+                     {/* <Avatar style={avatarStyle}><LockOutlinedIcon/></Avatar> */}
+                    <h2>Sign In</h2>
+                </Grid>
+					{
+						errorMessage !== "" &&
+						<p id='errorMessage'>{errorMessage}</p>
+					}
+					<form>
+					<label>Username</label><br />
+					<input  type="text" onChange={(event) => {handleChange(event, "username") }} /><br /><br />
+                	{/* <TextField label='Username' placeholder='Enter username' fullWidth required /><br /><br /> */}
+					<label>Password</label><br />
+					<input  type="password" onChange={(event) => {handleChange(event, "password")} }/><br /><br />
+                	{/* <TextField label='Password' placeholder='Enter password' type='password' fullWidth required /> */}
+					<p>Not yet registered ? <br /><NavLink to="/register"> create an account </NavLink> </p>
+					</form><br />
+
+                <Button type='submit' color='primary' variant="contained" style={btnstyle} fullWidth onClick={handleSubmit}>Login</Button><br />
+				<Button variant="contained" href={API_AUTH_42_LOGIN} style={btnstyle} fullWidth >LOGIN WITH 42</Button>
+
+		</Paper>
+        </Grid>
     </div>
   );
 }
