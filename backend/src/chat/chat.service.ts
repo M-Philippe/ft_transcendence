@@ -45,7 +45,7 @@ export class ChatService {
     chat.usersInChat = [];
     chat.roomName = "global";
     // put superAdmin in owner.
-    chat.owners = [];
+    chat.owners = [1];
     chat.admins = [];
     chat.usersInfos = [];
     chat.bannedUsers = [];
@@ -82,10 +82,28 @@ export class ChatService {
     return (chat);
   }
 
+  async propagateMute(userWhoMute: User, userToMute: User) {
+    for (let i = 0; i < userWhoMute.listChat.length; i++) {
+      if (
+        (userWhoMute.listChat[i].usersInfos[getIndexUser(userWhoMute.listChat[i].usersInfos, userWhoMute.id)].persoMutedUsers.find(o => o === userWhoMute.id) === undefined)
+        && (userWhoMute.listChat[i].admins.find(o => o === userToMute.id) === undefined)) {
+          userWhoMute.listChat[i].usersInfos[getIndexUser(userWhoMute.listChat[i].usersInfos, userWhoMute.id)].persoMutedUsers.push(userToMute.id);
+        try {
+          await this.chatRepository.save(userWhoMute.listChat[i]);
+        } catch (error) {
+          return;
+        }
+        console.error("PROPAGATED");
+      }
+    }
+  }
+
   async classicUserMuteCommand(chat: Chat, user: User, userToMute: User) {
     chat.usersInfos[getIndexUser(chat.usersInfos, user.id)].persoMutedUsers.push(userToMute.id);
     if (chat.admins.indexOf(userToMute.id) >= 0)
       return;
+    // propagateToAllChat.
+    this.propagateMute(user, userToMute);
     try {
       await this.chatRepository.save(chat);
     } catch (error) {
@@ -489,7 +507,7 @@ export class ChatService {
     chat.usersInfos.push({
       userId: userToInvite.id,
       hasProvidedPassword: false,
-      persoMutedUsers: [],
+      persoMutedUsers: globalChat.usersInfos[getIndexUser(globalChat.usersInfos, userToInvite.id)].persoMutedUsers,
       socket: socketToEmit.socket,
     });
     this.addMessageInArray(chat, userInit.name, INVITE_MESSAGE + " " + userToInvite.name);
@@ -897,9 +915,7 @@ export class ChatService {
     chat.messages.push(data.message);
     try {
       await this.chatRepository.save(chat);
-    } catch (error) {
-      // Error handler
-    }
+    } catch (error) {}
     return chat;
   }
 
@@ -925,7 +941,7 @@ export class ChatService {
     }
     if (userInvited === undefined)
       return;
-    if (getIndexUser(initialChat.usersInfos, userInvited.id)
+    if (getIndexUser(initialChat.usersInfos, userInvited.id) >= 0
     && initialChat.usersInfos[getIndexUser(initialChat.usersInfos, userInvited.id)].persoMutedUsers.indexOf(userInit.id) >= 0)
       return;
     let firstSocket = initialChat.usersInfos[getIndexUser(initialChat.usersInfos, userInit.id)].socket;
@@ -1021,10 +1037,15 @@ export class ChatService {
   }
 
   async suscribeToChat(user: User, chat: Chat) {
+    let globalChat = await this.chatRepository.findOne(1);
+    if (globalChat === undefined)
+      return;
+    if (!isUserPresent(globalChat.usersInfos, user.id))
+      return;
     chat.usersInfos.push({
       userId: user.id,
       hasProvidedPassword: false,
-      persoMutedUsers: [],
+      persoMutedUsers: globalChat.usersInfos[getIndexUser(globalChat.usersInfos, user.id)].persoMutedUsers,
       socket: "",
     });
     chat.usersInChat.push(user);
@@ -1036,11 +1057,6 @@ export class ChatService {
     }
     this.chatGateway.sendToAllSocketsIntoChat(chat);
     // We pull user's socket from global to update his chat.
-    let globalChat = await this.chatRepository.findOne(1);
-    if (globalChat === undefined)
-      return;
-    if (!isUserPresent(globalChat.usersInfos, user.id))
-      return;
     let userIdToFind = user.id;
     let socketToEmit = globalChat.usersInfos.find(o => o.userId === userIdToFind);
     if (socketToEmit === undefined)

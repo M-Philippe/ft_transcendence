@@ -37,8 +37,8 @@ export class UsersService {
 
   async onApplicationBootstrap() {
     // We create sudo user [id: 0]
-    const checkSudoExist = await this.usersRepository.findOne({where: { id: 0}});
-    if (checkSudoExist !== null)
+    const checkSudoExist = await this.usersRepository.findOne({where: { id: 1}});
+    if (checkSudoExist !== null && checkSudoExist !== undefined)
       return;
     try {
       const sudo = await this.createUserLocal({ name: "sudo", password: "sudo" });
