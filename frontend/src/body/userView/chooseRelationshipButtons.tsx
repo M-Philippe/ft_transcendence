@@ -47,13 +47,13 @@ function assembleBlockButton(nameUserFetched: string, countKeys: number, setRefr
         else if (response.status === 201)
           setRefresh(Date.now());
       })
-      }}>Block</Button>
+      }}>Block this user</Button>
   );
 }
 
 function assembleAddFriendButton(nameUserFetched: string, countKeys: number, setRefresh: React.Dispatch<SetStateAction<number>>) {
   return (
-    <Button variant="contained"  key={countKeys} onClick={() => {
+    <Button variant="contained" key={countKeys} onClick={() => {
       // Send friend request to back.
       let headers = new Headers();
       headers.append("Content-Type", "application/json");
@@ -72,7 +72,7 @@ function assembleAddFriendButton(nameUserFetched: string, countKeys: number, set
           setRefresh(Date.now());
       });
       }}>
-      Add to my friends
+      Add to friends
     </Button>
   );
 }

@@ -9,7 +9,7 @@ interface rules {
 }
 
 
-export default function InvitationGameQueryBox(props: { nameProfile: string, setShowBox: React.Dispatch<React.SetStateAction<boolean>> }) {
+export default function InvitationGameQueryBox(props: { nameProfile: string }) {
 	const [rules, setRules] = useState<rules>({
     scoreMax: 3,
     powerUp: true,
@@ -18,7 +18,7 @@ export default function InvitationGameQueryBox(props: { nameProfile: string, set
 
 	return (
 		<div>
-			<p>Choose your rules to play against : {props.nameProfile}</p>
+			<h3>{props.nameProfile}</h3>
 			<p>Points</p>
         <select onChange={(event) => {
           setRules({...rules, scoreMax: parseInt(event.target.value)});
@@ -63,12 +63,12 @@ export default function InvitationGameQueryBox(props: { nameProfile: string, set
 						if (response.status === 403)
 							window.location.assign(DISCONNECTING_URL);
 					});
-					props.setShowBox(false);
+					// props.setShowBox(false);
 				}}>
 					Invite
 			 </Button>
         
-				<Button variant="contained" color="error" onClick={() => { props.setShowBox(false); }}>Cancel</Button>
+				{/* <Button variant="contained" color="error" onClick={() => { props.setShowBox(false); }}>Cancel</Button> */}
 		</div>
 	);
 }

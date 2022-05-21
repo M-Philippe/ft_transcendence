@@ -51,15 +51,15 @@ const handleChange = (event: React.ChangeEvent<HTMLInputElement>, fieldToUpdate:
 				<p className="errorMessage">{errorMessage}</p>
 			}
 			<form>
-				<label>Current Password</label><br />
-					<input type="password" onChange={(event) => {handleChange(event ,"currentPassword")}}/><br />
-				<label>New Password</label><br />
-					<input type="password" onChange={(event) => {handleChange(event, "newPassword")}}/><br />
-				<label>Confirm New Password</label><br />
+				<p>Current Password :</p>
+					<input type="password" onChange={(event) => {handleChange(event ,"currentPassword")}}/>
+				<p>New password :</p>
+					<input type="password" onChange={(event) => {handleChange(event, "newPassword")}}/>
+				<p>Confirm new password :</p>
 					<input type="password" onChange={(event) => {handleChange(event, "confirmNewPassword")}}/>
 			</form>
 			<br />
-			<Button id = "ChangePassForm" variant="contained" color="success"  onClick={handleSubmit}>Change my password</Button>
+			<Button id = "ChangePassForm" variant="contained" color="success"  onClick={handleSubmit}>Validate new password</Button>
 			<br />
 		</div>
 	)

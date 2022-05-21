@@ -31,9 +31,9 @@ body {
 	}
 }
 
-/* p {
+p {
   color: white;
-} */
+}
 
 label {
   color: white;
@@ -41,7 +41,7 @@ label {
 
 .userAlertP{
   color: black;
-}
+} 
 
 /*---------- HEADER ----------*/
 /* 
@@ -143,7 +143,7 @@ footer {
   bottom: 0;
   min-height: 2vh;
   max-height: 2vh;
-  background: linear-gradient(rgba(255, 255, 255, 0), rgba(30, 30, 31, 0.616));
+  /* background: linear-gradient(rgba(255, 255, 255, 0), rgba(30, 30, 31, 0.616)); */
   text-align: center;
 }
 
@@ -188,7 +188,6 @@ th {
 
 caption {
   padding-top: 15%;
-  color:white;
 }
 
 /* ------ IMAGES ------ */

@@ -8,6 +8,11 @@ import { connect } from "react-redux";
 import { storeState } from "../../store/types";
 import { Link } from "react-router-dom";
 import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Modal from '@mui/material/Modal';
+import * as React from 'react';
 
 function assembleAchievements(achievements: any[]) {
   let retJsx = [];
@@ -27,6 +32,10 @@ function UserView(props: {username: string}) {
   const url = API_USER_VIEW + username;
   const [refresh, setRefresh] = useState(0);
 
+  const [open, setOpen] = React.useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  
   const [data, setData] = useState({
       name: "",
       avatar: "",
@@ -38,7 +47,20 @@ function UserView(props: {username: string}) {
     }
   );
   const [load, setLoad] = useState(false);
-  const [showBox, setShowBox] = useState(false);
+  // const [showBox, setShowBox] = useState(false);
+
+  const style = {
+    position: 'absolute' as 'absolute',
+    top: '50%',
+    left: '40%',
+    transform: 'translate(-50%, -50%)',
+    width: 'auto',
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+  };
+
 
   useEffect(() => {
     const controller = new AbortController();
@@ -82,35 +104,53 @@ function UserView(props: {username: string}) {
   if (load) {
     return (
       <div>
-        <b><p>{data.name}</p></b>
+      <Stack direction="row" spacing={2}>
+			<Typography variant="h6" noWrap sx={{border: 1, borderRadius: 2, margin:'auto', fontFamily: 'monospace', 
+				fontWeight: 700, color: 'white', }}	>
+				&nbsp;{data.name}&nbsp;
+			</Typography>
+			</Stack><br />
         <img id = "avatarMyProfil" src={data.avatar} alt="Avatar"/>
         {
           data.online &&
           <b><p style={{color:"#00FF00"}}>ONLINE</p></b>
         }
         {
-          data.online && !showBox &&
-          <Button variant="contained" color="success" onClick={() => {
-            setShowBox(true);
-          }}>Invite to play a game!</Button>
+          data.online &&
+          <Button variant="contained" color="success" onClick={() => {handleOpen()}}>
+            Invite to play a game</Button>
         }
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <Typography id="modal-modal-title" variant="h6" component="h2">
+          Choose your rules to play against :   
+          </Typography>
+          <Typography id="modal-modal-description" sx={{ mt: 2, textAlign: 'center' }}>
         {
-          data.online && showBox &&
-          <InvitationGameQueryBox nameProfile={data.name} setShowBox={setShowBox} />
+          data.online &&
+          <InvitationGameQueryBox nameProfile={data.name} />
         }
+          </Typography>
+        </Box>
+      </Modal>
         <br />
         {
           !data.online &&
           <b><p style={{color:"#FF4500"}}>OFFLINE</p></b>
         }
-        <p>wonCount: {data.wonCount} &emsp;&emsp; lostCount: {data.lostCount}</p>
+        <p>Victory: {data.wonCount} &emsp;&emsp; Defeat: {data.lostCount}</p>
         {
           data.achievements.length !== 0 &&
           assembleAchievements(data.achievements)
         }
         {chooseRelationshipButton(data.relationshipStatus, data.name, setRefresh)}
         {data.name !== "" && <RelationshipsDisplay nameProfile={data.name} />}
-  			<Button component={Link} to="/matchHistory" variant="contained" state={{username: username}}>Match History</Button>
+  			<Button component={Link} to="/matchHistory" variant="contained" color="info" state={{username: username}}>Match History</Button>
       </div>
     )
   }

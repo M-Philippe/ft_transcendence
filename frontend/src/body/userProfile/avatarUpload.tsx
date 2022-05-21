@@ -51,10 +51,10 @@ function AvatarUpload(props: { user: userState, dispatch: DispatchType }) {
 			{/* <label>Upload your avatar (only jpg)</label><br />
 			<input type="file" accept=".jpg" name="avatar_upload" onChange={handleChange} />
 			<br /><br /> */}
-			<label>Modify your avatar</label><br /><br />
+			<label>Modify your avatar :</label><br /><br />
 			<label htmlFor="contained-button-file">
         <Input accept="image/*" id="contained-button-file" multiple type="file" onChange={handleChange} />
-			<Button variant="contained" component="span" >
+			<Button variant="contained" color="info" component="span" >
 			Browse...
 			</Button><br />
 		</label>

@@ -13,6 +13,9 @@ import { Link } from "react-router-dom";
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Modal from '@mui/material/Modal';
+import * as React from 'react';
 
 interface UserProfileProps {
 	user: userState;
@@ -21,8 +24,23 @@ interface UserProfileProps {
 
 function UserProfile(props: UserProfileProps) {
 	const [redirect2fa, setRedirect2fa] = useState(false);
-	const [showChangePassword, setShowChangePassword] = useState(false);
 	const [status2fa, setStatus2fa] = useState(false);
+
+	const [open, setOpen] = React.useState(false);
+	const handleOpen = () => setOpen(true);
+	const handleClose = () => setOpen(false);
+
+	const style = {
+	position: 'absolute' as 'absolute',
+	top: '50%',
+	left: '40%',
+	transform: 'translate(-50%, -50%)',
+	width: 'auto',
+	bgcolor: 'background.paper',
+	border: '2px solid #000',
+	boxShadow: 24,
+	p: 4,
+	};
 
 	useEffect(() => {
 		const controller = new AbortController();
@@ -51,19 +69,36 @@ function UserProfile(props: UserProfileProps) {
 
 		return (
 		<Box sx={{ width: '100%', minWidth: '400px'}}>
-			<p><b>{props.user.username}</b></p>
-			<img id = "avatarMyProfil" src={props.user.avatar} alt="avatarUser" /><br /><br />
+			<Stack direction="row" spacing={2}>
+			<Typography variant="h6" noWrap sx={{border: 1, borderRadius: 2, margin:'auto', fontFamily: 'monospace', 
+				fontWeight: 700, color: 'white', }}	>
+				&nbsp;{props.user.username}&nbsp;
+			</Typography>
+			</Stack><br />
+			<img id = "avatarMyProfil" src={props.user.avatar} alt="Avatar" /><br /><br />
 			<AvatarUpload />
       		<Stack margin="auto" sx={{ width: '35%', }} spacing={2}>
-			<Button id ="ChangePasswButton" variant="contained" onClick={() => {setShowChangePassword(true); 
-				document.getElementById('ChangePasswButton')?.remove();
-				document.getElementById('avatar')?.setAttribute('style', 'height:20%');
-				document.getElementById('avatar')?.setAttribute('style', 'width:20%')}}
-				>Change my password</Button>
+			<Button id ="ChangePasswButton" variant="contained" onClick={handleOpen}
+				>Change my password
+			</Button>
+
+			<Modal
+			open={open}
+			onClose={handleClose}
+			aria-labelledby="modal-modal-title"
+			aria-describedby="modal-modal-description"
+		>
+			<Box sx={style}>
+			<Typography id="modal-modal-title" variant="h5" sx={{borderBottom: 2}}>
+			Choose new password
+			</Typography>
+			<Typography id="modal-modal-description" sx={{ mt: 2, textAlign: 'center' }}>
 			{
-				showChangePassword &&
 				<ChangePassword />
 			}
+			</Typography>
+			</Box>
+			</Modal>
 			{
 				status2fa &&
 				<Button variant="contained" onClick={() => { disable2fa(); }}>Disable 2fa</Button>

@@ -5,7 +5,7 @@ import { sortingLostAscend, sortingLostDescend } from "./sortingLost";
 import { connect } from 'react-redux';
 import { storeState } from '../../../store/types';
 import { Link } from 'react-router-dom';
-import trophee from '../../../styles/medias/trophee.png';
+import trophee from '../../../styles/medias/podium.png';
 import Avatar from '@mui/material/Avatar'
 // import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
@@ -94,7 +94,6 @@ function RankingUsers(props: any) {
               data.map((element: any, index: number) => (
                 <tr key={index}>
                     <th style={props.username === element.name ? {background: "rgba(200, 200, 200, 0.6)"} : {}}>
-                    {/* <img id ="miniAvatRanking" src={element.avatar} onError={() =>{document.getElementById('miniAvatRanking')?.remove()}} alt="" /> */}
                     <Stack direction="row" spacing={2} >
                     <Avatar alt="avatar" src={element.avatar} />
                     <Link to={"/userView/:" + element.name}>{element.name}</Link>

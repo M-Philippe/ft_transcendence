@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import store from "../../store/store";
 import { CONNECTION_SERVER_APPROVED } from "../../store/userSlice/userSliceActionTypes";
 import { API_FIRST_CONNECTION_42_NO_CHANGE, API_SET_USERNAME_42, BASE_URL, DISCONNECTING_URL } from "../../urlConstString";
+import Button from '@mui/material/Button';
 
 export default function FirstLogin(props: any) {
 	const [errorMessage, setErrorMessage] = useState("");
@@ -85,21 +86,21 @@ export default function FirstLogin(props: any) {
 				errorMessage.length > 0 &&
 				<p className="errorMessage" >{errorMessage}</p>
 			}
+			<p>
+				Enter a new Username<br />
+				Your actual username is : <br /><br /><b>{generatedUsername}</b><br /><br />
+				Please note that this operation is unique,<br />
+				don't leave this page if you don't want this username.<br /><br />
+				Choose an other username :
+			</p>
 			<form id="className" onSubmit={(event) => { handleSubmit(event) }}>
 				<label>
-					Username
 					<input type="text" onChange={(event) => handleChange(event)} />
 				</label>
 			</form>
-			<p>
-				Enter a new Username<br />
-				Your actual generated username is {generatedUsername}<br />
-				Please note that this operation is unique and can't be done elsewhere,<br />
-				so don't leave this page if you don't want this username.
-			</p>
-			<button onClick={keepSameUsername}>
-				Click here to keep generated name
-			</button>
+			<br /><Button variant="contained" onClick={keepSameUsername}>
+				Keep my 42 name
+			</Button>
 		</div>
 	);
 }
