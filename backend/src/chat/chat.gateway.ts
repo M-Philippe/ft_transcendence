@@ -410,6 +410,36 @@ export class ChatGateway {
       this.sendToAllSocketsIntoChat(response);
   }
 
+  async commandGameOptions(command: string[], idChat: number, idUser: number, socketId: string, redirect: boolean) {
+    if (command.length !== 2) {
+      this.server.to(socketId).emit("errorMessage", {
+        errorMessage: "Needs 1 arguments"
+      });
+    }
+    let response;
+    try {
+      response = await this.chatService.commandGameOptions(idChat, idUser, command[1], redirect);
+    } catch (error) {
+      console.error(error);
+      this.server.to(socketId).emit("errorMessage", {
+        errorMessage: "Internal Server Error, please retry later."
+      });
+      return;
+    }
+    if (typeof(response) === "string") {
+      this.server.to(socketId).emit("errorMessage", {
+        errorMessage: response
+      });
+      return;
+    }
+    if (redirect) {
+      console.error("HAS SEND REDIRECTION");
+      this.server.to(socketId).emit("redirectToInviteProfile", {
+        usernameToRedirect: command[1]
+      });
+    }
+  }
+
   async wrapperCommand(command: string, idChat: number, idUser: number, socketId: string) {
     // add more than one space?
     const arrayCommand = command.split(" ");
@@ -458,6 +488,12 @@ export class ChatGateway {
         break;
       case "/removeAdmin":
         await this.commandRemoveAdmin(arrayCommand, idChat, idUser, socketId);
+        break;
+      case "/game":
+        await this.commandGameOptions(arrayCommand, idChat, idUser, socketId, false);
+        break;
+      case "/gameOptions":
+        await this.commandGameOptions(arrayCommand, idChat, idUser, socketId, true);
         break;
       default:
         this.server.to(socketId).emit("errorMessage", {

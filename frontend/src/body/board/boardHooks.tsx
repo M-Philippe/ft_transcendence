@@ -111,7 +111,7 @@ export function useCanvas() {
   useEffect(() => {
     const canvasObj = canvasRef.current;
     if (canvasObj == null) {
-      console.log("CanvasObj NULL");
+      //console.log("CanvasObj NULL");
       return;
     }
     const ctx = canvasObj.getContext("2d");

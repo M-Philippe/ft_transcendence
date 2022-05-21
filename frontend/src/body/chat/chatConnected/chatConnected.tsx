@@ -118,6 +118,7 @@ export function ChatConnected(props: PropsChatConnected) {
   props.socket.off("newChat");
   props.socket.off("receivedMessages");
   props.socket.off("errorMessage");
+  props.socket.off("redirectToInviteProfile");
 
   props.socket.on("removeChat", (...args: any) => {
     if (state.lstButtonsGreen.indexOf(args[0].oldIdChat) >= 0)
@@ -169,7 +170,14 @@ export function ChatConnected(props: PropsChatConnected) {
     setTimeout(() => {
       dispatch({ type: "SET_ERROR_DISPLAY_FALSE" });
     }, 5000);
-  })
+  });
+
+  props.socket.on("redirectToInviteProfile", (...args: any) => {
+    let h = window.history;
+    h.pushState({ "showGameOptions": true }, "", "/userView/:" + args[0].usernameToRedirect);
+    h.go(0);
+  });
+
 
   useEffect(() => {
     const controller = new AbortController();

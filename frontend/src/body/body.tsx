@@ -38,7 +38,7 @@ function Body(props: PropsBody) {
         <Route path="/matchHistory" element={ <MatchHistory /> } />
         { props.user.isConnected && <Route path="/connectionForm" element={<Navigate replace to="/" />} /> } 
         <Route path="/register" element={<Register />} />
-        <Route path="/userView/:username" element={<UserView />} />
+        <Route path="/userView/:username" element={<UserView showGameOptions={false}/>} />
         <Route path="/myProfile" element={<UserProfile />}/>
         <Route path="/loginFailed" element={<LoginFail />} />
         <Route path="/loginSuccess" element={<LoginSuccess />} />

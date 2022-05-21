@@ -13,6 +13,8 @@ import { isPasswordEmpty } from "./utils/chat.password.utils";
 import { comparePassword, encryptPasswordToStoreInDb } from "src/passwordEncryption/passwordEncryption";
 import { BANNED_MESSAGE, INVITE_MESSAGE, JOINED_MESSAGE, LACK_ADMIN_RIGHT, LACK_OWNER_RIGHT, MUTED_MESSAGE, QUIT_MESSAGE, RESOLVED_PASSWORD, SET_CHAT_PRIVATE, SET_CHAT_PUBLIC, SET_PASSWORD, UNBANNED_MESSAGE, UNMUTED_MESSAGE, UNSET_PASSWORD } from "./chat.constMessages";
 import { ChatGateway } from "./chat.gateway";
+import { RelationshipsService } from "src/relationships/relationships.service";
+import { RelationshipStatus } from "src/relationships/entities/relationship.entity";
 
 function getTimestamp() : string {
   let time = new Date();
@@ -27,6 +29,7 @@ export class ChatService {
     private chatRepository: Repository<Chat>,
     @Inject(forwardRef(() => UsersService)) private readonly usersService: UsersService,
     @Inject(forwardRef(() => ChatGateway)) private readonly chatGateway: ChatGateway,
+    @Inject(forwardRef(() => RelationshipsService)) private readonly relationshipsService: RelationshipsService
   ) {}
 
   async onApplicationBootstrap() {
@@ -1021,6 +1024,51 @@ export class ChatService {
       throw new Error(error);
     }
     return (chat);
+  }
+
+  async checkUserNotBlocked(user1: User, user2: User) {
+    let existingRelationship = await this.relationshipsService.checkRelationshipExistWithId(user1.id, user2.id);
+    if (existingRelationship === undefined)
+      return false;
+    if (existingRelationship.status === RelationshipStatus.BLOCKED_REQUESTEE
+    || existingRelationship.status === RelationshipStatus.BLOCKED_REQUESTER)
+      return true;
+    return false;
+  }
+
+  async commandGameOptions(idChat: number, idUser: number, usernameToInvite: string, redirect: boolean) {
+    let chat: Chat | undefined;
+    let userInit: User | undefined;
+    let userToInvite: User | undefined;
+    
+    try {
+      chat = await this.findOne(idChat);
+      userInit = await this.usersService.findOne(idUser);
+    } catch (error) {
+      throw new Error(error);
+    }
+    try {
+      userToInvite = await this.usersService.findOneByName(usernameToInvite);
+    } catch (error) { return "No such user."; }
+    if (userToInvite === undefined)
+      return "No such user.";
+    else if (userInit.name === userToInvite.name)
+      return "You can't play against yourself";
+    if (!isUserPresent(chat.usersInfos, userToInvite.id))
+      return "User not in this chat.";
+    else if (chat.usersInfos[getIndexUser(chat.usersInfos, userToInvite.id)].persoMutedUsers.indexOf(userInit.id) >= 0)
+      return "You're muted by this user.";
+    else if (isUserMuted(chat.mutedUsers, userInit.id))
+      return "You're muted by administrator.";
+    else if (await this.checkUserNotBlocked(userInit, userToInvite))
+      return "You are blocked with this user.";
+    else if (redirect) {
+      return 0;
+    } else {
+      let assembledRulesString = "(points:3#power-up:yes#map:original)";
+      await this.usersService.addEventToUserAlert(userInit.id, userToInvite.id, userInit.name + " invited you to play a game. " + assembledRulesString, true, "invitationGame");
+      return 0;
+    }
   }
 
   async findAll() {
