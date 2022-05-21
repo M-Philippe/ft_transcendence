@@ -7,7 +7,7 @@ import { storeState } from '../../../store/types';
 import { Link } from 'react-router-dom';
 import trophee from '../../../styles/medias/trophee.png';
 import Avatar from '@mui/material/Avatar'
-import Button from '@mui/material/Button';
+// import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 
 interface IRankingUsers {

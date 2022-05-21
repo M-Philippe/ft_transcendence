@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { API_AUTH_ENABLE_2FA, API_AUTH_SETUP_2FA, DISCONNECTING_URL } from "../../../urlConstString";
-import Stack from '@mui/material/Stack';
-import Box from '@mui/material/Box';
+// import Stack from '@mui/material/Stack';
+// import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 
 async function fetch2fa() {
