@@ -73,6 +73,7 @@ export default function MatchHistory(props: any) {
     else 
         return (
             <div>
+                <h1>{usernameToFetch} matches history</h1>
                 {assembleMatchHistory(usernameToFetch, matchHistory)}
             </div>
         );

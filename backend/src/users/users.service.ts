@@ -80,7 +80,7 @@ export class UsersService {
   }
 
   async createUserLocal(createUserLocalDto: CreateUserLocalDto) {
-    let avatar = FRONT_GENERIC_AVATAR; // Should implement generic avatar.
+    let avatar = FRONT_GENERIC_AVATAR;
     const user = this.usersRepository.create({
       name: createUserLocalDto.name,
       avatar: avatar,

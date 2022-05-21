@@ -20,12 +20,11 @@ function assembleAchievements(achievements: any[]) {
   return (retJsx);
 }
 
-function UserView(props: {username: string}) {
+function UserView(props: {username: string, showGameOptions: boolean}) {
   const location = useLocation();
   const username = location.pathname.substr(location.pathname.indexOf(":") + 1);
   const url = API_USER_VIEW + username;
   const [refresh, setRefresh] = useState(0);
-
   const [data, setData] = useState({
       name: "",
       avatar: "",
@@ -40,6 +39,11 @@ function UserView(props: {username: string}) {
   const [showBox, setShowBox] = useState(false);
 
   useEffect(() => {
+    if (window.history.state.showGameOptions === null || window.history.state.showGameOptions === undefined)
+      console.log("NO CORRESPONDING STATE");
+    else
+      setShowBox(window.history.state.showGameOptions);
+    
     const controller = new AbortController();
     fetch(url, { credentials: "include", signal: controller.signal })
       .then(res => {
@@ -74,8 +78,7 @@ function UserView(props: {username: string}) {
   if (props.username === username) {
     return (
 			<Navigate replace to="/myProfile" />
-
-    )
+    );
   }
 
   if (load) {
@@ -117,9 +120,10 @@ function UserView(props: {username: string}) {
   return(<div><p>Fetching User</p></div>);
 }
 
-function mapStateToProps(state: storeState) {
+function mapStateToProps(state: storeState, ownProps: {showGameOptions: boolean}) {
   return ({
-    username: state.user.username
+    username: state.user.username,
+    showGameOptions: ownProps.showGameOptions,
   });
 }
 
