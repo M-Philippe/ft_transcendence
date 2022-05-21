@@ -41,7 +41,7 @@ export class UsersService {
     if (checkSudoExist !== undefined)
       return;
     try {
-      const sudo = await this.createUserLocal({ name: "sudo", password: "sudo" });
+      const sudo = await this.createUserLocal({ name: "Admin", password: "Admin" });
     } catch (error) {}
   }
 
@@ -182,7 +182,7 @@ export class UsersService {
   }
 
   async setUserInGame(usernameOne: string, usernameTwo: string) {
-    
+
     await getConnection()
       .createQueryBuilder()
       .update(User)

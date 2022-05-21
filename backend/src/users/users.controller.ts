@@ -125,6 +125,7 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  // TODO DELETE ADMIN IN THE RANKING
   @Get()
   findAll() {
     return this.usersService.findAll();
