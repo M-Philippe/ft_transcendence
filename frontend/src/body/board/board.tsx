@@ -29,6 +29,7 @@ function mapStateToProps(state: storeState, props: InheritedProps) {
 function Board(props: BoardProps) {
 	const [coordinates, setCoordinates, canvasRef] = useCanvas();
 	const [idBoard, setIdBoard] = useState(0);
+	const [endGame, setEndGame] = useState(false);
 	const [palletAssigned, setPalletAssigned] = useState(-1);
 	const [cancelGame, setCancelGame] = useState(false);
 	const [searchingMessage, setSearchingMessage] = useState("Searching for a similar game or creating a new one.");
@@ -52,7 +53,7 @@ function Board(props: BoardProps) {
 		})
 	});
 
-	if (cancelGame)
+	if (cancelGame || endGame)
 		return (
 			<Navigate replace to="/ranking" />
 		);
@@ -82,8 +83,6 @@ function Board(props: BoardProps) {
 			setCoordinates(coordinates);
 		}
 	}
-
-	//document.addEventListener("visibilitychange", alertServerPlayerLeavingGame);
 
 	props.socket.off("idGame");
 	props.socket.on("idGame", (...args: any) => {
@@ -116,6 +115,7 @@ function Board(props: BoardProps) {
 			type: UNSET_USER_INGAME,
 			user: props.user,
 		});
+		setTimeout(() => setEndGame(true), 5000);
 	});
 
 	props.socket.off("alreadyCreatedMatch");
