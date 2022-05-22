@@ -837,7 +837,7 @@ export class ChatService {
     }
     if (user === undefined)
       return (undefined);
-    if (user.id = chat.owners[0]) {
+    if (user.id === chat.owners[0]) {
       arraySocketsToEmit = await this.deleteChat(chat);
     } else {
       arraySocketsToEmit = await this.removePersoFromChat(chat, user);
