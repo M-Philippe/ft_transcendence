@@ -27,13 +27,13 @@ export default function ChatCommandHelp (props: any) {
           <p>Quit: "/quit"</p>
           <p>Game: "/game &lt;user&gt;"</p>
           <b><p>&emsp;Admin commands :</p></b>
+          <p>Ban: "/ban &lt;user&gt;"</p>
+          <p>Ban: "/Ban &lt;user&gt; &lt;time&gt; &lt;h or s&gt;"</p>
+          <b><p>&emsp;Owner commands :</p></b>
           <p>chatPublic: "/setChatPublic"</p>
           <p>chatPrivate: "/setChatPrivate"</p>
           <p>password: "/setPassword &lt;password&gt;"</p>
           <p>unsetpassword: "/unsetPassword"</p>
-          <p>Ban: "/ban &lt;user&gt;"</p>
-          <p>Ban: "/Ban &lt;user&gt; &lt;time&gt; &lt;h or s&gt;"</p>
-          <b><p>&emsp;Owner commands :</p></b>
           <p>Admin: "/addAdmin &lt;user&gt;"</p>
           <p>Unadmin: "/removeAdmin &lt;user&gt;"</p>
           <br/>

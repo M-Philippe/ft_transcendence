@@ -615,8 +615,8 @@ export class ChatService {
     }
     if (adminUser === undefined)
       return;
-    if (chat.admins.indexOf(adminUser.id) < 0)
-      return (LACK_ADMIN_RIGHT);
+    if (chat.owners[0] !== adminUser.id)
+      return (LACK_OWNER_RIGHT);
     chat.type = "public";
     chat = await this.addMessageInArray(chat, "System [" + adminUser.name + "]", SET_CHAT_PUBLIC);
     try {
@@ -645,8 +645,8 @@ export class ChatService {
     }
     if (adminUser === undefined)
       return;
-    if (chat.admins.indexOf(adminUser.id) < 0)
-      return (LACK_ADMIN_RIGHT);
+    if (chat.owners[0] !== adminUser.id)
+      return (LACK_OWNER_RIGHT);
     chat.type = "private";
     chat = await this.addMessageInArray(chat, "System [" + adminUser.name + "]" + " (System)", SET_CHAT_PRIVATE);
     try {
