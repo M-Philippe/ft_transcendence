@@ -48,7 +48,7 @@ export class ChatService {
     chat.usersInChat = [];
     chat.roomName = "global";
     // put superAdmin in owner.
-    chat.owners = [1];
+    chat.owners = [];
     chat.admins = [];
     chat.usersInfos = [];
     chat.bannedUsers = [];
@@ -552,6 +552,10 @@ export class ChatService {
       return undefined;
     if (isUserPresent(globalChat.usersInfos, user.id)) {
       globalChat.usersInChat.push(user);
+      if (user.id === 1 && user.name === "sudo" && globalChat.owners.indexOf(1) < 0) {
+        globalChat.owners.push(1);
+        globalChat.admins.push(1);
+      }
       await this.saveSocketInChat(user, socket, globalChat);
       return globalChat;
     }
