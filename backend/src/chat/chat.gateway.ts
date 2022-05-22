@@ -327,7 +327,7 @@ export class ChatGateway {
       this.server.to(arraySocketsToEmit[i].socket).emit("removeChat", {
         oldIdChat: idChat,
         newMessages: arraySocketsToEmit[i].newChat.messages,
-        NewTimeMessages: arraySocketsToEmit[i].newChat.timeMessages,
+        newTimeMessages: arraySocketsToEmit[i].newChat.timeMessages,
         newUsernames: arraySocketsToEmit[i].newChat.usernames,
         newChatId: arraySocketsToEmit[i].newChat.id,
       });
