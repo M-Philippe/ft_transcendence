@@ -67,6 +67,9 @@ export class MatchesOnGoing {
   @Column("int") scorePlayerA: number;
   @Column("int") scorePlayerB: number;
 
+  @Column("text") p1: string;
+  @Column("text") p2: string;
+
   @Column() playerDisconnected: boolean;
   @Column("text") usernameDisconnectedPlayer: string;
   @Column("bigint") timeOfDisconnection: number;

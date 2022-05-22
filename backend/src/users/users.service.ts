@@ -13,6 +13,7 @@ import { RelationshipStatus } from 'src/relationships/entities/relationship.enti
 import { MatchesOnGoingService } from 'src/matchesOngoing/matchesOnGoing.service';
 import { ChangePasswordDto } from './users.types';
 import { API_USER_AVATAR, FRONT_GENERIC_AVATAR } from 'src/urlConstString';
+import { Not } from 'typeorm'
 
 const WIN10 = 0;
 const WIN100 = 1;
@@ -576,6 +577,10 @@ export class UsersService {
 
   findAll() {
     return this.usersRepository.find({ relations: ["matches", "listChat", "requestedRelationships", "requesteeRelationships"] });
+  }
+
+  async findAllForRanking() {
+    return this.usersRepository.find({ id: Not(1), });
   }
 
   async findOne(id: number) {

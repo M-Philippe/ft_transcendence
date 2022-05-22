@@ -25,7 +25,6 @@ import {
   POWERUP_HEIGHT,
   POWERUP_WIDTH,
 } from "./matchesOnGoing.constBoard";
-import { Interface } from "readline";
 
 function delay(ms: number) {
   return new Promise( resolve => setTimeout(resolve, ms) );
@@ -500,7 +499,7 @@ export class MatchesOnGoingService {
   }
   /*                                  Move Puck                                 */
 
-  async movePuck(gameId: number, p1: any, p2: any) {
+  async movePuck(gameId: number, p1: number, p2: number) {
     let game: MatchesOnGoing = await getConnection()
         .getRepository(MatchesOnGoing)
         .createQueryBuilder('matches')
@@ -512,17 +511,16 @@ export class MatchesOnGoingService {
     }
     if (game.finishedGame)
       return  undefined;
-    if (p1.disconnect || p2.disconnect)
-      this.checkTimeoutDisconnectedUser(game);
-
+    if (game.playerDisconnected)
+      return game;
     let collisionPallet: boolean = false;
     let coord: Coord = {puckX: Number(game.puckX), puckY: Number(game.puckY), puckVX: Number(game.puckVX), puckVY:  Number(game.puckVY)};
-    game.palletAY += (p1.move * SPEED_PALLET);
+    game.palletAY += (p1 * SPEED_PALLET);
     if (game.palletAY + game.palletAHeight > BOARD_HEIGHT)
       game.palletAY = BOARD_HEIGHT - game.palletAHeight;
     else if (game.palletAY < 0)
       game.palletAY = 0;
-    game.palletBY += (p2.move * SPEED_PALLET);
+    game.palletBY += (p2 * SPEED_PALLET);
     if (game.palletBY + game.palletBHeight > BOARD_HEIGHT)
       game.palletBY = BOARD_HEIGHT - game.palletBHeight;
     else if (game.palletBY < 0)
@@ -561,8 +559,6 @@ export class MatchesOnGoingService {
           })
           .where("id = :id", {id: game.id})
           .execute();
-          // p1.move = 0;
-          // p2.move = 0;
     }
     return (game);
   }
@@ -627,6 +623,8 @@ export class MatchesOnGoingService {
       palletAssigned: 1,
       socket: "",
     })
+    match.p1 = playerOne.name;
+    match.p2 = playerTwo.name;
     match.socketsToEmit = [];
     match.scoreMax = rules.scoreMax;
     this.setColorMap(match, rules.map);
@@ -666,6 +664,7 @@ export class MatchesOnGoingService {
       palletAssigned: 0,
       socket: socket,
     });
+    match.p1 = rules.username;
     match.socketsToEmit = [socket];
     match.scoreMax = rules.scoreMax;
     this.setColorMap(match, rules.map);
@@ -696,6 +695,7 @@ export class MatchesOnGoingService {
       palletAssigned: 1,
       socket: socket,
     });
+    match.p2 = username;
     match.pending = false;
     try {
       await this.matchesOnGoingRepository.save(match);

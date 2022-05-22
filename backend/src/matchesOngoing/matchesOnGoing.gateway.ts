@@ -16,14 +16,9 @@ import { getConnection } from "typeorm";
 
 const FPS = 60;
 
-interface match {
-  move: number;
-  disconnect: boolean;
-}
-
 type HashMap<T> = { [key: string]: T };
 
-const updatePlayers: HashMap<match> = {};
+const updatePlayers: HashMap<number> = {};
 
 // let updatePlayers = new Map<string, match>();
 
@@ -119,22 +114,10 @@ export class MatchesOnGoingGateway {
     await this.matchesOnGoingService.cancelMatch(data.username);
   }
 
-  // @SubscribeMessage("movePallet")
-  // async movePallet(
-  // @MessageBody() data: any,
-  // @ConnectedSocket() socket: Socket) {
-  //   // Check that user is a player, check which pallet is assigned
-  //   let response;
-  //   if (data.direction !== "down" && data.direction !== "up")
-  //     return;
-  //   await this.matchesOnGoingService.movePalletPlayer(data.idGame, data.username, data.direction);
-  // }
-
   async handleDisconnect(client: any) {
 		if (client.handshake.headers.cookie) {
       console.error("\n-----> PLAYER DISCONNECTED IN GAME <----- " + Date.now());
 			// console.error("COOKIES: ", typeof(client.handshake.headers.cookie));
-			let cookie: string = client.handshake.headers.cookie;
 			let jwt = extractJwtFromCookie(client.handshake.headers.cookie);
 			try {
 				let payload = this.jwtService.verify(jwt);
@@ -143,20 +126,12 @@ export class MatchesOnGoingGateway {
           .createQueryBuilder('user')
           .where("id = :id", { id: payload.idUser})
           .getOneOrFail();
-
-        /*
-          CHANGE TO SEEARCH WITH THE PLAYERS'S ID
-          ADD PLAYER'S ID IN THE MATCHESONGOING ENTITY
-          AND DELETE USER'S QUERYBUILDER
-        */
-
         let game: MatchesOnGoing = await getConnection()
           .getRepository(MatchesOnGoing)
           .createQueryBuilder('game')
-          .where("players[0].username = :name", { name: usr.name })
-          .orWhere("players[1].username = :name", { name: usr.name })
+          .where("p1 = :name", { name: usr.name })
+          .orWhere("p2 = :name", { name: usr.name })
           .getOneOrFail();
-
         if (game.pending) {
           await getConnection()
                 .createQueryBuilder()
@@ -177,11 +152,7 @@ export class MatchesOnGoingGateway {
                 .where("id = :id", { id: game.id })
                 .execute();
         }
-          // .where("id = :id", {id: user.listChat[i].id})
-
-        // let p = updatePlayers[usr.name];
         console.error("----->" + usr.name + "<-----\n");
-        // p.disconnect = true;
       } catch (error) {}
 		}
 	}
@@ -190,13 +161,10 @@ export class MatchesOnGoingGateway {
   async movePallet(
   @MessageBody() data: any,
   @ConnectedSocket() socket: Socket) {
-    let p = updatePlayers[data.username];
-    if (p == undefined)
-      return;
     if (data.direction == "up")
-      --p.move;
+      --updatePlayers[data.username];
     else if (data.direction == "down")
-      ++p.move;
+      ++updatePlayers[data.username];
   }
 
   @UseGuards(JwtGatewayGuard)
@@ -229,16 +197,8 @@ export class MatchesOnGoingGateway {
         idGame: joinPendingGame.id,
       });
       this.usersService.setUserInGame(joinPendingGame.players[0].username, joinPendingGame.players[1].username);
-
-      let m1: match = {move: 0, disconnect: false};
-      let m2: match = {move: 0, disconnect: false};
-
-      updatePlayers[joinPendingGame.players[0].username] = m1;
-      updatePlayers[joinPendingGame.players[1].username] = m2;
-      // updatePlayers[joinPendingGame.players[0].username] = { move = 0, powerUp = false, disconnect = false}
-
-      // updatePlayers.set(joinPendingGame.players[0].username, m1);
-      // updatePlayers.set(joinPendingGame.players[1].username, m2);
+      updatePlayers[joinPendingGame.players[0].username] = 0;
+      updatePlayers[joinPendingGame.players[1].username] = 0;
       console.error("Add the two players in the map");
       this.gameLoop(joinPendingGame);
       return;
@@ -296,15 +256,6 @@ export class MatchesOnGoingGateway {
       let game = await this.matchesOnGoingService.movePuck(match.id, p1, p2);
       if (game === undefined)
         return;
-
-      /*          Disconnection         */
-      // if (p1.disconnect) {
-      //   await this.matchesOnGoingService.playerDisconnected(game.id, game.players[0].username);
-      //   p1.disconnect = false;
-      // } else if (p2.disconnect) {
-      //   await this.matchesOnGoingService.playerDisconnected(game.id, game.players[1].username);
-      //   p2.disconnect = false;
-      // }
       if (game.playerDisconnected)
         game = await this.matchesOnGoingService.checkTimeoutDisconnectedUser(game);
 
@@ -331,11 +282,8 @@ export class MatchesOnGoingGateway {
         await this.usersService.checkUserAchievements(game.players[1].username);
         return;
       }
-
-      if (p1 !== undefined && p2 !== undefined) {
-        p1.move = 0;
-        p2.move = 0;
-      }
+      p1 = 0;
+      p2 = 0;
       await this.sendToAllSockets(game);
     }, 1000 / FPS);
   }
