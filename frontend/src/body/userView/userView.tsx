@@ -126,7 +126,7 @@ function UserView(props: {username: string}) {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box sx={style}>
+        <Box id ="inviteGamePopup" sx={style}>
           <Typography id="modal-modal-title" variant="h6" component="h2">
           Choose your rules to play against :   
           </Typography>

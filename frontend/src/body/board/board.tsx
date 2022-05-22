@@ -7,6 +7,8 @@ import { SET_ID_GAME, SET_USER_INGAME, UNSET_USER_INGAME } from "../../store/use
 import { Navigate } from "react-router-dom";
 import { userState } from "../../store/userSlice/userSliceTypes";
 import { API_MATCHES_PLAYER_LEAVING } from "../../urlConstString";
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 
 interface BoardProps {
 	socket: Socket,
@@ -127,14 +129,14 @@ function Board(props: BoardProps) {
 	if (coordinates.width === 0) {
 		return (
 			<div>
-				<p>{searchingMessage}</p>
-				<p>Click on this button to cancel searching</p>
-				<button onClick={() => {
+					<CircularProgress sx={{color: 'white'}}/><br/><br/>
+				<p>{searchingMessage}</p><br/>
+				<Button variant="contained" color="error" onClick={() => {
 					props.socket.emit("cancelMatch", {
 						username: props.user.username,
 					})
 					setCancelGame(true);
-				}}>Cancel</button>
+				}}>Cancel</Button>
 			</div>
 		);
 	}

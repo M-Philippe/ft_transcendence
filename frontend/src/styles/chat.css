@@ -6,6 +6,7 @@
   padding-right: 1%;
   padding-left: 1%;
   overflow-y: auto;
+  height: 89.5vh;
   background: linear-gradient( rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.185));
 }
 

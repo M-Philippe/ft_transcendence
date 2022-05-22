@@ -69,7 +69,7 @@ function RankingUsers(props: any) {
   return (
     <div id = "RankingArrayDiv">
       <table>
-        <caption><img id = "RanktropheeImg" src= {trophee} alt="Trophee"></img> <br/><br/> <b> Ranking Users </b> </caption>
+        <caption><img id = "RanktropheeImg" src= {trophee} alt="Trophee"></img> <br/> <b> Ranking Users </b> </caption>
         <thead>
           <tr>
             <th>
@@ -96,7 +96,7 @@ function RankingUsers(props: any) {
                     <th style={props.username === element.name ? {background: "rgba(200, 200, 200, 0.6)"} : {}}>
                     <Stack direction="row" spacing={2} >
                     <Avatar alt="avatar" src={element.avatar} />
-                    <Link to={"/userView/:" + element.name}>{element.name}</Link>
+                    <Link style={{textDecoration:'none'}} to={"/userView/:" + element.name}>{element.name}</Link>
                     </Stack>
                     </th>
                   <th style={{textAlign:"center"}}>{element.wonCount}</th>

@@ -65,7 +65,7 @@ export default function Enable2fa(props: any) {
 		return (
 			<section>
 				<p>
-					Scan the qr code with google authenticator then submit your validation code to enable 2fa.
+					Scan the qr code with google authenticator <br/> then submit your validation code to enable 2fa
 				</p>
 				{
 					errorMessage !== "" &&
