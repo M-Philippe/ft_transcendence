@@ -92,7 +92,7 @@ function UserProfile(props: UserProfileProps) {
 			<Typography id="modal-modal-title" variant="h5" sx={{borderBottom: 2}}>
 			Choose new password
 			</Typography>
-			<Typography id="modal-modal-description" sx={{ mt: 2, textAlign: 'center' }}>
+			<Typography id="modal-modal-description" variant="subtitle1" sx={{ mt: 2, textAlign: 'center' }}>
 			{
 				<ChangePassword />
 			}

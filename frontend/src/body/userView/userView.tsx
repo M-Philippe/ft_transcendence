@@ -130,7 +130,7 @@ function UserView(props: {username: string}) {
           <Typography id="modal-modal-title" variant="h6" component="h2">
           Choose your rules to play against :   
           </Typography>
-          <Typography id="modal-modal-description" sx={{ mt: 2, textAlign: 'center' }}>
+          <Typography variant="subtitle1" id="modal-modal-description" sx={{ mt: 2, textAlign: 'center' }}>
         {
           data.online &&
           <InvitationGameQueryBox nameProfile={data.name} />

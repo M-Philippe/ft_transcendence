@@ -195,8 +195,8 @@ function UserAlert(props: {user: userState}) {
 			horizontal: 'left',
 			}}
 		>
-		<Typography sx={{ p: 2 }}> 
-		{assembleAlertToHtml(alert)}
+		<Typography variant="subtitle1" sx={{ p: 2 }}> 
+			{assembleAlertToHtml(alert)}
 		</Typography>
 		</Popover>
 		</div>

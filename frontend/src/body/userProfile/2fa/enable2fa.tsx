@@ -85,7 +85,8 @@ export default function Enable2fa(props: any) {
 					fetch2fa();
 					setAskCode(true);
 				}}> Click here to generate a Qr code</Button>
-
+				<br />
+				<br />
 				<canvas id="canvasQr" height="0" width="0" ></canvas>
 			</section>
 		);

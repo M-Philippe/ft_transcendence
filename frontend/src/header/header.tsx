@@ -29,14 +29,17 @@ interface IProps {
 
   const linksNotLog = [
 	{
+		id: 1,
 		to: '/ranking',
 		name: 'Ranking'
 	},
 	{
+		id: 2,
 		to: '/login',
 		name: 'Login'
 	},
 	{
+		id: 3,
 		to: '/register',
 		name: 'Register'
 	}
@@ -44,18 +47,22 @@ interface IProps {
 
 const linksLoged = [
 	{
+		id: 1,
 		to: '/ranking',
 		name: 'Ranking'
 	},
 	{
+		id: 2,
 		to: '/listChat',
 		name: 'Chat List'
 	},
 	{
+		id: 3,
 		to: '/play',
 		name: 'Play'
 	},
 	{
+		id: 4,
 		to: '/myProfile',
 		name: 'Profile'
 	}
@@ -63,10 +70,12 @@ const linksLoged = [
 
 const userMenu = [
 	{
+		id: 1,
 		to: '/myProfile',
 		name: 'Profile'
 	},
 	{
+		id: 2,
 		to: '/disconnect',
 		name: 'Disconnect'
 	}
@@ -99,6 +108,7 @@ const Header = (props: IProps) => {
 	else
 		linkToDisplay = linksLoged;
 
+	let keyCount = 0;
 
 //   if (redirectDisconnect) {
 // 	window.location.assign(DISCONNECTING_URL);
@@ -122,7 +132,7 @@ const Header = (props: IProps) => {
 					aria-haspopup="true" onClick={handleOpenNavMenu} color="inherit">
 				<MenuIcon />
 				</IconButton>
-				<Menu id="menu-appbar"	anchorEl={anchorElNav}	anchorOrigin={{	vertical: 'bottom', horizontal: 'left',	}}	
+				<Menu id="menu-appbar" anchorEl={anchorElNav} anchorOrigin={{vertical: 'bottom', horizontal: 'left', }}	
 					keepMounted transformOrigin={{vertical: 'top', horizontal: 'left', }} open={Boolean(anchorElNav)} onClose={handleCloseNavMenu}	
 						sx={{display: { xs: 'block', md: 'none' }, }}>
 				{linkToDisplay.map(link => (
@@ -132,18 +142,17 @@ const Header = (props: IProps) => {
 
 			</Box>
 			<Typography	variant="h5" noWrap component={NavLink}	to="/" sx={{mr: 2, display: { xs: 'flex', md: 'none' },	flexGrow: 1, 
-				fontFamily: 'monospace', fontWeight: 700, fontSize:20, color: 'inherit',	textDecoration: 'none',	}} >
+				fontFamily: 'monospace', fontWeight: 700, fontSize:20, color: 'inherit', textDecoration: 'none',}} >
 				Ft_transcendence
 			</Typography>
 
 			<Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
 			{linkToDisplay.map(link => (
-			<Typography variant="h6" noWrap	sx={{mr: 2, display: { xs: 'none', md: 'flex' }, 
+			<Typography key={keyCount++} variant="h6" noWrap	sx={{mr: 2, display: { xs: 'none', md: 'flex' }, 
 				fontFamily: 'monospace', color: 'inherit', textDecoration: 'none',}}	>
-				<MenuItem  className="ButtonLinkNavbar" key={link.name} onClick={handleCloseNavMenu} component={NavLink} to={link.to}>{link.name}</MenuItem>
+				<MenuItem  className="ButtonLinkNavbar" onClick={handleCloseNavMenu} component={NavLink} to={link.to}>{link.name}</MenuItem>
 			</Typography>
 			))}
-
 			</Box>
 
 			<Typography
