@@ -106,10 +106,10 @@ export default function UserRelationships(props: any) {
 	}, [load]);
 
 	return (
-		<Box sx={{ width: '100%' }}>
+		<Box sx={{ width: '100%', }}>
 		<Stack spacing={2}>
 		<Button variant="contained" onClick={handleOpen}>
-			Relationship 
+			Relations
 		</Button>
 		</Stack>
 			<Modal
@@ -118,7 +118,7 @@ export default function UserRelationships(props: any) {
 				>
 				<Box sx={style}>
 				<Typography variant="h5" sx={{borderBottom: 2}}>
-				Relationship
+				Relations
 				</Typography>
 				<Typography variant="subtitle1" sx={{ mt: 2, textAlign: 'center' }}>
 				<Stack>

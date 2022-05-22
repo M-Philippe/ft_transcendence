@@ -15,7 +15,7 @@ export default function ChatCommandHelp (props: any) {
 
   return (
     <span style={{display:'inline'}}>
-      <p style={{display:'inline'}} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}> <QuestionMarkIcon sx={{ color:'white', fontSize: 30 }} /></p>
+      <p style={{display:'inline'}} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}> <QuestionMarkIcon sx={{ color:'white', fontSize: 25 }} /></p>
       {displayText &&
         <div id="chatCmdHelp" style={{borderRadius:'10px', backgroundColor: "white", color:'black', position:'absolute', right:'8%', minWidth:'25%' , zIndex:1}}>
           <b><p>&emsp;User commands :</p></b>

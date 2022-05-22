@@ -222,26 +222,25 @@ export function ChatConnected(props: PropsChatConnected) {
   }, [state, url, props.socket, props.name]);
 
   // autoscroll down on msg receive :
-  var chatWindow = document.getElementById('chat');
+  var chatWindow = document.getElementById('txtWrap');
   chatWindow?.scrollTo(0, chatWindow?.scrollHeight);
 
   return (
-    <div>
-      <br/>
-			<div>
+    <div >
+			<div id = "chatButtonTop">
       <DisplayButtonsChat
         state={state}
         dispatch={dispatch} />
-    </div>
       {state.lstId.length !== 0 &&
 			<div style={{display: 'flex', margin:'auto', justifyContent:'center', alignItems: 'center', flexWrap: 'wrap'}}>
         	<IconButton size="large" onClick={() => {
             props.socket.emit("createChat", {nameUser: props.name});}}>
-          <AddBoxIcon sx={{ color:'white', fontSize: 32 }}/>
+          <AddBoxIcon sx={{ color:'white', fontSize: 28 }}/>
           </IconButton>
         <ChatCommandHelp />
         </div>
       }
+      </div>
       <div id="txtWrap" >
       {
         state.errorDisplay &&

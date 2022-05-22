@@ -6,7 +6,7 @@ import { API_AUTH_42_LOGIN, API_AUTH_LOCAL_REGISTER, BASE_URL, CONNECT_FORM_URL 
 import Button from '@mui/material/Button';
 // import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
 
 interface UserInput {
 	username: string,
@@ -54,17 +54,9 @@ function Register(props: {user: userState}) {
 		});
 	}
 
-	const paperStyle={padding :20,height:'45vh',width:280, margin:"20px auto", backgroundColor:'transparent'}
-	const btnstyle={margin:'8px 0'}
-  
 	return (
-		<section>
         <Grid>
-            <Paper elevation={0} style={paperStyle}>
-                <Grid >
-                     {/* <Avatar style={avatarStyle}><LockOutlinedIcon/></Avatar> */}
-                    <h2>Register</h2>
-                </Grid>
+                <h2>Register</h2>
 				{ errorMessage !== "" && <p className="errorMessage" >{errorMessage}</p> }
 				<form>
                 	{/* <TextField label='Username' placeholder='Enter username' fullWidth required /><br /><br /> */}
@@ -76,12 +68,11 @@ function Register(props: {user: userState}) {
 				<label>Confirm Password</label><br />
 					<input type="password" onChange={(event) => {handleChange(event, "confirmPassword")}}/> <br /><br />
 				</form><br />
-                <Button type='submit' color='primary' variant="contained" style={btnstyle} fullWidth onClick={handleSubmit}>Register</Button><br />
-				<Button variant="contained" href={API_AUTH_42_LOGIN} style={btnstyle} fullWidth >LOGIN WITH 42</Button>
-
-		</Paper>
+				<Stack margin="auto" sx={{ width: '20%', }} spacing={2}>
+                <Button type='submit' color='primary' variant="contained" style={{margin:'8px 0'}} fullWidth onClick={handleSubmit}>Register</Button><br />
+				<Button variant="contained" href={API_AUTH_42_LOGIN} style={{margin:'8px 0'}} fullWidth >LOGIN WITH 42</Button>
+				</Stack>
         </Grid>
-		</section>
 	);
 }
 

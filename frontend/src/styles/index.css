@@ -15,8 +15,8 @@ body {
   min-width: 100vw;
   max-height: 100vh;
   max-width: 100vw;
-  overflow-y: hidden;
-  overflow-x: hidden;
+  /* overflow-y: hidden;
+  overflow-x: hidden; */
 }
 /* Background animation : */
 @keyframes gradient {
@@ -147,19 +147,9 @@ nav .active {
   flex: 1;
   order: 1;
   max-height: 86vh;
-  overflow:hidden;
+  /* overflow:hidden; */
   /* overflow-y: auto; */
 }
-/* 
-#content *{
-  display: 'flex';
-  margin:'auto';
-  justify-content:'center';
-  align-content: 'center';
-  align-items: 'center';
-  flex-wrap: 'wrap';
-  background-color: #b95c40;
-} */
 
 footer {
   bottom: 0;
@@ -171,7 +161,7 @@ footer {
 
 #chatListStack
 {
-  overflow:hidden;
+  /* overflow:hidden; */
   overflow-y: scroll;
   max-height: 50vh;
   /* padding-top: 1%; */
@@ -180,14 +170,14 @@ footer {
 /* ------ Ranking table ------ */
 #RankingArrayDiv
 {
-  overflow:hidden;
+  /* overflow:hidden; */
   overflow-y: scroll;
   height: 87vh;
 
 }
 
 table {
-  overflow:hidden;
+  /* overflow:hidden; */
   overflow-y: scroll;
   width: auto;
   min-width: 30vw;
@@ -407,17 +397,9 @@ caption {
 
 }
 
-#errorMessage {
-  color: red;
+.errorMessage {
+  color: #cf2626;
   font-size: large;
-  font-family:Verdana, Geneva, Tahoma, sans-serif;
-  /* background-color:transparent; */
-  /* margin: auto; */
-  /* background-color: white; */
-  /* border: solid black 1px; */
-  /* max-width: fit-content; */
-  /* margin-left: auto; */
-  /* margin-right: auto; */
-  /* border-radius: 5px; */
-  /* text-align: justify; */
+  font-weight:bold;
+  font-family: Arial, Helvetica, sans-serif;
 }
