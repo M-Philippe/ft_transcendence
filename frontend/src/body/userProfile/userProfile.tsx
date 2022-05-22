@@ -14,6 +14,7 @@ import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
+import UserGameInfos from "./userGameInfos";
 
 interface UserProfileProps {
 	user: userState;
@@ -70,6 +71,7 @@ function UserProfile(props: UserProfileProps) {
 				setStatus2fa((await response.json()).is2faEnabled);
 			}
 		});
+		fetch("")
 		// return () => {
 		// 	controller.abort();
 		// }
@@ -94,7 +96,7 @@ function UserProfile(props: UserProfileProps) {
       		<Stack margin="auto" sx={{ width: '35%', }} spacing={2}>
 
 			{/* <p>Victory: {data.wonCount} &emsp;&emsp; Defeat: {data.lostCount}</p> */}
-
+			<UserGameInfos />
 			{/* {data.achievements.length !== 0 && <Button variant="contained" onClick={() => {handleOpenAchievements()}}>
 			<b>{data.achievements.length}</b> &nbsp;&nbsp;Achivements</Button> }
 			<Modal

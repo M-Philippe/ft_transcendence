@@ -355,6 +355,24 @@ export class UsersService {
     this.usersGateway.contactUsers(userOne.userAlert.socket, userTwo.userAlert.socket, "redirectionToBoard");
   }
 
+  async getGameInfos(idUser: number) {
+    let user: User;
+    try {
+      user = await this.findOne(idUser);
+    } catch (error) { console.error("H");return undefined; }
+    if (user === undefined)
+      return undefined;
+    let ret: {
+      wonCount: number,
+      lostCount: number,
+      achievements: String[]
+    } = {wonCount: 0, lostCount: 0, achievements: []};
+    ret.wonCount = user.wonCount;
+    ret.lostCount = user.lostCount;
+    ret.achievements = await this.getUserAchievements(idUser);
+    return ret;
+  }
+
   /*
   **  ACHIEVEMTS
   */

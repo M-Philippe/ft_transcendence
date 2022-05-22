@@ -214,6 +214,12 @@ export class UsersController {
     }));
   }
 
+  @UseGuards(JwtGuard)
+  @Get("/gameInfos")
+  async getGameInfos(@Req() request: Request) {
+    let idUser = this.getIdUserFromCookie(request.cookies.authentication);
+    return await this.usersService.getGameInfos(idUser);
+  }
 
   @UseGuards(JwtGuard)
   @Get('/name/:input')
