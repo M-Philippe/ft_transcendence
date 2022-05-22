@@ -109,7 +109,7 @@ function UserAlert(props: {user: userState}) {
 	const [showPopUp, setShowPopUp] = useState<{show: boolean, message: string}>({show: false, message: ""});
 	const [alert, setAlert] = useState<Array<{message: string, needResponse: boolean, requesterId: number, requesteeId: number}>>([]);
 	const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
-	let [alertNbr, setIcon] = useState(0);
+	const [alertNbr, setIcon] = useState(0);
 	
 	if (socket === undefined) {
 		setSocket(io(API_URL, {
@@ -131,9 +131,10 @@ function UserAlert(props: {user: userState}) {
 			socket.off("getUserAlert");
 			socket.on("getUserAlert", (...args) => {
 				//console.log("RECEIVED ALERT: ", args[0].data);
+				//console.log("LENGTH_RECEIVED: ", args[0].data.length);
 				setAlert(args[0].data);
-				alertNbr++;
-				setIcon(alertNbr);
+				if (args[0].data !== undefined)
+					setIcon(args[0].data.length);
 			})
 
 			socket.off("messageReceived");
