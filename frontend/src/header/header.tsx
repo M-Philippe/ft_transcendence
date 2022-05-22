@@ -175,7 +175,7 @@ const Header = (props: IProps) => {
 			</Box>
 			{props.user.isConnected && 
 			<IconButton aria-label="delete" color="error"  size="large" component={NavLink} to='/disconnect'>
-			<ExitToAppIcon fontSize="large"/>
+			<ExitToAppIcon sx={{ fontSize: 40 }}/>
 		  	</IconButton>}
 			</Toolbar>
 		</Container>

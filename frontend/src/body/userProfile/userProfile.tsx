@@ -1,8 +1,7 @@
 import { userState } from "../../store/userSlice/userSliceTypes";
 import { DispatchType, storeState } from "../../store/types";
 import { connect } from "react-redux";
-import /*React,*/ { useEffect, useState } from "react";
-//import pencil from "./pencil.jpg";
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { disable2fa } from "./2fa/disable2fa";
 import AvatarUpload from "./avatarUpload";
@@ -15,20 +14,35 @@ import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
-import * as React from 'react';
 
 interface UserProfileProps {
 	user: userState;
 	dispatch: DispatchType;
 }
 
+// function assembleAchievements(achievements: any[]) {
+// 	let retJsx = [];
+// 	for (let i = 0; i < achievements.length; i++) {
+// 	  retJsx.push(
+// 		<p style={{color:'black'}} key={i}>
+// 		  {achievements[i]}
+// 		</p>
+// 	  );
+// 	}
+// 	return (retJsx);
+//   }
+
 function UserProfile(props: UserProfileProps) {
 	const [redirect2fa, setRedirect2fa] = useState(false);
 	const [status2fa, setStatus2fa] = useState(false);
 
-	const [open, setOpen] = React.useState(false);
+	const [open, setOpen] = useState(false);
 	const handleOpen = () => setOpen(true);
 	const handleClose = () => setOpen(false);
+
+	// const [openAchievements, setOpenAchievements] = useState(false);
+	// const handleOpenAchievements = () => setOpenAchievements(true);
+	// const handleCloseAchievements = () => setOpenAchievements(false);
 
 	const style = {
 	position: 'absolute' as 'absolute',
@@ -56,9 +70,9 @@ function UserProfile(props: UserProfileProps) {
 				setStatus2fa((await response.json()).is2faEnabled);
 			}
 		});
-		return () => {
-			controller.abort();
-		}
+		// return () => {
+		// 	controller.abort();
+		// }
 	});
 
 	if (redirect2fa)
@@ -75,9 +89,31 @@ function UserProfile(props: UserProfileProps) {
 				&nbsp;{props.user.username}&nbsp;
 			</Typography>
 			</Stack><br />
-			<img id = "avatarMyProfil" src={props.user.avatar} alt="Avatar" /><br /><br />
+			<img id = "avatarMyProfil" src={props.user.avatar} alt="Avatar" /><br />
 			<AvatarUpload />
       		<Stack margin="auto" sx={{ width: '35%', }} spacing={2}>
+
+			{/* <p>Victory: {data.wonCount} &emsp;&emsp; Defeat: {data.lostCount}</p> */}
+
+			{/* {data.achievements.length !== 0 && <Button variant="contained" onClick={() => {handleOpenAchievements()}}>
+			<b>{data.achievements.length}</b> &nbsp;&nbsp;Achivements</Button> }
+			<Modal
+			open={openAchievements}
+			onClose={handleCloseAchievements}
+			>
+			<Box sx={style}>
+			<Typography id="modal-modal-title" variant="h5" sx={{borderBottom: 2, textAlign: 'center'}}>
+			 your achivements
+			</Typography>
+			<Typography id="modal-modal-description" variant="subtitle1" sx={{ mt: 2, textAlign: 'center' }}>
+			{
+				assembleAchievements(data.achievements)
+			}
+			</Typography>
+			</Box>
+			</Modal> */}
+
+
 			<Button id ="ChangePasswButton" variant="contained" onClick={handleOpen}
 				>Change my password
 			</Button>
@@ -85,14 +121,12 @@ function UserProfile(props: UserProfileProps) {
 			<Modal
 			open={open}
 			onClose={handleClose}
-			aria-labelledby="modal-modal-title"
-			aria-describedby="modal-modal-description"
 		>
 			<Box sx={style}>
-			<Typography id="modal-modal-title" variant="h5" sx={{borderBottom: 2}}>
+			<Typography variant="h5" sx={{borderBottom: 2, textAlign: 'center' }}>
 			Choose new password
 			</Typography>
-			<Typography id="modal-modal-description" variant="subtitle1" sx={{ mt: 2, textAlign: 'center' }}>
+			<Typography variant="subtitle1" sx={{ mt: 2, textAlign: 'center' }}>
 			{
 				<ChangePassword />
 			}

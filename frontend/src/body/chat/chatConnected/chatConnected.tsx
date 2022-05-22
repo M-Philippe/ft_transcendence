@@ -10,6 +10,8 @@ import ChatInput from './chatInput';
 import ChatCommandHelp from './chatCommandHelp';
 import ChatErrorMessage from './chatErrorMessage';
 import { API_USER_LIST_CHAT, DISCONNECTING_URL } from "../../../urlConstString";
+import AddBoxIcon from '@mui/icons-material/AddBox';
+import IconButton from '@mui/material/IconButton';
 
 interface PropsChatConnected {
   name: string,
@@ -157,9 +159,6 @@ export function ChatConnected(props: PropsChatConnected) {
         usernames: args[0].usernames,
       });
     }
-    // autoscroll down on msg receive :
-    var chatWindow = document.getElementById('chat');
-    chatWindow?.scrollTo(0, chatWindow?.scrollHeight);
   })
 
   props.socket.on("errorMessage", (...args: any) => {
@@ -214,19 +213,28 @@ export function ChatConnected(props: PropsChatConnected) {
     }
   }, [state, url, props.socket, props.name]);
 
+  // autoscroll down on msg receive :
+  var chatWindow = document.getElementById('chat');
+  chatWindow?.scrollTo(0, chatWindow?.scrollHeight);
+
   return (
     <div>
+      <br/>
+			<div>
+      <DisplayButtonsChat
+        state={state}
+        dispatch={dispatch} />
+    </div>
       {state.lstId.length !== 0 &&
-        <div className="buttonChanTop">
-        <DisplayButtonsChat
-          state={state}
-          dispatch={dispatch}
-        />
-        <button onClick={() => {
-          props.socket.emit("createChat", {nameUser: props.name});}}>ADD</button>
+			<div style={{display: 'flex', margin:'auto', justifyContent:'center', alignItems: 'center', flexWrap: 'wrap'}}>
+        	<IconButton size="large" onClick={() => {
+            props.socket.emit("createChat", {nameUser: props.name});}}>
+          <AddBoxIcon sx={{ color:'white', fontSize: 32 }}/>
+          </IconButton>
         <ChatCommandHelp />
         </div>
       }
+      <div id="txtWrap" >
       {
         state.errorDisplay &&
         <ChatErrorMessage
@@ -237,7 +245,6 @@ export function ChatConnected(props: PropsChatConnected) {
         state={state}
         dispatch={dispatch}
       />
-    <div>
       <ChatInput
         socket={props.socket}
         state={state}

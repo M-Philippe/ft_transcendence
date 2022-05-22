@@ -48,7 +48,7 @@ const handleChange = (event: React.ChangeEvent<HTMLInputElement>, fieldToUpdate:
 		<div>
 			{
 				errorMessage &&
-				<p className="errorMessage">{errorMessage}</p>
+				<p id="errorMessage">{errorMessage}</p>
 			}
 			<form>
 				<p>Current Password :</p>

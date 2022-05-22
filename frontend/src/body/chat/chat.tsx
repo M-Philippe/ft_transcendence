@@ -11,7 +11,6 @@ import { DefaultEventsMap } from '@socket.io/component-emitter/index';
 import { SocketHandler } from './socketHandler';
 import { ChatConnected } from './chatConnected/chatConnected';
 
-
 interface IChatProps {
   isConnected: boolean,
   username: string,
@@ -34,7 +33,7 @@ function Chat(props: IChatProps) {
 
   if (props.isConnected && !props.inGame) {
     return (
-      <div id="chat">
+		<div id="chat">
         {socket === undefined &&
           <SocketHandler
             setSocket={setSocket}
@@ -42,12 +41,10 @@ function Chat(props: IChatProps) {
           />
         }
         {socket !== undefined &&
-          <div >
             <ChatConnected
               name={props.username}
               socket={socket}
             />
-          </div>
         }
       </div>
       );

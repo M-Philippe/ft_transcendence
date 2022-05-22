@@ -8,6 +8,10 @@ import { Link } from 'react-router-dom';
 import trophee from '../../../styles/medias/podium.png';
 import Avatar from '@mui/material/Avatar'
 // import Button from '@mui/material/Button';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import IconButton from '@mui/material/IconButton';
+
 import Stack from '@mui/material/Stack';
 
 interface IRankingUsers {
@@ -69,23 +73,35 @@ function RankingUsers(props: any) {
   return (
     <div id = "RankingArrayDiv">
       <table>
-        <caption><img id = "RanktropheeImg" src= {trophee} alt="Trophee"></img> <br/> <b> Ranking Users </b> </caption>
+        <caption><img id = "RanktropheeImg" src= {trophee} alt="Trophee"></img><br/><b>Ranking</b></caption>
         <thead>
           <tr>
             <th>
-              <p className="nameHead">Name</p>
-              <button id = "arrowUButton" onClick={() => {setSortNameAscend(true);}}></button>
-              <button id = "arrowDButton" onClick={() => {setSortNameDescend(true);}}></button>
+              <p>Name</p>
+              <IconButton  onClick={() => {setSortNameAscend(true);}}>
+                <ArrowDropUpIcon fontSize="large"/>
+              </IconButton>
+              <IconButton onClick={() => {setSortNameDescend(true);}}>
+                <ArrowDropDownIcon fontSize="large"/>
+              </IconButton>
             </th>
             <th>
               <p>Win</p>
-              <button id = "arrowUButton" onClick={() => {setSortWinAscend(true);}}></button>
-              <button id = "arrowDButton" onClick={() => {setSortWinDescend(true);}}></button>
+              <IconButton onClick={() => {setSortWinDescend(true);}}>
+                <ArrowDropUpIcon fontSize="large"/>
+              </IconButton>
+              <IconButton onClick={() => {setSortWinAscend(true);}}>
+                <ArrowDropDownIcon fontSize="large"/>
+              </IconButton>
             </th>
             <th>
               <p>Lost</p>
-              <button id = "arrowUButton" onClick={() => {setSortLostAscend(true);}}></button>
-              <button id = "arrowDButton" onClick={() => {setSortLostDescend(true);}}></button>
+              <IconButton onClick={() => {setSortLostDescend(true);}}>
+                <ArrowDropUpIcon fontSize="large"/>
+              </IconButton>
+              <IconButton onClick={() => {setSortLostAscend(true);}}>
+                <ArrowDropDownIcon fontSize="large"/>
+              </IconButton>
             </th>
           </tr>
         </thead>

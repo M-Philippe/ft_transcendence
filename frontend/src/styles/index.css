@@ -148,8 +148,18 @@ nav .active {
   order: 1;
   max-height: 86vh;
   overflow:hidden;
-  overflow-y: scroll;
+  /* overflow-y: auto; */
 }
+/* 
+#content *{
+  display: 'flex';
+  margin:'auto';
+  justify-content:'center';
+  align-content: 'center';
+  align-items: 'center';
+  flex-wrap: 'wrap';
+  background-color: #b95c40;
+} */
 
 footer {
   bottom: 0;
@@ -188,10 +198,14 @@ table {
   padding-top: 1%;
 }
 
+th p{
+  margin: auto;
+}
+
 th {
+  text-align: center;
   padding-top: 1%;
   padding-bottom: 1%;
-
 }
 
 tbody {
@@ -204,7 +218,7 @@ tbody {
 } */
 
 caption {
-  padding-top: 15%;
+  padding-top: 7%;
 }
 
 /* ------ IMAGES ------ */
@@ -225,8 +239,8 @@ caption {
 } */
 
 #pongImgPlayMenu {
-  width: 18vw;
-  height: 25vh;
+  width: 16vw;
+  height: 24vh;
   min-width: 200px;
   min-height: 200px;
 }
@@ -395,7 +409,7 @@ caption {
 
 #errorMessage {
   color: red;
-  font-size: x-large;
+  font-size: large;
   font-family:Verdana, Geneva, Tahoma, sans-serif;
   /* background-color:transparent; */
   /* margin: auto; */

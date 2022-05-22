@@ -65,7 +65,7 @@ function ListChat(props: any) {
 		<Box sx={{ width: '100%' }}>
 
       <button id = "bulleButtonTricks"></button>
-      <p>Click on the chat button you want to join :</p>
+      {data.length !== 0 && <p>Click on the chat button you want to join :</p>}
 		<Box id = "chatListStack" sx={{ width: '100%' }}>
     <Stack spacing={2}>
       {data.length !== 0 &&

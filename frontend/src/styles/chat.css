@@ -5,13 +5,11 @@
   max-width: 85vw;
   padding-right: 1%;
   padding-left: 1%;
-  overflow-y: auto;
-  height: 89.5vh;
   background: linear-gradient( rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.185));
+  overflow-y: auto;
 }
 
  .chatForm {
-  /* position: fixed; */
   right: 0;
   bottom: 0;
   height: 4vh;
@@ -21,32 +19,17 @@
   border:0;
 }
 
-.buttonChanTop {
-  /* position: absolute;
-  top: 9%; */
-  padding-top: 1vh;
-  padding-right: 1%;
-  /* text-overflow: ellipsis; */
+#chatCmdHelp p{
+  color:black;
 }
 
-/* 
-.buttonChanBottom {
-  width: 70px;
-  height: 30px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: auto;
-}
-
-.textArea {
-  margin-top: auto;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-} */
-
-.tstWrap {
+#txtWrap {
+  max-height: 80%;
+  overflow-y: auto;
   padding-bottom: 8%;
+  height: 100%;
+  max-width: 22vw;
+  padding-right: 1%;
+  padding-left: 1%;
   word-wrap: break-word;
 }

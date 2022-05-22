@@ -69,9 +69,9 @@ export function draw(ctx: CanvasRenderingContext2D | null, coordinates: BoardPos
     }
   }
   if (coordinates.hasMessageToDisplay) {
-    ctx.fillStyle = "red";
+    ctx.fillStyle = "green";
     ctx.textAlign = "center";
-    ctx.fillText(coordinates.messageToDisplay, 200, 200);
+    ctx.fillText(coordinates.messageToDisplay, 250, 200);
   }
 }
 
