@@ -200,8 +200,8 @@ export class UsersService {
   }
 
   async updateSocketAndGetUserAlert(userId: number, socket: string) {
-    let user = await this.findOne(userId);
-    if (user.userAlert.socket !== "")
+    let user = await this.usersRepository.findOne(userId);
+    if (user === undefined || user.userAlert.socket !== "")
       return (undefined);
     user.userAlert.socket = socket;
     await this.usersRepository.save(user);
