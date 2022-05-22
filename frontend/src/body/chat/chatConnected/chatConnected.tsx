@@ -228,9 +228,6 @@ export function ChatConnected(props: PropsChatConnected) {
   return (
     <div >
 			<div id = "chatButtonTop">
-      <DisplayButtonsChat
-        state={state}
-        dispatch={dispatch} />
       {state.lstId.length !== 0 &&
 			<div style={{display: 'flex', margin:'auto', justifyContent:'center', alignItems: 'center', flexWrap: 'wrap'}}>
         	<IconButton size="large" onClick={() => {
@@ -238,8 +235,10 @@ export function ChatConnected(props: PropsChatConnected) {
           <AddBoxIcon sx={{ color:'white', fontSize: 28 }}/>
           </IconButton>
         <ChatCommandHelp />
-        </div>
-      }
+      </div>}
+      <DisplayButtonsChat
+        state={state}
+        dispatch={dispatch} />
       </div>
       <div id="txtWrap" >
       {

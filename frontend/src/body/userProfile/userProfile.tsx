@@ -21,18 +21,6 @@ interface UserProfileProps {
 	dispatch: DispatchType;
 }
 
-// function assembleAchievements(achievements: any[]) {
-// 	let retJsx = [];
-// 	for (let i = 0; i < achievements.length; i++) {
-// 	  retJsx.push(
-// 		<p style={{color:'black'}} key={i}>
-// 		  {achievements[i]}
-// 		</p>
-// 	  );
-// 	}
-// 	return (retJsx);
-//   }
-
 function UserProfile(props: UserProfileProps) {
 	const [redirect2fa, setRedirect2fa] = useState(false);
 	const [status2fa, setStatus2fa] = useState(false);
@@ -40,10 +28,6 @@ function UserProfile(props: UserProfileProps) {
 	const [open, setOpen] = useState(false);
 	const handleOpen = () => setOpen(true);
 	const handleClose = () => setOpen(false);
-
-	// const [openAchievements, setOpenAchievements] = useState(false);
-	// const handleOpenAchievements = () => setOpenAchievements(true);
-	// const handleCloseAchievements = () => setOpenAchievements(false);
 
 	const style = {
 	position: 'absolute' as 'absolute',
@@ -91,31 +75,10 @@ function UserProfile(props: UserProfileProps) {
 				&nbsp;{props.user.username}&nbsp;
 			</Typography>
 			</Stack><br />
-			<img id = "avatarMyProfil" src={props.user.avatar} alt="Avatar" /><br />
+			<img id = "avatarMyProfil" src={props.user.avatar} alt="Avatar" />
 			<AvatarUpload />
       		<Stack margin="auto" sx={{ width: '35%', }} spacing={2}>
-
-			{/* <p>Victory: {data.wonCount} &emsp;&emsp; Defeat: {data.lostCount}</p> */}
 			<UserGameInfos />
-			{/* {data.achievements.length !== 0 && <Button variant="contained" onClick={() => {handleOpenAchievements()}}>
-			<b>{data.achievements.length}</b> &nbsp;&nbsp;Achivements</Button> }
-			<Modal
-			open={openAchievements}
-			onClose={handleCloseAchievements}
-			>
-			<Box sx={style}>
-			<Typography id="modal-modal-title" variant="h5" sx={{borderBottom: 2, textAlign: 'center'}}>
-			 your achivements
-			</Typography>
-			<Typography id="modal-modal-description" variant="subtitle1" sx={{ mt: 2, textAlign: 'center' }}>
-			{
-				assembleAchievements(data.achievements)
-			}
-			</Typography>
-			</Box>
-			</Modal> */}
-
-
 			<Button id ="ChangePasswButton" variant="contained" onClick={handleOpen}
 				>Change my password
 			</Button>

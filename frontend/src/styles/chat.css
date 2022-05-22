@@ -2,7 +2,7 @@
   flex: 0 22vw;
   order: 2;
   max-height: 86vh;
-  min-height: 86vh;
+  min-height: 89vh;
   max-width: 24vw;
   min-width: 24vw;
   background: linear-gradient( rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.185));
@@ -12,7 +12,8 @@
 {
   background: linear-gradient( rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.185));
   border-radius: 15px;
-  max-height: 26vh;
+  max-height: 24vh;
+  min-height: 8vh;
   overflow-y: scroll;
 }
 
@@ -24,13 +25,13 @@
   padding-right: 1%;
   padding-left: 1%;
   border:0;
+  padding-bottom: 1%;
+
 }
 
 #chatCmdHelp p{
-  color:rgb(27, 99, 158);
-  
+  color:black;
 }
-
 
 #txtWrap {
   padding-right: 5%;
@@ -39,5 +40,34 @@
   padding-bottom: 8%;
   word-wrap: break-word;
   overflow-y: scroll;
-  
 }
+
+
+@media all and (max-width: 920px) {
+
+  #chat {
+    min-height: 90vh;
+    min-width: 30vw;
+
+  }
+  .chatForm {
+    min-width: 28vw;
+  }
+
+}
+
+@media all and (max-width: 550px) {
+
+  #chat {
+    margin-top: 15%;
+    margin-bottom: 10%;
+    max-height: 80vh;
+    min-width: 85vw;
+  }
+
+  .chatForm {
+    min-width: 75vw;
+  }
+
+}
+ 
