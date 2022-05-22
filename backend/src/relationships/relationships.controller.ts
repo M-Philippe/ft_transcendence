@@ -47,6 +47,7 @@ export class RelationshipsController {
     let relationshipCreated;
     if (existingRelationship !== undefined && existingRelationship.status === RelationshipStatus.REFUSED) {
       relationshipCreated = existingRelationship;
+      await this.relationshipsService.update(relationshipCreated, {status: RelationshipStatus.PENDING});
     } else if (existingRelationship === undefined) {
       relationshipCreated = await this.relationshipsService.create({
         requesteeId: requestee.id.toString(),
