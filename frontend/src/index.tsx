@@ -8,7 +8,6 @@ import {Provider} from 'react-redux';
 import store from "./store/store";
 import './styles/index.css';
 import './styles/chat.css';
-import "./styles/buttons.css"
 
 function App () {
   //let t = 0;
