@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { DISCONNECT_USER } from "../../store/userSlice/userSliceActionTypes";
 import { API_USER_DISCONNECT, BASE_URL } from "../../urlConstString";
 import { Navigate } from "react-router-dom";
@@ -7,7 +7,6 @@ import { DispatchType, storeState } from "../../store/types";
 import { userState } from "../../store/userSlice/userSliceTypes";
 
 function Disconnecting(props: { user: userState, dispatch: DispatchType }) {
-	const [leaving, setLeaving] = useState(false);
 	
 	useEffect(() => {
 		if (props.user.isConnected)
@@ -23,9 +22,6 @@ function Disconnecting(props: { user: userState, dispatch: DispatchType }) {
 		body: JSON.stringify({}),
 		credentials: "include",
 	})
-	.then(response => {
-		setLeaving(true);
-	});
 
 	if (!props.user.isConnected) {
 		return(<Navigate to={BASE_URL} />

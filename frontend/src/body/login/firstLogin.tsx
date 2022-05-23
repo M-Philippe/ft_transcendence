@@ -41,8 +41,9 @@ export default function FirstLogin(props: any) {
 		setInput(event.target.value);
 	}
 
-	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
+	const handleSubmit = (event: React.FormEvent<HTMLFormElement> | undefined) => {
+		if (event !== undefined)
+			event.preventDefault();
 		if (input === "")
 			return;
 		let headers = new Headers();
@@ -98,8 +99,8 @@ export default function FirstLogin(props: any) {
 					<input type="text" onChange={(event) => handleChange(event)} />
 				</label>
 			</form>
-			<Button variant="contained">
-				Change username
+			<Button variant="contained" onClick={(event) => { handleSubmit(undefined) }}>
+				Change username 
 			</Button><br />
 			<br /><Button variant="contained" onClick={keepSameUsername}>
 				Keep my 42 name
