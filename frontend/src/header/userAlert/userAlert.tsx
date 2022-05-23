@@ -27,7 +27,7 @@ function assembleAlertToHtml(alert: {message: string, needResponse: boolean, req
 					<p className="userAlertP">
 						{alert[i].message}
 					</p> 
-					<IconButton  onClick={() => {
+						<IconButton  onClick={() => {
 						let headers = new Headers();
 						headers.append("Content-Type", "application/json");
 						fetch(API_USER_RESPONSE_ALERT, {
@@ -175,10 +175,6 @@ function UserAlert(props: {user: userState}) {
 
 	return (
 		<div>
-		{
-			showPopUp.show &&
-			<p>	{showPopUp.message}	</p>
-		}
 
 		<IconButton aria-describedby={id} onClick={handleClick} size="large"  color="inherit">
 		<Badge badgeContent={alertNbr} color="error">
@@ -192,11 +188,15 @@ function UserAlert(props: {user: userState}) {
 			onClose={handleClose}
 			max-height="20vh"
 			anchorOrigin={{
-			vertical: 'bottom',
-			horizontal: 'left',
+				vertical: 'bottom',
+				horizontal: 'left',
 			}}
-		>
-		<Typography variant="subtitle1" sx={{ p: 2 }}> 
+			>
+			<Typography variant="subtitle1" sx={{ p: 2 }}> 
+			{
+				showPopUp.show &&
+				<p className="errorMessage">	{showPopUp.message}	</p>
+			}
 			{assembleAlertToHtml(alert)}
 		</Typography>
 		</Popover>

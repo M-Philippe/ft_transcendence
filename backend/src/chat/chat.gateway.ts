@@ -58,8 +58,12 @@ export class ChatGateway {
   }
 
   async commandBan(command: string[], idChat: number, idUser: number, socketId: string) {
-    if (command.length != 2)
+    if (command.length != 2) {
+      this.server.to(socketId).emit("errorMessage", {
+        errorMessage: "Invalid number of arguments"
+      });
       return;
+    }
     let response;
     try {
       response = await this.chatService.kickUserFromChat(command[1], idChat, idUser)
@@ -452,6 +456,10 @@ export class ChatGateway {
           await this.commandBan(arrayCommand, idChat, idUser, socketId);
         else if (arrayCommand.length === 3)
           await this.commandBanWithTimer(arrayCommand, idChat, idUser, socketId);
+        else
+          this.server.to(socketId).emit("errorMessage", {
+            errorMessage: "Bad commands"
+          });
         break;
       case "/unban":
         await this.commandUnban(arrayCommand, idChat, idUser, socketId);

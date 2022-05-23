@@ -117,7 +117,7 @@ function Board(props: BoardProps) {
 			type: UNSET_USER_INGAME,
 			user: props.user,
 		});
-		setTimeout(() => setEndGame(true), 5000);
+		// setTimeout(() => setEndGame(true), 5000);
 	});
 
 	props.socket.off("alreadyCreatedMatch");

@@ -75,7 +75,7 @@ function LoginForm(props: ConnectFormProps) {
 			<label>Username</label><br />
 			<input  type="text" onChange={(event) => {handleChange(event, "username") }} /><br /><br />
 			<label>Password</label><br />
-			<input  type="text" onChange={(event) => {handleChange(event, "password")} }/><br /><br />
+			<input  type="password" onChange={(event) => {handleChange(event, "password")} }/><br /><br />
 			<p>Not yet registered ? <br /><NavLink to="/register"> create an account </NavLink> </p>
 			</form><br />
 		<Stack margin="auto" sx={{ width: '20%', }} spacing={2}>
