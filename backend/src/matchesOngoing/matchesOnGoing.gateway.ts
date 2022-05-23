@@ -29,7 +29,7 @@ const FPS = 80;
 
 // let updatePlayers = new Map<string, number>();
 
-@WebSocketGateway({ path:"/matchesOnGoing", transports: ['websocket'] })
+@WebSocketGateway({ path:"/matchesOnGoing", transports: ['websocket'], namespace: "matchesOnGoing" })
 @Injectable()
 export class MatchesOnGoingGateway {
   constructor(private readonly matchesOnGoingService: MatchesOnGoingService,

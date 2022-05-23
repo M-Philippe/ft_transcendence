@@ -182,6 +182,7 @@ export class UsersService {
       .execute();
   }
 
+<<<<<<< HEAD
   // async setUserInGame(usernameOne: string, usernameTwo: string) {
 
   //   await getConnection()
@@ -197,6 +198,18 @@ export class UsersService {
   //     .where("name = :secondName", { secondName: usernameTwo })
   //     .execute();
   // }
+=======
+  async setUserInGame(usernameOne: string, usernameTwo: string) {
+    await getConnection()
+      .createQueryBuilder()
+      .update(User)
+      .set({
+        inGame: true,
+      })
+      .where("name = :firstName OR name = :secondName", { firstName: usernameOne, secondName: usernameTwo })
+      .execute();
+  }
+>>>>>>> main
 
   async setUserOfflineAndSocketToNull(idUser: number) {
     let user = await this.findOne(idUser);
@@ -207,8 +220,9 @@ export class UsersService {
 
   async updateSocketAndGetUserAlert(userId: number, socket: string) {
     let user = await this.usersRepository.findOne(userId);
-    if (user === undefined || user.userAlert.socket !== "")
+    if (user === undefined) {
       return (undefined);
+    }
     user.userAlert.socket = socket;
     await this.usersRepository.save(user);
     return (user.userAlert);
@@ -282,7 +296,7 @@ export class UsersService {
     else if (!requester.online || requester.inGame != -1) {
       await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
       return ({
-        message: requester.name + " isn't connected!"
+        message: requester.name + " isn't connected!"/* (requester) online: " + requester.online + " | ingame: " + requester.inGame*/
       });
     }
     else if (requestee.inGame != -1) {
@@ -295,9 +309,10 @@ export class UsersService {
     } else if (response === "yes") {
       if (requester.userAlert.socket === "") {
         await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
-        return ({
-          message: requester.name + " isn't connected!"
-        });
+        return ({ message: "Intern problem, socket"});
+        //return ({
+        //  message: requester.name + " isn't connected! (no socket defined)"
+        //});
       }
       let parsedRules:
         {powerUp: boolean, scoreMax: number, map: "original" | "desert" | "jungle"}

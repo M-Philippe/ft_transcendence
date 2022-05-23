@@ -17,11 +17,13 @@ interface IChatInputProps {
 
 export default function ChatInput(props: IChatInputProps) {
   const [text, setText] = useState("");
+  const [timer, setTimer] = useState(Date.now());
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (text.length === 0)
+    if (text.length === 0 || Date.now() - timer < 400)
       return;
+    setTimer(Date.now());
     props.socket.emit("postMessage", {id: props.state.chatFocusId +1, username: props.username, message: text});
     setText("");
   }

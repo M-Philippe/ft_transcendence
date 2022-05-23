@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { Socket } from 'socket.io-client';
 /* Keep this in case of future compatibility problem */
 //import { DefaultEventsMap } from 'socket.io-client/build/typed-events';
@@ -113,6 +113,7 @@ export function ChatConnected(props: PropsChatConnected) {
     errorDisplay: false,
     errorMessage: "",
   });
+  const [dateClick, setDateClick] = useState(Date.now());
 
   props.socket.off("removeChat");
   props.socket.off("newChat");
@@ -140,7 +141,7 @@ export function ChatConnected(props: PropsChatConnected) {
       return;
     let tmp = state.lstId;
     tmp.push(args[0].newChatId);
-    tmp.sort();
+    tmp = tmp.sort();
     dispatch({type: "CHANGE_LST_ID", lstId: tmp});
     state.lstButtonsGreen.push(args[0].newChatId);
     dispatch({type: "UPDATE_BUTTONS_GREEN", lstButtonsGreen: state.lstButtonsGreen});
@@ -231,7 +232,13 @@ export function ChatConnected(props: PropsChatConnected) {
       {state.lstId.length !== 0 &&
 			<div style={{display: 'flex', margin:'auto', justifyContent:'center', alignItems: 'center', flexWrap: 'wrap'}}>
         	<IconButton size="large" onClick={() => {
-            props.socket.emit("createChat", {nameUser: props.name});}}>
+            if (Date.now() - dateClick > 1000) {
+              props.socket.emit("createChat", {nameUser: props.name});
+              setDateClick(Date.now());
+            }
+            }
+          }
+          >
           <AddBoxIcon sx={{ color:'white', fontSize: 28 }}/>
           </IconButton>
         <ChatCommandHelp />
@@ -241,22 +248,24 @@ export function ChatConnected(props: PropsChatConnected) {
         dispatch={dispatch} />
       </div>
       <div id="txtWrap" >
-      {
-        state.errorDisplay &&
-        <ChatErrorMessage
-          errorMessage={state.errorMessage}
-        />
-      }
       <ChatDisplay
         state={state}
         dispatch={dispatch}
-      />
+        />
+        {
+          state.errorDisplay &&
+          <ChatErrorMessage
+            errorMessage={state.errorMessage}
+          />
+        }
+      <div className="chatFormDiv">
       <ChatInput
         socket={props.socket}
         state={state}
         dispatch={dispatch}
         username={props.name}
       />
+      </div>
     </div>
     </div>
   );

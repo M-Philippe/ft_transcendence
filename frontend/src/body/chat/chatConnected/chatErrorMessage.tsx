@@ -5,7 +5,7 @@ interface ChatErrorMessageProps {
 export default function ChatErrorMessage(props: ChatErrorMessageProps) {
   return (
     <div style={{display: 'inline'}}>
-      <p style={{color: "white", backgroundColor: "black"}}>{props.errorMessage}</p>
+      <p className="errorMessage">{props.errorMessage}</p>
     </div>
   );
 }

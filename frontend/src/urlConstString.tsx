@@ -18,7 +18,8 @@ export const USER_MY_PROFILE = BASE_URL + "/myProfile";
 **	CHAT
 */
 
-export const SOCKET_CHAT = '/socket.io/chat';
+//export const SOCKET_CHAT = '/socket.io/chat';
+export const SOCKET_CHAT = '/chat';
 
 /*
 **	MATCHESONGOING
