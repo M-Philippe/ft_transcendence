@@ -14,7 +14,7 @@ import internal from "stream";
 import { join } from "path";
 import { DataTypeNotSupportedError, getConnection } from "typeorm";
 
-const FPS = 60;
+const FPS = 50;
 
 type HashMap<T> = { [key: string]: T };
 
@@ -161,7 +161,6 @@ export class MatchesOnGoingGateway {
   async movePallet(
   @MessageBody() data: any,
   @ConnectedSocket() socket: Socket) {
-    console.error(data.username);
     if (data.direction == "up")
       --updatePlayers[data.username];
     else if (data.direction == "down")

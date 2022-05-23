@@ -695,6 +695,7 @@ export class MatchesOnGoingService {
             hasMessageToDisplay: false,
             playerDisconnected: false,
             usernameDisconnectedPlayer: "",
+            messageToDisplay: "",
           })
           .where("id = :id", { id: game.id})
           .execute();
