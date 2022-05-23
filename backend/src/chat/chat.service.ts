@@ -965,14 +965,10 @@ export class ChatService {
     }
     if (userInvited === undefined)
       return;
-<<<<<<< HEAD
     if (userInit.name === userInvited.name)
       return "Can't do command on yourself.";
 
     if (getIndexUser(initialChat.usersInfos, userInvited.id)
-=======
-    if (getIndexUser(initialChat.usersInfos, userInvited.id) >= 0
->>>>>>> main
     && initialChat.usersInfos[getIndexUser(initialChat.usersInfos, userInvited.id)].persoMutedUsers.indexOf(userInit.id) >= 0)
       return;
     let firstSocket = initialChat.usersInfos[getIndexUser(initialChat.usersInfos, userInit.id)].socket;
