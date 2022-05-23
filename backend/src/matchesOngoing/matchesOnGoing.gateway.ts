@@ -181,7 +181,7 @@ export class MatchesOnGoingGateway {
         await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletbyfromuser: () => "palletbyfromuser + 1"}).where("p2 = :name", {name: data.username}).execute();
     }
   }
-  
+
   @UseGuards(JwtGatewayGuard)
   @SubscribeMessage('createMatch')
   async handleAsync(
