@@ -126,6 +126,10 @@ export default function UserRelationships(props: any) {
 					listRelationships.length !== 0 &&
 					renderListRelationships(listRelationships)
 				}
+				{
+					listRelationships.length === 0 &&
+					<p style={{color:'black'}}>You don't have any relation...</p>
+				}
 				</Stack>
 				</Typography>
 				</Box>

@@ -56,8 +56,8 @@ export default function UserGameInfos(props: any) {
   if (load) {
     return (
       <div>
-        <p>Victory: {data.wonCount} &emsp;&emsp; Defeat: {data.lostCount}</p>
-        			{data.achievements.length !== 0 && <Button variant="contained" onClick={() => {handleOpenAchievements()}}>
+        <span style={{color:'greenyellow'}}>Victory: {data.wonCount} &emsp;&emsp;</span><span style={{color:'darkred'}}> Defeat: {data.lostCount}</span> <br/><br/>
+        			{data.achievements.length !== 0 && <Button variant="contained" sx={{color:'gold'}} onClick={() => {handleOpenAchievements()}}>
 			<b>{data.achievements.length}</b> &nbsp;&nbsp;Achivements</Button> }
 			<Modal
 			open={openAchievements}

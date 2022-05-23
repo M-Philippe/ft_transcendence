@@ -8,7 +8,7 @@ interface UserInput {
 	confirmNewPassword: string,
 }
 
-export default function ChangePassword(props: any) {
+export default function ChangePassword(props: {closePopUp : Function}) {
 const [userInput, setUserInput] = useState<UserInput>({
 	currentPassword: "",
 	newPassword: "",
@@ -60,6 +60,9 @@ const handleChange = (event: React.ChangeEvent<HTMLInputElement>, fieldToUpdate:
 			</form>
 			<br />
 			<Button id = "ChangePassForm" variant="contained" color="success"  onClick={handleSubmit}>Validate new password</Button>
+			<br />
+			<br />
+			<Button variant="contained" color="error" onClick={() => props.closePopUp()} >Cancel</Button>
 			<br />
 		</div>
 	)

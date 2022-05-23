@@ -93,7 +93,7 @@ function UserProfile(props: UserProfileProps) {
 			</Typography>
 			<Typography variant="subtitle1" sx={{ mt: 2, textAlign: 'center' }}>
 			{
-				<ChangePassword />
+				<ChangePassword closePopUp={handleClose} />
 			}
 			</Typography>
 			</Box>
@@ -108,7 +108,6 @@ function UserProfile(props: UserProfileProps) {
 			}
 			<UserRelationships />
 			<Button component={Link} to="/matchHistory" variant="contained" state={{username: props.user.username}}>Match History</Button>
-
 			</Stack>
     	</Box>
 	);

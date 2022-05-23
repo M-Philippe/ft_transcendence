@@ -98,6 +98,9 @@ export default function FirstLogin(props: any) {
 					<input type="text" onChange={(event) => handleChange(event)} />
 				</label>
 			</form>
+			<Button variant="contained">
+				Change username
+			</Button><br />
 			<br /><Button variant="contained" onClick={keepSameUsername}>
 				Keep my 42 name
 			</Button>

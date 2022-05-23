@@ -146,7 +146,7 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
           <Typography variant="subtitle1" id="modal-modal-description" sx={{ mt: 2, textAlign: 'center' }}>
         {
           data.online &&
-          <InvitationGameQueryBox nameProfile={data.name} />
+          <InvitationGameQueryBox nameProfile={data.name} closePopUp={handleClose}/>
         }
           </Typography>
         </Box>

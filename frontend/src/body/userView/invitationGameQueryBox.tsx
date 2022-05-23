@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { API_USER_INVITE_MATCH, DISCONNECTING_URL } from "../../urlConstString";
+import { API_USER_INVITE_MATCH, DISCONNECTING_URL } from '../../urlConstString';
 import Button from '@mui/material/Button';
 
 interface rules {
@@ -8,8 +8,7 @@ interface rules {
   map: string,
 }
 
-
-export default function InvitationGameQueryBox(props: { nameProfile: string }) {
+export default function InvitationGameQueryBox(props: { nameProfile: string, closePopUp : Function}) {
 	const [rules, setRules] = useState<rules>({
     scoreMax: 3,
     powerUp: true,
@@ -63,12 +62,11 @@ export default function InvitationGameQueryBox(props: { nameProfile: string }) {
 						if (response.status === 403)
 							window.location.assign(DISCONNECTING_URL);
 					});
-					// props.setShowBox(false);
-				}}>
+          props.closePopUp()}}>
 					Invite
 			 </Button>
-        
-				{/* <Button variant="contained" color="error" onClick={() => { props.setShowBox(false); }}>Cancel</Button> */}
+       &nbsp;
+				<Button variant="contained" color="error" onClick={() => props.closePopUp()} >Cancel</Button>
 		</div>
 	);
 }

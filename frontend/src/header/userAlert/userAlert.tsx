@@ -13,6 +13,7 @@ import Popover from '@mui/material/Popover';
 import Typography from '@mui/material/Typography';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import Button from '@mui/material/Button';
 
 function assembleAlertToHtml(alert: {message: string, needResponse: boolean, requesterId: number, requesteeId: number}[]) {
 	const alertsHtml = [];
@@ -76,7 +77,7 @@ function assembleAlertToHtml(alert: {message: string, needResponse: boolean, req
 					<p className="userAlertP">
 						{alert[i].message}
 					</p> <br />
-					<button onClick={() => {
+					<Button onClick={() => {
 						let headers = new Headers();
 						headers.append("Content-Type", "application/json");
 						fetch(API_USER_RESPONSE_ALERT, {
@@ -94,7 +95,7 @@ function assembleAlertToHtml(alert: {message: string, needResponse: boolean, req
 							if (response.status === 403)
 								window.location.assign(DISCONNECTING_URL);
 						})
-					}}>Clear</button>
+					}}>Clear</Button>
 				</section>
 			)
 		}

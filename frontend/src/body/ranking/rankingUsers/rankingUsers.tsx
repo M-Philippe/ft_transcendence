@@ -12,8 +12,6 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import IconButton from '@mui/material/IconButton';
 
-import Stack from '@mui/material/Stack';
-
 interface IRankingUsers {
   url: string;
 }
@@ -110,10 +108,10 @@ function RankingUsers(props: any) {
               data.map((element: any, index: number) => (
                 <tr key={index}>
                     <th style={props.username === element.name ? {background: "rgba(200, 200, 200, 0.6)"} : {}}>
-                    <Stack direction="row" spacing={2} >
-                    <Avatar alt="avatar" src={element.avatar} />
+                    <div style={{display: 'flex', alignItems: 'center', flexWrap: 'wrap'}}>
+                    &nbsp; &nbsp;<Avatar alt="avatar" src={element.avatar} /> &nbsp;&nbsp; 
                     <Link style={{textDecoration:'none'}} to={"/userView/:" + element.name}>{element.name}</Link>
-                    </Stack>
+                    </div>
                     </th>
                   <th style={{textAlign:"center"}}>{element.wonCount}</th>
                   <th style={{textAlign:"center"}}>{element.lostCount}</th>
