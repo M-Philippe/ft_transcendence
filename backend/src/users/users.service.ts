@@ -50,7 +50,7 @@ export class UsersService {
   async create(createUserDto: CreateUserDto) {
     const user = this.usersRepository.create(createUserDto);
     user.online = false;
-    user.inGame = false;
+    user.inGame = -1;
     user.listChat = [];
     user.userAlert = {socket: "", alert: []};
     this.createUserAchievements(user);
@@ -90,7 +90,7 @@ export class UsersService {
       listChat: [],
       userAlert: {socket: "", alert: []},
       online: false,
-      inGame: false
+      inGame: -1
     });
     this.createUserAchievements(user);
     user.password = await encryptPasswordToStoreInDb(undefined, createUserLocalDto.password);
@@ -182,17 +182,21 @@ export class UsersService {
       .execute();
   }
 
-  async setUserInGame(usernameOne: string, usernameTwo: string) {
+  // async setUserInGame(usernameOne: string, usernameTwo: string) {
 
-    await getConnection()
-      .createQueryBuilder()
-      .update(User)
-      .set({
-        inGame: true,
-      })
-      .where("name = :firstName OR name = :secondName", { firstName: usernameOne, secondName: usernameTwo })
-      .execute();
-  }
+  //   await getConnection()
+  //     .createQueryBuilder()
+  //     .update(User)
+  //     .set({
+  //       inGame: 1,
+  //     })
+  //     .where("name = :firstName", { firstName: usernameOne })
+  //     .set({
+  //       inGame: 2,
+  //     })
+  //     .where("name = :secondName", { secondName: usernameTwo })
+  //     .execute();
+  // }
 
   async setUserOfflineAndSocketToNull(idUser: number) {
     let user = await this.findOne(idUser);
@@ -275,13 +279,13 @@ export class UsersService {
     }
     if (requester === undefined)
       return (undefined)
-    else if (!requester.online || requester.inGame) {
+    else if (!requester.online || requester.inGame != -1) {
       await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
       return ({
         message: requester.name + " isn't connected!"
       });
     }
-    else if (requestee.inGame) {
+    else if (requestee.inGame != -1) {
       return undefined;
     }
     // createMatch with ids and emit to socket to assign new Location.
@@ -502,7 +506,7 @@ export class UsersService {
           .getOne();
     if (user !== null && user !== undefined) {
       user.online = true;
-      user.inGame = false;
+      user.inGame = -1;
       user.userAlert = {socket: "", alert: []};
       try {
         user = await this.usersRepository.save(user);
@@ -520,7 +524,7 @@ export class UsersService {
     try {
       user = this.usersRepository.create(userToCreate);
       user.online = true;
-      user.inGame = false;
+      user.inGame = -1;
       this.createUserAchievements(user);
       user = await this.usersRepository.save(user);
     } catch (error) {
@@ -678,12 +682,12 @@ export class UsersService {
     return this.findOne(id);
   }
 
-  async setInGame(username: string) {
+  async setInGame(username: string, value: number) {
     await getConnection()
     .createQueryBuilder()
     .update(User)
     .set({
-      inGame: true,
+      inGame: value
     })
     .where("name = :name", {name: username})
     .execute();
@@ -694,7 +698,7 @@ export class UsersService {
     .createQueryBuilder()
     .update(User)
     .set({
-      inGame: false,
+      inGame: -1,
     })
     .where("name = :name", {name: username})
     .execute();

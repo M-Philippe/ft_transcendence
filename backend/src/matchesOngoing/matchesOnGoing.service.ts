@@ -55,13 +55,13 @@ function initStartingPositions(game: MatchesOnGoing) {
   game.palletAWidth = START_PALLET_WIDTH;
   game.palletAHeight = START_PALLET_HEIGHT;
   game.palletAXFromUser = START_PALLETAX;
-  game.palletAYFromUser = START_PALLETAY;
+  game.palletayfromuser = 0;
   game.palletBX = START_PALLETBX;
   game.palletBY = START_PALLETBY;
   game.palletBWidth = START_PALLET_WIDTH;
   game.palletBHeight = START_PALLET_HEIGHT;
   game.palletBXFromUser = START_PALLETBX;
-  game.palletBYFromUser = START_PALLETBY;
+  game.palletbyfromuser = 0;
   game.puckX = START_PUCKX;
   game.puckY = START_PUCKY;
   game.puckVX = START_PUCK_VEL;
@@ -100,15 +100,14 @@ export class MatchesOnGoingService {
 
   async initStartingPositionsAfterScore(game: MatchesOnGoing, who: string) {
     let puckVX = who === "left" ? START_PUCK_VEL :  -START_PUCK_VEL;
-    let puckVY = 0;
     await getConnection()
     .createQueryBuilder()
     .update(MatchesOnGoing)
     .set({
       palletAY: START_PALLETAY,
       palletBY: START_PALLETBY,
-      palletAYFromUser: START_PALLETAY,
-      palletBYFromUser: START_PALLETBY,
+      palletayfromuser: 0,
+      palletbyfromuser: 0,
       palletAHeight: START_PALLET_HEIGHT,
       palletBHeight: START_PALLET_HEIGHT,
       puckX: START_PUCKX,
@@ -117,7 +116,6 @@ export class MatchesOnGoingService {
       scorePlayerB: game.scorePlayerB,
       puckVX: puckVX,
       puckVY: Math.round(Math.random() * (100 - 1) + 1) * ((Math.random() * (100 -1) + 1) % 2 == 0 ? -1 : 1) / 100,
-      lastUpdateTime: Date.now()
     })
     .where("id = :id", { id: game.id })
     .execute();
@@ -439,33 +437,33 @@ export class MatchesOnGoingService {
   }
   /*                                  Move Puck                                 */
 
-  async movePuck(gameId: number, p1: number, p2: number) {
+  async movePuck(gameId: number) {
+    // async movePuck(gameId: number, p1: number, p2: number) {
     let game: MatchesOnGoing = await getConnection()
         .getRepository(MatchesOnGoing)
         .createQueryBuilder('matches')
         .where("id = :id", { id: gameId})
         .getOneOrFail();
-    if (p1 === undefined || p2 == undefined) {
-      console.error("player undefined");
-      return undefined;
-    }
+    // if (p1 === undefined || p2 == undefined) {
+    //   console.error("player undefined");
+    //   return undefined;
+    // }
     if (game.finishedGame)
       return  undefined;
     if (game.playerDisconnected)
       return game;
     let collisionPallet: boolean = false;
     let coord: Coord = {puckX: Number(game.puckX), puckY: Number(game.puckY), puckVX: Number(game.puckVX), puckVY:  Number(game.puckVY)};
-    game.palletAY += (p1 * SPEED_PALLET);
+    game.palletAY += game.palletayfromuser * SPEED_PALLET;
     if (game.palletAY + game.palletAHeight > BOARD_HEIGHT)
       game.palletAY = BOARD_HEIGHT - game.palletAHeight;
     else if (game.palletAY < 0)
       game.palletAY = 0;
-    game.palletBY += (p2 * SPEED_PALLET);
+    game.palletBY += game.palletbyfromuser * SPEED_PALLET;
     if (game.palletBY + game.palletBHeight > BOARD_HEIGHT)
       game.palletBY = BOARD_HEIGHT - game.palletBHeight;
     else if (game.palletBY < 0)
       game.palletBY = 0;
-
     // console.error("\n--> PuckX = ", coord.puckX, " and puckVX = ", coord.puckVX, ", puckY = ", coord.puckY, ", puckVY = ", coord.puckVY,);
     if (coord.puckX + coord.puckVX <= 0.0 || coord.puckX + coord.puckVX >= game.width)
       await this.goal(game, coord.puckX < game.width / 2 ? "right" : "left");
@@ -489,13 +487,18 @@ export class MatchesOnGoingService {
           .createQueryBuilder()
           .update(MatchesOnGoing)
           .set({
-            puckX: Math.round(coord.puckX * 100) / 100,
-            puckY: Math.round(coord.puckY * 100) / 100,
-            puckVX: Math.round(coord.puckVX * 100) / 100,
-            puckVY: Math.round(coord.puckVY * 100) / 100,
+            puckX: Math.round(coord.puckX),
+            puckY: Math.round(coord.puckY),
+            puckVX: Math.round(coord.puckVX),
+            puckVY: Math.round(coord.puckVY),
+            // puckX: Math.round(coord.puckX * 100) / 100,
+            // puckY: Math.round(coord.puckY * 100) / 100,
+            // puckVX: Math.round(coord.puckVX * 100) / 100,
+            // puckVY: Math.round(coord.puckVY * 100) / 100,
             palletAY: game.palletAY,
             palletBY: game.palletBY,
-            lastUpdateTime: Date.now(),
+            palletayfromuser: 0,
+            palletbyfromuser: 0,
           })
           .where("id = :id", {id: game.id})
           .execute();
@@ -574,8 +577,6 @@ export class MatchesOnGoingService {
     else
       this.setPowerUpToNull(match);
     const d = new Date();
-    match.startTime = d.valueOf();
-    match.lastUpdateTime = d.valueOf();
     match.hasMessageToDisplay = false;
     match.messageToDisplay = "";
     match.playerDisconnected = false;
@@ -613,9 +614,6 @@ export class MatchesOnGoingService {
       this.setPowerUp(match);
     else
       this.setPowerUpToNull(match);
-    const d = new Date();
-    match.startTime = d.valueOf();
-    match.lastUpdateTime = d.valueOf();
     match.hasMessageToDisplay = false;
     match.messageToDisplay = "";
     match.playerDisconnected = false;

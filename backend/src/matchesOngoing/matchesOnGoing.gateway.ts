@@ -4,23 +4,30 @@ import { MatchesOnGoingService } from "./matchesOnGoing.service";
 import { MatchesOnGoing } from "./entities/matchesOngoing.entity" ;
 import { MatchesService } from "src/matches/matches.service";
 import { CreateMatchDto } from 'src/matches/dto/create-match.dto';
-import { SPEED_PALET_FRONT } from "./matchesOnGoing.constBoard";
+import { BOARD_HEIGHT, SPEED_PALET_FRONT, SPEED_PALLET, START_PALLET_HEIGHT } from "./matchesOnGoing.constBoard";
 import { Injectable, UseGuards, Inject, forwardRef } from "@nestjs/common";
 import { extractJwtFromCookie, JwtGatewayGuard } from "src/guards/jwtGateway.guards";
 import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
 import { UsersService } from "src/users/users.service";
 import { User } from "src/users/entities/user.entity";
+import { Connection, getConnection, Repository } from "typeorm";
+
 import internal from "stream";
 import { join } from "path";
-import { DataTypeNotSupportedError, getConnection } from "typeorm";
+// import { DataTypeNotSupportedError, getConnection, MetadataWithSuchNameAlreadyExistsError } from "typeorm";
+// import {Mutex, MutexInterface, Semaphore, SemaphoreInterface, withTimeout} from 'async-mutex';
+// import { Mutex }from 'async-mutex';
+// import {Mutex, MutexInterface, Semaphore, SemaphoreInterface, withTimeout} from 'async-mutex';
 
-const FPS = 50;
 
-type HashMap<T> = { [key: string]: T };
+const FPS = 80;
 
-const updatePlayers: HashMap<number> = {};
+// type HashMap<T> = { [key: string]: T };
 
-// let updatePlayers = new Map<string, match>();
+// const updatePlayers: HashMap<number> = {};
+// const mutex = new Mutex();
+
+// let updatePlayers = new Map<string, number>();
 
 @WebSocketGateway({ path:"/matchesOnGoing", transports: ['websocket'] })
 @Injectable()
@@ -109,9 +116,9 @@ export class MatchesOnGoingGateway {
   @UseGuards(JwtGatewayGuard)
   @SubscribeMessage("cancelMatch")
   async cancelMatch(
-  @MessageBody() data: any,
-  ) {
+  @MessageBody() data: any) {
     await this.matchesOnGoingService.cancelMatch(data.username);
+    await this.usersService.setNotInGame(data.username);
   }
 
   async handleDisconnect(client: any) {
@@ -161,12 +168,20 @@ export class MatchesOnGoingGateway {
   async movePallet(
   @MessageBody() data: any,
   @ConnectedSocket() socket: Socket) {
-    if (data.direction == "up")
-      --updatePlayers[data.username];
-    else if (data.direction == "down")
-      ++updatePlayers[data.username];
+    let mvt: number;
+    if (data.direction === "up") {
+      if (data.inGame === 1)
+        await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletayfromuser: () => "palletayfromuser - 1"}).where("p1 = :name", {name: data.username}).execute();
+      else
+        await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletbyfromuser: () => "palletbyfromuser - 1"}).where("p2 = :name", {name: data.username}).execute();
+    } else if (data.direction === "down") {
+      if (data.inGame === 1)
+        await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletayfromuser: () => "palletayfromuser + 1"}).where("p1 = :name", {name: data.username}).execute();
+      else
+        await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletbyfromuser: () => "palletbyfromuser + 1"}).where("p2 = :name", {name: data.username}).execute();
+    }
   }
-
+  
   @UseGuards(JwtGatewayGuard)
   @SubscribeMessage('createMatch')
   async handleAsync(
@@ -189,16 +204,16 @@ export class MatchesOnGoingGateway {
         await this.sendToAllSockets(existingGame);
       return;
     }
-    await this.usersService.setInGame(data.username);
     // Check if game pending with same rules (except map)
     let joinPendingGame = await this.matchesOnGoingService.checkSimilarGamePending(data, socket.id);
     if (joinPendingGame !== undefined) {
       this.server.to(joinPendingGame.players[1].socket).emit("idGame", {
         idGame: joinPendingGame.id,
       });
-      this.usersService.setUserInGame(joinPendingGame.players[0].username, joinPendingGame.players[1].username);
-      updatePlayers[joinPendingGame.players[0].username] = 0;
-      updatePlayers[joinPendingGame.players[1].username] = 0;
+      await this.usersService.setInGame(data.username, 2);
+      // this.usersService.setUserInGame(joinPendingGame.players[0].username, joinPendingGame.players[1].username);
+      // updatePlayers[joinPendingGame.players[0].username] = 0;
+      // updatePlayers[joinPendingGame.players[1].username] = 0;
       console.error("Add the two players in the map");
       this.gameLoop(joinPendingGame);
       return;
@@ -209,6 +224,7 @@ export class MatchesOnGoingGateway {
     } catch (error) {
       return;
     }
+    await this.usersService.setInGame(data.username, 1);
     this.server.to(response.players[0].socket).emit("idGame", {
       idGame: response.id
     });
@@ -241,7 +257,9 @@ export class MatchesOnGoingGateway {
       this.server.to(socket.id).emit("idGame", {
         idGame: matchOrId.id,
       });
-      this.usersService.setUserInGame(matchOrId.players[0].username, matchOrId.players[1].username);
+      this.usersService.setInGame(matchOrId.p1, 1);
+      this.usersService.setInGame(matchOrId.p2, 2);
+      // this.usersService.setUserInGame(matchOrId.players[0].username, matchOrId.players[1].username);
       this.gameLoop(matchOrId);
     } else
       return;
@@ -250,8 +268,13 @@ export class MatchesOnGoingGateway {
   async gameLoop(match: MatchesOnGoing) {
     await this.sendToAllSockets(match);
     let pid: NodeJS.Timer;
+    let y = 0;
+    let c = 0;
+    let d = Date.now();
     pid = setInterval(async () => {
-      let game = await this.matchesOnGoingService.movePuck(match.id, updatePlayers[match.p1], updatePlayers[match.p2]);
+      d = Date.now();
+      let game = await this.matchesOnGoingService.movePuck(match.id);
+      // let game = await this.matchesOnGoingService.movePuck(match.id, updatePlayers[match.p1], updatePlayers[match.p2]);
       if (game === undefined)
         return;
       if (game.playerDisconnected)
@@ -280,12 +303,15 @@ export class MatchesOnGoingGateway {
         await this.usersService.checkUserAchievements(game.p2);
         await this.usersService.setNotInGame(game.p1);
         await this.usersService.setNotInGame(game.p2);
+        console.error("moy: " + y / c);
         return;
       }
-      let a = updatePlayers[match.p1];
-      updatePlayers[match.p1] = 0;
-      updatePlayers[match.p2] = 0;
+      // let a = updatePlayers[match.p1];
+      // updatePlayers[match.p1] = 0;
+      // updatePlayers[match.p2] = 0;
       await this.sendToAllSockets(game);
+      ++c;
+      y += Date.now()- d;
     }, 1000 / FPS);
   }
 }

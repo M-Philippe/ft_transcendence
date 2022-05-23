@@ -17,8 +17,6 @@ export class MatchesOnGoing {
   @Column("text") bakckgroundColor: string;
   @Column("text") objectColor: string;
 
-  @Column("bigint") startTime: number;
-  @Column("bigint") lastUpdateTime: number;
 
   @Column({
     type: 'jsonb',
@@ -39,14 +37,14 @@ export class MatchesOnGoing {
   @Column("int") palletAWidth: number;
   @Column("int") palletAHeight: number;
   @Column("int") palletAXFromUser: number;
-  @Column("int") palletAYFromUser: number;
+  @Column("int") palletayfromuser: number;
 
   @Column("int") palletBX: number;
   @Column("int") palletBY: number;
   @Column("int") palletBWidth: number;
   @Column("int") palletBHeight: number;
   @Column("int") palletBXFromUser: number;
-  @Column("int") palletBYFromUser: number;
+  @Column("int") palletbyfromuser: number;
 
   @Column("int") puckWidth: number;
   @Column("int") puckHeight: number;

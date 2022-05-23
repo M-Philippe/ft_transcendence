@@ -36,8 +36,8 @@ export class User {
     @Column({ nullable: false, default: false })
     public online: boolean;
 
-    @Column({ nullable: false, default: false })
-    public inGame: boolean;
+    @Column({ nullable: false, default: -1 })
+    public inGame: number;
 
     @CreateDateColumn()
     public createdAt: Date;
