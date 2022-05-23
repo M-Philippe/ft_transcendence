@@ -13,6 +13,7 @@ import { User } from "src/users/entities/user.entity";
 import internal from "stream";
 import { join } from "path";
 import { DataTypeNotSupportedError, getConnection } from "typeorm";
+import { map, queueScheduler } from "rxjs";
 
 const FPS = 50;
 
@@ -20,9 +21,16 @@ type HashMap<T> = { [key: string]: T };
 
 const updatePlayers: HashMap<number> = {};
 
+interface IQueue {
+  id: number,
+  rules: string
+}
+
+const queue = new Map<number /* timestamp */, IQueue>(); 
+
 // let updatePlayers = new Map<string, match>();
 
-@WebSocketGateway({ path:"/matchesOnGoing", transports: ['websocket'], namespace: "matchesOnGoing" })
+@WebSocketGateway({ path:"/matchesOnGoing", transports: ['websocket'] })
 @Injectable()
 export class MatchesOnGoingGateway {
   constructor(private readonly matchesOnGoingService: MatchesOnGoingService,
@@ -128,8 +136,8 @@ export class MatchesOnGoingGateway {
         let game: MatchesOnGoing = await getConnection()
           .getRepository(MatchesOnGoing)
           .createQueryBuilder('game')
-          .where("p1 = :name", { name: usr.name })
-          .orWhere("p2 = :name", { name: usr.name })
+          .where("p1 = :name1", { name1: usr.name })
+          .orWhere("p2 = :name2", { name2: usr.name })
           .getOneOrFail();
         if (game.pending) {
           await getConnection()
@@ -167,11 +175,106 @@ export class MatchesOnGoingGateway {
       ++updatePlayers[data.username];
   }
 
+  async checkUserAlreadyInGame(idUser: number) {
+    let user: User | undefined;
+    try {
+      user = await this.usersService.findOne(idUser);
+    } catch (error) {
+      return { response: false, game: null };
+    }
+    let existingGame = await this.matchesOnGoingService.findOneWithUser(user.name);
+    if (existingGame !== undefined)
+      return { response: true, game: existingGame };
+    else
+      return { response: false, game: null };
+  }
+
+  checkUserAlreadyInQueue(idUser: number) {
+    for (let value of queue.values())
+      if (value.id === idUser)
+        return true;
+    return false;
+  }
+
+  disassembleRulesString(rulesToDisassemble: string) {
+    let parsedRules: {powerUp: boolean, scoreMax: number, map: "original" | "desert" | "jungle"}
+      = { powerUp: false, scoreMax: 3, map: "original"};
+    let rules = rulesToDisassemble;
+    rules.indexOf("(");
+    let rulesReturn = rules.substring(rules.indexOf("("));
+    let arrayRules = rules.split("#");
+    parsedRules.scoreMax = parseInt(arrayRules[0].substring(arrayRules[0].indexOf(":") + 1));
+    parsedRules.powerUp
+      = (arrayRules[1].substring(arrayRules[1].indexOf(":") + 1)) === "yes" ? true : false;
+    let mapExtracted = arrayRules[2].substring(arrayRules[2].indexOf(":") + 1, arrayRules[2].length - 1);
+    if (mapExtracted === "original" || mapExtracted === "desert" || mapExtracted === "jungle")
+    parsedRules.map = mapExtracted;
+    console.error("PARSED_RULES: ", parsedRules);
+    return parsedRules;
+  }
+
+  checkSimilarGame(idUser: number, rulesConcat: string) {
+    let rulesSearching = this.disassembleRulesString(rulesConcat);
+    for (let entries of queue.entries()) {
+      let rulesPulled = this.disassembleRulesString(entries[1].rules);
+      if (rulesPulled.scoreMax === rulesSearching.scoreMax && rulesPulled.powerUp === rulesSearching.powerUp) {
+        queue.delete(entries[0]);
+        return { response: true, playerOneId: entries[1].id, playerTwoId: idUser, rules: rulesPulled };
+      }
+    }
+    return { response: false };
+  }
+
+  assembleRulesString(rules: any) {
+    let assembledRulesString =
+      "(points:" + rules.scoreMax
+      + "#power-up:" + (rules.powerUp ? "yes" : "no")
+      + "#map:" + rules.map + ")";
+    return assembledRulesString;
+  }
+
+  removeUserFromQueue(idUser: number) {
+    for (let entries of queue.entries())
+      if (entries[1].id === idUser)
+        queue.delete(entries[0]);
+  }
+
   @UseGuards(JwtGatewayGuard)
   @SubscribeMessage('createMatch')
   async handleAsync(
   @MessageBody() data: any,
   @ConnectedSocket() socket: Socket) {
+    /* NEW_CODE */
+    if (socket.handshake.headers.cookie === undefined) {
+      socket.disconnect();
+      return;
+    }
+    let idUser: number = 0;
+    try {
+      const jwtToken = extractJwtFromCookie(socket.handshake.headers.cookie);
+      idUser = await this.jwtService.verify(jwtToken).idUser;
+      console.error("IDUSER: ", idUser);
+    } catch (error) {
+      socket.disconnect();
+      return;
+    }
+    const user = await this.usersService.findOne(idUser);
+    let rulesConcat = this.assembleRulesString(data);
+    if ((await this.checkUserAlreadyInGame(idUser)).response) { // We can reconnect player to his previous game
+      /*  */
+    } else if (this.checkUserAlreadyInQueue(idUser)) { // Search continue
+      this.server.to(socket.id).emit("alreadyCreatedMatch", { idGame: -1 });
+    } else if (this.checkSimilarGame(idUser, rulesConcat).response) { // We create the match
+      /*  */
+    } else {
+      queue.set(Date.now(), { id: idUser, rules: rulesConcat })
+    }
+    // Only here to return.
+    let t = 0;
+    if (t === 0)
+      return;
+
+
     if (data.map !== "original" && data.map !== "desert" && data.map !== "jungle")
       data.map = "original";
     if (data.scoreMax != 3 && data.scoreMax != 5 && data.scoreMax != 7)

@@ -98,6 +98,21 @@ export class MatchesOnGoingService {
     }, HttpStatus.NOT_FOUND);
   }
 
+  async findOneWithUser(username: string) {
+    let game;
+    try {
+      game = await getConnection()
+        .getRepository(MatchesOnGoing)
+        .createQueryBuilder("game")
+        .where("p1 = :name1", { name1: username })
+        .orWhere("p2 = :name2", { name2: username })
+        .getOneOrFail();
+    } catch (error) {
+      return undefined;
+    }
+    return game;
+  }
+
   async initStartingPositionsAfterScore(game: MatchesOnGoing, who: string) {
     let puckVX = who === "left" ? START_PUCK_VEL :  -START_PUCK_VEL;
     let puckVY = 0;
