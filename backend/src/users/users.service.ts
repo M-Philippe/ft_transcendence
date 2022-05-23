@@ -275,11 +275,14 @@ export class UsersService {
     }
     if (requester === undefined)
       return (undefined)
-    else if (!requester.online /* || requester.inGame*/ ) {
+    else if (!requester.online || requester.inGame) {
       await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
       return ({
         message: requester.name + " isn't connected!"
       });
+    }
+    else if (requestee.inGame) {
+      return undefined;
     }
     // createMatch with ids and emit to socket to assign new Location.
     if (response === "no") {
@@ -652,6 +655,28 @@ export class UsersService {
   async update(id: number, updateUserDto: UpdateUserDto) {
     await this.usersRepository.update(id, updateUserDto);
     return this.findOne(id);
+  }
+
+  async setInGame(username: string) {
+    await getConnection()
+    .createQueryBuilder()
+    .update(User)
+    .set({
+      inGame: true,
+    })
+    .where("name = :name", {name: username})
+    .execute();
+  }
+
+  async setNotInGame(username: string) {
+    await getConnection()
+    .createQueryBuilder()
+    .update(User)
+    .set({
+      inGame: false,
+    })
+    .where("name = :name", {name: username})
+    .execute();
   }
 
   async remove(id: number) {

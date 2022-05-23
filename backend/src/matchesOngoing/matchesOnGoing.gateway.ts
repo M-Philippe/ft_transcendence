@@ -12,7 +12,7 @@ import { UsersService } from "src/users/users.service";
 import { User } from "src/users/entities/user.entity";
 import internal from "stream";
 import { join } from "path";
-import { getConnection } from "typeorm";
+import { DataTypeNotSupportedError, getConnection } from "typeorm";
 
 const FPS = 60;
 
@@ -116,7 +116,6 @@ export class MatchesOnGoingGateway {
 
   async handleDisconnect(client: any) {
 		if (client.handshake.headers.cookie) {
-      console.error("\n-----> PLAYER DISCONNECTED IN GAME <----- " + Date.now());
 			// console.error("COOKIES: ", typeof(client.handshake.headers.cookie));
 			let jwt = extractJwtFromCookie(client.handshake.headers.cookie);
 			try {
@@ -139,6 +138,8 @@ export class MatchesOnGoingGateway {
                 .from(MatchesOnGoing)
                 .where("id = :id", { id: game.id })
                 .execute();
+          this.usersService.setNotInGame(game.p1);
+          this.usersService.setNotInGame(game.p2);
         }
         else {
           await getConnection()
@@ -152,7 +153,6 @@ export class MatchesOnGoingGateway {
                 .where("id = :id", { id: game.id })
                 .execute();
         }
-        console.error("----->" + usr.name + "<-----\n");
       } catch (error) {}
 		}
 	}
@@ -177,7 +177,7 @@ export class MatchesOnGoingGateway {
       data.map = "original";
     if (data.scoreMax != 3 && data.scoreMax != 5 && data.scoreMax != 7)
       data.scoreMax = 3;
-
+    data.username
     // Check if user has a pending or disconnected game
     let existingGame = await this.matchesOnGoingService.checkUserAlreadyInGame(data.username, socket.id);
     if (existingGame !== undefined) {
@@ -190,7 +190,7 @@ export class MatchesOnGoingGateway {
         await this.sendToAllSockets(existingGame);
       return;
     }
-
+    await this.usersService.setInGame(data.username);
     // Check if game pending with same rules (except map)
     let joinPendingGame = await this.matchesOnGoingService.checkSimilarGamePending(data, socket.id);
     if (joinPendingGame !== undefined) {
@@ -279,6 +279,8 @@ export class MatchesOnGoingGateway {
         }
         await this.usersService.checkUserAchievements(game.p1);
         await this.usersService.checkUserAchievements(game.p2);
+        await this.usersService.setNotInGame(game.p1);
+        await this.usersService.setNotInGame(game.p2);
         return;
       }
       let a = updatePlayers[match.p1];

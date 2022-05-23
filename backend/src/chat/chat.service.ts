@@ -13,6 +13,7 @@ import { isPasswordEmpty } from "./utils/chat.password.utils";
 import { comparePassword, encryptPasswordToStoreInDb } from "src/passwordEncryption/passwordEncryption";
 import { BANNED_MESSAGE, INVITE_MESSAGE, JOINED_MESSAGE, LACK_ADMIN_RIGHT, LACK_OWNER_RIGHT, MUTED_MESSAGE, QUIT_MESSAGE, RESOLVED_PASSWORD, SET_CHAT_PRIVATE, SET_CHAT_PUBLIC, SET_PASSWORD, UNBANNED_MESSAGE, UNMUTED_MESSAGE, UNSET_PASSWORD } from "./chat.constMessages";
 import { ChatGateway } from "./chat.gateway";
+import { queueScheduler } from "rxjs";
 
 function getTimestamp() : string {
   let time = new Date();
@@ -96,6 +97,8 @@ export class ChatService {
 
   async classicUserUnmuteCommand(chat: Chat, user: User, userToUnmute: User) {
     let index = chat.usersInfos[getIndexUser(chat.usersInfos, user.id)].persoMutedUsers.indexOf(userToUnmute.id);
+    if (user.name === userToUnmute.name)
+      return "Can't do command on yourself.";
     if (!isUserPresent(chat.usersInfos, userToUnmute.id)
     || isUserBanned(chat.bannedUsers, userToUnmute.id)
     || index < 0)
@@ -131,6 +134,8 @@ export class ChatService {
     } catch (error) {
       return ("No user named '" + userToMute + "'");
     }
+    if (adminUser.name === mutedUser.name)
+      return "Can't do command on yourself.";
     // Classic Mute
     if (chat.admins.indexOf(adminUser.id) < 0) {
       chat = await this.classicUserMuteCommand(chat, adminUser, mutedUser);
@@ -177,6 +182,8 @@ export class ChatService {
     } catch (error) {
       return ("No user named '" + userToMute + "'");
     }
+    if (adminUser.name === mutedUser.name)
+      return "Can't do command on yourself.";
     if (chat.admins.indexOf(adminUser.id) < 0) {
       chat = await this.classicUserUnmuteCommand(chat, adminUser, mutedUser);
       return (chat);
@@ -235,6 +242,8 @@ export class ChatService {
     } catch (error) {
       return ("No user named '" + userToMute + "'");
     }
+    if (adminUser.name === mutedUser.name)
+      return "Can't do command on yourself.";
     if (!isUserPresent(chat.usersInfos, mutedUser.id)
     || isUserMuted(chat.mutedUsers, mutedUser.id)
     || isUserBanned(chat.bannedUsers, mutedUser.id))
@@ -285,6 +294,8 @@ export class ChatService {
     }
     if (chat === undefined)
       return undefined;
+    if (adminUser.name === banishedUser.name)
+      return "Can't do command on yourself.";
     if (chat.admins.indexOf(adminUser.id) < 0)
       return (LACK_ADMIN_RIGHT);
     if (!isUserPresent(chat.usersInfos, banishedUser.id)
@@ -341,6 +352,8 @@ export class ChatService {
     }
     if (chat === undefined)
       return undefined;
+    if (adminUser.name === banishedUser.name)
+      return "Can't do command on yourself.";
     if (chat.admins.indexOf(adminUser.id) < 0) {
       return (LACK_ADMIN_RIGHT);
     }
@@ -398,6 +411,8 @@ export class ChatService {
     }
     if (chat === undefined)
       return undefined;
+    if (adminUser.name === banishedUser.name)
+      return "Can't do command on yourself.";
     if (chat.admins.indexOf(adminUser.id) < 0)
       return (LACK_ADMIN_RIGHT);
     if (!isUserPresent(chat.usersInfos, banishedUser.id)
@@ -472,7 +487,9 @@ export class ChatService {
     }
     if (chat === undefined)
       return undefined;
-    // Check that users isn't already in chat
+    if (userInit.name === userToInvite.name)
+      return "Can't do command on yourself.";
+      // Check that users isn't already in chat
     if (isUserPresent(chat.usersInfos, userToInvite.id) || isUserBanned(chat.bannedUsers, userToInvite.id)
     || isUserMuted(chat.mutedUsers, userInit.id)) {
       return ("User already in chat, or banned");
@@ -925,6 +942,9 @@ export class ChatService {
     }
     if (userInvited === undefined)
       return;
+    if (userInit.name === userInvited.name)
+      return "Can't do command on yourself.";
+
     if (getIndexUser(initialChat.usersInfos, userInvited.id)
     && initialChat.usersInfos[getIndexUser(initialChat.usersInfos, userInvited.id)].persoMutedUsers.indexOf(userInit.id) >= 0)
       return;
@@ -961,6 +981,8 @@ export class ChatService {
     } catch (error) {
       return ("No user named " + usernameToAdd + "!");
     }
+    if (userInit.name === userToAdd.name)
+      return "Can't do command on yourself.";
     if (isUserMuted(chat.mutedUsers, userToAdd.id))
       return (usernameToAdd + " is muted!");
     else if (isUserBanned(chat.bannedUsers, userToAdd.id))
@@ -995,6 +1017,8 @@ export class ChatService {
     } catch (error) {
       return ("No user named " + usernameToAdd + "!");
     }
+    if (userInit.name === userToRemove.name)
+      return "Can't do command on yourself.";
     if (chat.admins.indexOf(userToRemove.id) < 0)
       return (usernameToAdd + " isn't an admin!");
     chat.admins.splice(chat.admins.indexOf(userToRemove.id), 1);
