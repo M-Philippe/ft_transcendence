@@ -569,7 +569,7 @@ export class ChatService {
       return undefined;
     if (isUserPresent(globalChat.usersInfos, user.id)) {
       globalChat.usersInChat.push(user);
-      if (user.id === 1 && user.name === "sudo" && globalChat.owners.indexOf(1) < 0) {
+      if (user.id === 1 && user.name === "Admin" && globalChat.owners.indexOf(1) < 0) {
         globalChat.owners.push(1);
         globalChat.admins.push(1);
       }
@@ -586,7 +586,8 @@ export class ChatService {
       globalChat.usersInChat = [];
     }
     globalChat.usersInChat.push(user);
-    globalChat = await this.addMessageInArray(globalChat, user.name, JOINED_MESSAGE);
+    if (user.id !== 1 && user.name !== "Admin")
+      globalChat = await this.addMessageInArray(globalChat, user.name, JOINED_MESSAGE);
     try {
       await this.chatRepository.save(globalChat);
     } catch (error) {

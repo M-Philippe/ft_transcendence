@@ -2,7 +2,7 @@
 **	FRONT_URL
 */
 
-const domain = "localhost";
+const domain = "10.1.4.3";
 const port = "3005";
 export const BASE_URL = "http://" + domain + ":" + port;
 export const BASE_API_URL = "http://" + domain + ":3000";
@@ -18,7 +18,8 @@ export const USER_MY_PROFILE = BASE_URL + "/myProfile";
 **	CHAT
 */
 
-export const SOCKET_CHAT = '/socket.io/chat';
+//export const SOCKET_CHAT = '/socket.io/chat';
+export const SOCKET_CHAT = '/chat';
 
 /*
 **	MATCHESONGOING

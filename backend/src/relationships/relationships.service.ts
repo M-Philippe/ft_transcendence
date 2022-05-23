@@ -52,9 +52,6 @@ export class RelationshipsService {
     }
     await this.relationshipRepository.save(relationship);
     //
-    console.error("TRYING TO UPDATE AND RETRIEVE");
-
-
     return relationship;
   }
 

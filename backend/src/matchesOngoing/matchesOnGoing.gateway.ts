@@ -22,7 +22,7 @@ const updatePlayers: HashMap<number> = {};
 
 // let updatePlayers = new Map<string, match>();
 
-@WebSocketGateway({ path:"/matchesOnGoing", transports: ['websocket'] })
+@WebSocketGateway({ path:"/matchesOnGoing", transports: ['websocket'], namespace: "matchesOnGoing" })
 @Injectable()
 export class MatchesOnGoingGateway {
   constructor(private readonly matchesOnGoingService: MatchesOnGoingService,
@@ -242,6 +242,8 @@ export class MatchesOnGoingGateway {
         idGame: matchOrId.id,
       });
       this.usersService.setUserInGame(matchOrId.players[0].username, matchOrId.players[1].username);
+      updatePlayers[matchOrId.players[0].username] = 0;
+      updatePlayers[matchOrId.players[1].username] = 0;
       this.gameLoop(matchOrId);
     } else
       return;

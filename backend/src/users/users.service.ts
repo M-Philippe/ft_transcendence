@@ -183,7 +183,6 @@ export class UsersService {
   }
 
   async setUserInGame(usernameOne: string, usernameTwo: string) {
-
     await getConnection()
       .createQueryBuilder()
       .update(User)
@@ -203,8 +202,9 @@ export class UsersService {
 
   async updateSocketAndGetUserAlert(userId: number, socket: string) {
     let user = await this.usersRepository.findOne(userId);
-    if (user === undefined || user.userAlert.socket !== "")
+    if (user === undefined) {
       return (undefined);
+    }
     user.userAlert.socket = socket;
     await this.usersRepository.save(user);
     return (user.userAlert);
@@ -278,7 +278,7 @@ export class UsersService {
     else if (!requester.online || requester.inGame) {
       await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
       return ({
-        message: requester.name + " isn't connected!"
+        message: requester.name + " isn't connected!"/* (requester) online: " + requester.online + " | ingame: " + requester.inGame*/
       });
     }
     else if (requestee.inGame) {
@@ -291,9 +291,10 @@ export class UsersService {
     } else if (response === "yes") {
       if (requester.userAlert.socket === "") {
         await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
-        return ({
-          message: requester.name + " isn't connected!"
-        });
+        return ({ message: "Intern problem, socket"});
+        //return ({
+        //  message: requester.name + " isn't connected! (no socket defined)"
+        //});
       }
       let parsedRules:
         {powerUp: boolean, scoreMax: number, map: "original" | "desert" | "jungle"}

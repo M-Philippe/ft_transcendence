@@ -14,7 +14,7 @@ import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
 import { IncomingHttpHeaders } from "http";
 import { isNotEmptyObject } from "class-validator";
 
-@WebSocketGateway({ transports: ['websocket'] })
+@WebSocketGateway({ path: "/chat", transports: ['websocket'] })
 export class ChatGateway {
   constructor(@Inject(forwardRef(() => ChatService)) private readonly chatService: ChatService,
               @Inject(forwardRef(() => UsersService)) private readonly usersService: UsersService,
