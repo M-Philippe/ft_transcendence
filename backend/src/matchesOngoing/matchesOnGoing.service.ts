@@ -68,6 +68,8 @@ function initStartingPositions(game: MatchesOnGoing) {
   game.puckVY =  (Math.round(Math.random() * (100 - 1) + 1) * ((Math.random() * (100 -1) + 1) % 2 == 0 ? -1 : 1) / 100);
   game.puckHeight = START_PUCK_HEIGHT;
   game.puckWidth = START_PUCK_WIDTH;
+  game.p1 = "";
+  game.p2 = "";
   game.scorePlayerA = 0;
   game.scorePlayerB = 0;
   game.finishedGame = false;
@@ -202,8 +204,7 @@ export class MatchesOnGoingService {
 
   async checkTimeoutDisconnectedUser(game: MatchesOnGoing) {
     let timeElapsed = Date.now() - game.timeOfDisconnection;
-    console.error("-> Check Timeout Disconnected User. Time elapsed: " + timeElapsed + ", time of disconnection: " +  game.timeOfDisconnection + ", date.now(): "+ Date.now() +") <-");
-    if (timeElapsed > 30000) {
+    if (timeElapsed > 15000) {
       if (game.usernameDisconnectedPlayer === game.players[0].username)
         game.winnerUsername = game.players[1].username;
       else
@@ -226,7 +227,7 @@ export class MatchesOnGoingService {
             .update(MatchesOnGoing)
             .set({
               hasMessageToDisplay: true,
-              messageToDisplay: game.usernameDisconnectedPlayer + " is disconnected. " + (10 - Math.round(timeElapsed / 1000)) + " remaining.",
+              messageToDisplay: game.usernameDisconnectedPlayer + " is disconnected, " + (15 - Math.round(timeElapsed / 1000)) + " remaining.",
             })
             .where("id = :id", { id: game.id })
             .execute();
@@ -254,67 +255,6 @@ export class MatchesOnGoingService {
         return;
     }
   }
-
-
-  /*                                  Move Pallet                                 */
-
-  // async movePalletPlayerB(board: MatchesOnGoing, direction: 0 | 1) {
-  //   if (direction == 0 && board.palletBYFromUser <= 0)
-  //     return (undefined);
-  //   if (direction == 1 && board.palletBYFromUser + board.palletBHeight >= board.height)
-  //     return (undefined);
-  //   direction == 0 ?
-  //     board.palletBYFromUser -= SPEED_PALLET:
-  //     board.palletBYFromUser += SPEED_PALLET;
-  //   await getConnection()
-  //         .createQueryBuilder()
-  //         .update(MatchesOnGoing)
-  //         .set(
-  //           {
-  //             palletBYFromUser: board.palletBYFromUser,
-  //           })
-  //         .where("id = :id", { id: board.id})
-  //         .execute();
-  //   return (board);
-  // }
-
-  // async movePalletPlayerA(board: MatchesOnGoing, direction: 0 | 1) {
-  //   if (direction == 0 && board.palletAYFromUser <= 0)
-  //     return (undefined);
-  //   if (direction == 1 && board.palletAYFromUser + board.palletAHeight >= board.height)
-  //     return (undefined);
-  //   direction == 0 ?
-  //     board.palletAYFromUser -= SPEED_PALLET:
-  //     board.palletAYFromUser += SPEED_PALLET;
-  //   await getConnection()
-  //         .createQueryBuilder()
-  //         .update(MatchesOnGoing)
-  //         .set(
-  //           {
-  //             palletAYFromUser: board.palletAYFromUser,
-  //           })
-  //         .where("id = :id", { id: board.id})
-  //         .execute();
-  //   return (board);
-  // }
-
-  // async movePalletPlayer(idGame: number, username: string, direction: "up" | "down") {
-  //   let board;
-
-  //   try {
-  //     board = await this.findOne(idGame);
-  //   } catch (error) {
-  //     throw new Error(error);
-  //   }
-  //   if (board.playerDisconnected)
-  //     return;
-  //   if (board.players[0].username === username)
-  //     await this.movePalletPlayerA(board, direction === "up" ? 0 : 1);
-  //   else if (board.players[1].username === username)
-  //     await this.movePalletPlayerB(board, direction === "up" ? 0 : 1);
-  //   else
-  //     return;
-  // }
 
   /*                                   Power Up                                  */
 

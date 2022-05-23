@@ -161,6 +161,7 @@ export class MatchesOnGoingGateway {
   async movePallet(
   @MessageBody() data: any,
   @ConnectedSocket() socket: Socket) {
+    console.error(data.username);
     if (data.direction == "up")
       --updatePlayers[data.username];
     else if (data.direction == "down")
@@ -251,9 +252,7 @@ export class MatchesOnGoingGateway {
     await this.sendToAllSockets(match);
     let pid: NodeJS.Timer;
     pid = setInterval(async () => {
-      let p1 = updatePlayers[match.players[0].username];
-      let p2 = updatePlayers[match.players[1].username];
-      let game = await this.matchesOnGoingService.movePuck(match.id, p1, p2);
+      let game = await this.matchesOnGoingService.movePuck(match.id, updatePlayers[match.p1], updatePlayers[match.p2]);
       if (game === undefined)
         return;
       if (game.playerDisconnected)
@@ -264,8 +263,8 @@ export class MatchesOnGoingGateway {
         clearInterval(pid);
         await this.sendToAllSockets(game);
         let matchToSend = new CreateMatchDto;
-        matchToSend.player1 = game.players[0].username;
-        matchToSend.player2 = game.players[1].username;
+        matchToSend.player1 = game.p1;
+        matchToSend.player2 = game.p2;
         matchToSend.winner = game.winnerUsername;
         try {
           await this.matchesService.create(matchToSend);
@@ -278,12 +277,13 @@ export class MatchesOnGoingGateway {
         } catch (error) {
           console.error(error);
         }
-        await this.usersService.checkUserAchievements(game.players[0].username);
-        await this.usersService.checkUserAchievements(game.players[1].username);
+        await this.usersService.checkUserAchievements(game.p1);
+        await this.usersService.checkUserAchievements(game.p2);
         return;
       }
-      p1 = 0;
-      p2 = 0;
+      let a = updatePlayers[match.p1];
+      updatePlayers[match.p1] = 0;
+      updatePlayers[match.p2] = 0;
       await this.sendToAllSockets(game);
     }, 1000 / FPS);
   }
