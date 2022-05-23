@@ -1,9 +1,10 @@
 import React, { SetStateAction } from "react";
 import { API_ADD_FRIEND, API_BLOCK_USER, API_UNBLOCK_USER, API_UNFRIEND_USER, DISCONNECTING_URL } from "../../urlConstString";
+import Button from '@mui/material/Button';
 
 function assembleUnblockButton(nameUserFetched: string, countKeys: number, setRefresh: React.Dispatch<SetStateAction<number>>) {
   return (
-    <button className="action-button shadow animate orange" key={countKeys} onClick={() => {
+    <Button variant="contained" color="warning" key={countKeys} onClick={() => {
       let headers = new Headers();
       headers.append("Content-Type", "application/json");
       fetch(API_UNBLOCK_USER, {
@@ -23,13 +24,13 @@ function assembleUnblockButton(nameUserFetched: string, countKeys: number, setRe
         }
       })
       }}> Unblock
-    </button>
+    </Button>
   );
 }
 
 function assembleBlockButton(nameUserFetched: string, countKeys: number, setRefresh: React.Dispatch<SetStateAction<number>>) {
   return (
-    <button className="action-button shadow animate red" key={countKeys} onClick={() => {
+    <Button variant="contained" color="error" key={countKeys} onClick={() => {
       let headers = new Headers();
       headers.append("Content-Type", "application/json");
       fetch(API_BLOCK_USER, {
@@ -46,13 +47,13 @@ function assembleBlockButton(nameUserFetched: string, countKeys: number, setRefr
         else if (response.status === 201)
           setRefresh(Date.now());
       })
-      }}>Block</button>
+      }}>Block this user</Button>
   );
 }
 
 function assembleAddFriendButton(nameUserFetched: string, countKeys: number, setRefresh: React.Dispatch<SetStateAction<number>>) {
   return (
-    <button className="action-button shadow animate blue" key={countKeys} onClick={() => {
+    <Button variant="contained" key={countKeys} onClick={() => {
       // Send friend request to back.
       let headers = new Headers();
       headers.append("Content-Type", "application/json");
@@ -71,14 +72,14 @@ function assembleAddFriendButton(nameUserFetched: string, countKeys: number, set
           setRefresh(Date.now());
       });
       }}>
-      Add to my friends!
-    </button>
+      Add to friends
+    </Button>
   );
 }
 
 function assembleUnfriendButton(nameUserFetched: string, countKeys: number, setRefresh: React.Dispatch<SetStateAction<number>>) {
   return (
-    <button key={countKeys} onClick={() => {
+    <Button variant="contained" color="error" key={countKeys} onClick={() => {
       // Send friend request to back.
       console.log("UNFRIEND");
       let headers = new Headers();
@@ -99,7 +100,7 @@ function assembleUnfriendButton(nameUserFetched: string, countKeys: number, setR
       });
       }}>
       Remove from my Friends.
-    </button>
+    </Button>
   );
 }
 

@@ -6,13 +6,13 @@ function Footer(props: { isInGame: boolean, isConnected: boolean })
 {
   if (!props.isInGame && !props.isConnected)
     return (
-      <footer>
+      <footer style={{color:'white'}}>
       © pminne vroth-di ninieddu
       </footer>
     );
   else
     return (
-      <footer style={{paddingRight:"24vw"}}>
+      <footer style={{paddingRight:"24vw", color:'white'}}>
       © pminne vroth-di ninieddu
       </footer>
     )

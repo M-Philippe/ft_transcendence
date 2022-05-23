@@ -7,6 +7,8 @@ import { SET_ID_GAME, SET_USER_INGAME, UNSET_USER_INGAME } from "../../store/use
 import { Navigate } from "react-router-dom";
 import { userState } from "../../store/userSlice/userSliceTypes";
 import { API_MATCHES_PLAYER_LEAVING } from "../../urlConstString";
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 
 interface BoardProps {
 	socket: Socket,
@@ -29,6 +31,7 @@ function mapStateToProps(state: storeState, props: InheritedProps) {
 function Board(props: BoardProps) {
 	const [coordinates, setCoordinates, canvasRef] = useCanvas();
 	const [idBoard, setIdBoard] = useState(0);
+	const [endGame, setEndGame] = useState(false);
 	const [palletAssigned, setPalletAssigned] = useState(-1);
 	const [cancelGame, setCancelGame] = useState(false);
 	const [searchingMessage, setSearchingMessage] = useState("Searching for a similar game or creating a new one.");
@@ -52,7 +55,7 @@ function Board(props: BoardProps) {
 		})
 	});
 
-	if (cancelGame)
+	if (cancelGame || endGame)
 		return (
 			<Navigate replace to="/ranking" />
 		);
@@ -82,8 +85,6 @@ function Board(props: BoardProps) {
 			setCoordinates(coordinates);
 		}
 	}
-
-	//document.addEventListener("visibilitychange", alertServerPlayerLeavingGame);
 
 	props.socket.off("idGame");
 	props.socket.on("idGame", (...args: any) => {
@@ -116,6 +117,7 @@ function Board(props: BoardProps) {
 			type: UNSET_USER_INGAME,
 			user: props.user,
 		});
+		setTimeout(() => setEndGame(true), 5000);
 	});
 
 	props.socket.off("alreadyCreatedMatch");
@@ -127,14 +129,14 @@ function Board(props: BoardProps) {
 	if (coordinates.width === 0) {
 		return (
 			<div>
-				<p>{searchingMessage}</p>
-				<p>Click on this button to cancel searching</p>
-				<button onClick={() => {
+					<CircularProgress sx={{color: 'white'}}/><br/><br/>
+				<p>{searchingMessage}</p><br/>
+				<Button variant="contained" color="error" onClick={() => {
 					props.socket.emit("cancelMatch", {
 						username: props.user.username,
 					})
 					setCancelGame(true);
-				}}>Cancel</button>
+				}}>Cancel</Button>
 			</div>
 		);
 	}

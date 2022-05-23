@@ -70,6 +70,8 @@ export const API_USER_CHANGE_PASSWORD = API_URL + "/users/changePassword";
 //	http://localhost:3000/users/changePassword
 export const API_USER_2FA_ENABLED = API_URL + "/users/is2faEnabled";
 // http://localhost:3000/users/is2faEnabled
+export const API_USER_GAME_INFOS = API_URL + "/users/gameInfos";
+// http://localhost:3000/users/gameInfos
 
 /*
 **	AUTH

@@ -4,7 +4,10 @@ import { connect } from 'react-redux';
 import { userState } from '../../store/userSlice/userSliceTypes';
 import { API_AUTH_42_LOGIN, API_AUTH_LOCAL_LOGIN } from '../../urlConstString';
 import store from '../../store/store';
-import { Navigate } from 'react-router-dom';
+import { Navigate, NavLink } from 'react-router-dom';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
 
 interface ConnectFormProps {
   user: userState;
@@ -61,22 +64,25 @@ function LoginForm(props: ConnectFormProps) {
 		return (<div><p>You're already connected</p></div>);
 	}
 
-  return (
-    <div>
-    {
-      errorMessage !== "" &&
-      <p className='errorMessage'>{errorMessage}</p>
-    }
-    <form id="className">
-      <label>Username</label><br />
-        <input type="text" onChange={(event) => {handleChange(event, "username") }} /><br />
+	return (
+        <Grid >
+			<h2>Sign In</h2>
+			{
+				errorMessage !== "" &&
+				<p className='errorMessage'>{errorMessage}</p>
+			}
+			<form>
+			<label>Username</label><br />
+			<input  type="text" onChange={(event) => {handleChange(event, "username") }} /><br /><br />
 			<label>Password</label><br />
-				<input type="password" onChange={(event) => {handleChange(event, "password")} }/>
-		</form><br />
-		<button onClick={handleSubmit}>Login</button>
-		<br /><br />
-    <a href={API_AUTH_42_LOGIN}>LOGIN WITH 42</a>
-    </div>
+			<input  type="text" onChange={(event) => {handleChange(event, "password")} }/><br /><br />
+			<p>Not yet registered ? <br /><NavLink to="/register"> create an account </NavLink> </p>
+			</form><br />
+		<Stack margin="auto" sx={{ width: '20%', }} spacing={2}>
+		<Button type='submit' color='primary' variant="contained" style={{margin:'8px 0'}} fullWidth onClick={handleSubmit}>Login</Button><br />
+		<Button variant="contained" href={API_AUTH_42_LOGIN} style={{margin:'8px 0'}} fullWidth >LOGIN WITH 42</Button>
+		</Stack>
+	</Grid>
   );
 }
 

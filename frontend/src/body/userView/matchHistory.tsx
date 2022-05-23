@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { API_MATCH_HISTORY, DISCONNECTING_URL } from "../../urlConstString";
 import { Link, useLocation } from "react-router-dom";
+import HistoryIcon from '@mui/icons-material/History';
+import { Stack } from "@mui/material";
+import Typography from '@mui/material/Typography';
+import CloseIcon from '@mui/icons-material/Close';
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 
 interface IMatchHistory {
     opponent: string,
@@ -13,10 +18,11 @@ function assembleMatchHistory(usernameFetched: string, matchHistory: IMatchHisto
     let count = 0;
     for (let i = 0; i < matchHistory.length; i++) {
         ret.push(
-            <div key={count++}>
-                <span key={count++}>{usernameFetched} VS </span>
-                <Link key={count++} to={"/userView/:" + matchHistory[i].opponent}>{matchHistory[i].opponent}</Link>
-                <span key={count++} style={{color: matchHistory[i].winner === usernameFetched ? "green" : "red"}}>    {matchHistory[i].winner}</span>
+            <div key={count++} style={{display: 'flex', alignItems: 'center', flexWrap: 'wrap'}}>
+                {matchHistory[i].winner === usernameFetched ? <EmojiEventsIcon sx={{color:'gold', fontSize: 35 }} />: <CloseIcon color="error" sx={{ fontSize: 35 }} />}&nbsp; 
+                {usernameFetched} VS &nbsp; 
+                {<Link key={count++} to={"/userView/:" + matchHistory[i].opponent}>{matchHistory[i].opponent}</Link>}&nbsp;
+                {matchHistory[i].winner === matchHistory[i].opponent ? <EmojiEventsIcon sx={{ color:'gold', fontSize: 35 }} />: <CloseIcon color="error" sx={{ fontSize: 35 }} />}
             </div>
         );
     }
@@ -73,7 +79,19 @@ export default function MatchHistory(props: any) {
     else 
         return (
             <div>
+            <Stack direction="row" sx={{margin:'auto',}} spacing={2}>
+			<Typography variant="h6" sx={{margin:'auto', color: 'white', }}	>
+                  <HistoryIcon sx={{ fontSize: 80 }}/>
+			</Typography>
+			</Stack><br />
+      		<Stack margin="auto" sx={{ width: '35%', textAlign:'center',}} spacing={2}>
+              <Typography variant="h6" sx={{margin:'auto', fontFamily: 'monospace', 
+				fontWeight: 700, color: 'white',}}	>
+                {matchHistory.length} Matchs played :{<br/>}{<br/>}
                 {assembleMatchHistory(usernameToFetch, matchHistory)}
+			</Typography>
+
+            </Stack>
             </div>
         );
 }

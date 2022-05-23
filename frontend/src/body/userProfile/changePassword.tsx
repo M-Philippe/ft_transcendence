@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { API_USER_CHANGE_PASSWORD, DISCONNECTING_URL } from "../../urlConstString";
+import Button from '@mui/material/Button';
 
 interface UserInput {
 	currentPassword: string,
@@ -7,7 +8,7 @@ interface UserInput {
 	confirmNewPassword: string,
 }
 
-export default function ChangePassword(props: any) {
+export default function ChangePassword(props: {closePopUp : Function}) {
 const [userInput, setUserInput] = useState<UserInput>({
 	currentPassword: "",
 	newPassword: "",
@@ -50,15 +51,18 @@ const handleChange = (event: React.ChangeEvent<HTMLInputElement>, fieldToUpdate:
 				<p className="errorMessage">{errorMessage}</p>
 			}
 			<form>
-				<label>Current Password</label><br />
-					<input type="password" onChange={(event) => {handleChange(event ,"currentPassword")}}/><br />
-				<label>New Password</label><br />
-					<input type="password" onChange={(event) => {handleChange(event, "newPassword")}}/><br />
-				<label>Confirm New Password</label><br />
+				<p>Current Password :</p>
+					<input type="password" onChange={(event) => {handleChange(event ,"currentPassword")}}/>
+				<p>New password :</p>
+					<input type="password" onChange={(event) => {handleChange(event, "newPassword")}}/>
+				<p>Confirm new password :</p>
 					<input type="password" onChange={(event) => {handleChange(event, "confirmNewPassword")}}/>
 			</form>
 			<br />
-			<button id = "ChangePassForm" className="action-button shadow animate green" onClick={handleSubmit}>Change my password</button>
+			<Button id = "ChangePassForm" variant="contained" color="success"  onClick={handleSubmit}>Validate new password</Button>
+			<br />
+			<br />
+			<Button variant="contained" color="error" onClick={() => props.closePopUp()} >Cancel</Button>
 			<br />
 		</div>
 	)

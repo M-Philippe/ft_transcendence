@@ -3,6 +3,10 @@ import { connect } from "react-redux";
 import { storeState } from "../../store/types";
 import { userState } from "../../store/userSlice/userSliceTypes";
 import { API_AUTH_42_LOGIN, API_AUTH_LOCAL_REGISTER, BASE_URL, CONNECT_FORM_URL } from "../../urlConstString";
+import Button from '@mui/material/Button';
+// import TextField from '@mui/material/TextField';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
 
 interface UserInput {
 	username: string,
@@ -51,20 +55,24 @@ function Register(props: {user: userState}) {
 	}
 
 	return (
-		<section>
-			{ errorMessage !== "" && <p style={{color: "red"}}>{errorMessage}</p> }
-			<p>Register :</p>
-			<form>
+        <Grid>
+                <h2>Register</h2>
+				{ errorMessage !== "" && <p className="errorMessage" >{errorMessage}</p> }
+				<form>
+                	{/* <TextField label='Username' placeholder='Enter username' fullWidth required /><br /><br /> */}
+                	{/* <TextField label='Password' placeholder='Enter password' type='password' fullWidth required /> */}
 				<label>Username</label><br />
 					<input type="text" onChange={(event) => {handleChange(event ,"username")}}/><br /><br />
 				<label>Password</label><br />
 					<input type="password" onChange={(event) => {handleChange(event, "password")}}/><br /><br />
 				<label>Confirm Password</label><br />
-					<input type="password" onChange={(event) => {handleChange(event, "confirmPassword")}}/>
-			</form><br />
-			<button onClick={handleSubmit}>Register</button> <br /><br />
-			<a href={API_AUTH_42_LOGIN}>REGISTER WITH 42</a>
-		</section>
+					<input type="password" onChange={(event) => {handleChange(event, "confirmPassword")}}/> <br /><br />
+				</form><br />
+				<Stack margin="auto" sx={{ width: '20%', }} spacing={2}>
+                <Button type='submit' color='primary' variant="contained" style={{margin:'8px 0'}} fullWidth onClick={handleSubmit}>Register</Button><br />
+				<Button variant="contained" href={API_AUTH_42_LOGIN} style={{margin:'8px 0'}} fullWidth >LOGIN WITH 42</Button>
+				</Stack>
+        </Grid>
 	);
 }
 

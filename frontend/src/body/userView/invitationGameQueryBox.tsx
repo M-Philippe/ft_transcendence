@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { API_USER_INVITE_MATCH, DISCONNECTING_URL } from "../../urlConstString";
+import { API_USER_INVITE_MATCH, DISCONNECTING_URL } from '../../urlConstString';
+import Button from '@mui/material/Button';
 
 interface rules {
   scoreMax: number,
@@ -7,8 +8,7 @@ interface rules {
   map: string,
 }
 
-
-export default function InvitationGameQueryBox(props: { nameProfile: string, setShowBox: React.Dispatch<React.SetStateAction<boolean>> }) {
+export default function InvitationGameQueryBox(props: { nameProfile: string, closePopUp : Function}) {
 	const [rules, setRules] = useState<rules>({
     scoreMax: 3,
     powerUp: true,
@@ -17,7 +17,7 @@ export default function InvitationGameQueryBox(props: { nameProfile: string, set
 
 	return (
 		<div>
-			<p>Choose your rules to play against : {props.nameProfile}</p>
+			<h3>{props.nameProfile}</h3>
 			<p>Points</p>
         <select onChange={(event) => {
           setRules({...rules, scoreMax: parseInt(event.target.value)});
@@ -45,7 +45,7 @@ export default function InvitationGameQueryBox(props: { nameProfile: string, set
           <option value="jungle">Jungle</option>
         </select>
 				<br /><br />
-				<button className="action-button shadow animate green" onClick={() => {
+				<Button variant="contained" color="success" onClick={() => {
 					let headers = new Headers();
 					headers.append("Content-Type", "application/json");
 					fetch(API_USER_INVITE_MATCH, {
@@ -62,11 +62,11 @@ export default function InvitationGameQueryBox(props: { nameProfile: string, set
 						if (response.status === 403)
 							window.location.assign(DISCONNECTING_URL);
 					});
-					props.setShowBox(false);
-				}}>
+          props.closePopUp()}}>
 					Invite
-				</button>
-				<button className="action-button shadow animate red" onClick={() => { props.setShowBox(false); }}>Cancel</button>
+			 </Button>
+       &nbsp;
+				<Button variant="contained" color="error" onClick={() => props.closePopUp()} >Cancel</Button>
 		</div>
 	);
 }

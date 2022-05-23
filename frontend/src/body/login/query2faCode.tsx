@@ -42,7 +42,7 @@ export default function Query2faCode(props: any) {
 		<section>
 			{
 				errorMessage !== "" &&
-				<p style={{color: "red"}}>{errorMessage}</p>
+				<p className="errorMessage" >{errorMessage}</p>
 			}
 			<p>Submit code from google authenticator</p>
 			<form onSubmit={(event) => { handleSubmit(event) }}>

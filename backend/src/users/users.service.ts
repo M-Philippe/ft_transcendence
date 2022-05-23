@@ -38,8 +38,8 @@ export class UsersService {
 
   async onApplicationBootstrap() {
     // We create sudo user [id: 0]
-    const checkSudoExist = await this.usersRepository.findOne(1);
-    if (checkSudoExist !== undefined)
+    const checkSudoExist = await this.usersRepository.findOne({where: { id: 1}});
+    if (checkSudoExist !== null && checkSudoExist !== undefined)
       return;
     try {
       const sudo = await this.createUserLocal({ name: "Admin", password: "Admin" });
@@ -81,7 +81,7 @@ export class UsersService {
   }
 
   async createUserLocal(createUserLocalDto: CreateUserLocalDto) {
-    let avatar = FRONT_GENERIC_AVATAR; // Should implement generic avatar.
+    let avatar = FRONT_GENERIC_AVATAR;
     const user = this.usersRepository.create({
       name: createUserLocalDto.name,
       avatar: avatar,
@@ -202,8 +202,8 @@ export class UsersService {
   }
 
   async updateSocketAndGetUserAlert(userId: number, socket: string) {
-    let user = await this.findOne(userId);
-    if (user.userAlert.socket !== "")
+    let user = await this.usersRepository.findOne(userId);
+    if (user === undefined || user.userAlert.socket !== "")
       return (undefined);
     user.userAlert.socket = socket;
     await this.usersRepository.save(user);
@@ -348,16 +348,34 @@ export class UsersService {
     let userOne;
     let userTwo;
     try {
-      userOne = await this.usersRepository.findOne(requesterId);
-      userTwo = await this.usersRepository.findOne(requesteeId);
+      userOne = await this.usersRepository.findOne({where: {id: requesterId}});
+      userTwo = await this.usersRepository.findOne({where: {id: requesteeId}});
     } catch (error) {
       return;
     }
-    if (userOne === undefined || userTwo === undefined)
+    if ((userOne === null || userTwo === null) || (userOne === undefined || userTwo === undefined))
       return;
     if (userOne.userAlert.socket === "" || userTwo.userAlert.socket === "")
       return;
     this.usersGateway.contactUsers(userOne.userAlert.socket, userTwo.userAlert.socket, "redirectionToBoard");
+  }
+
+  async getGameInfos(idUser: number) {
+    let user: User;
+    try {
+      user = await this.findOne(idUser);
+    } catch (error) { console.error("H");return undefined; }
+    if (user === undefined)
+      return undefined;
+    let ret: {
+      wonCount: number,
+      lostCount: number,
+      achievements: String[]
+    } = {wonCount: 0, lostCount: 0, achievements: []};
+    ret.wonCount = user.wonCount;
+    ret.lostCount = user.lostCount;
+    ret.achievements = await this.getUserAchievements(idUser);
+    return ret;
   }
 
   /*
@@ -482,7 +500,7 @@ export class UsersService {
           .from(User, "user")
           .where("id42 = :id", { id: userToCreate.id42 })
           .getOne();
-    if (user !== undefined) {
+    if (user !== null && user !== undefined) {
       user.online = true;
       user.inGame = false;
       user.userAlert = {socket: "", alert: []};
@@ -512,8 +530,8 @@ export class UsersService {
   }
 
   async changeUsername42(idUser: number, newName: string) {
-    let user = await this.usersRepository.findOne(idUser);
-    if (user === undefined)
+    let user = await this.usersRepository.findOne({where: {id: idUser}});
+    if (user === null || user === undefined)
       return ({ message: "Error intern." });
     if (user.hasAlreadyChanged42Name) {
       return ({ message: "You already have changed your username" });
@@ -550,8 +568,8 @@ export class UsersService {
   }
 
   async updateAvatar(idUser: number, avatar: string) {
-    let user = await this.usersRepository.findOne(idUser);
-    if (user === undefined)
+    let user = await this.usersRepository.findOne({ where: {id: idUser}});
+    if (user === null || user === undefined)
       return (undefined);
     await getConnection()
       .createQueryBuilder()
@@ -587,7 +605,8 @@ export class UsersService {
   }
 
   async findOne(id: number) {
-    const user = await this.usersRepository.findOne(id, { relations: ["matches", "listChat"] });
+    //const user = await this.usersRepository.findOne(id, { relations: ["matches", "listChat"] });
+    const user = await this.usersRepository.findOne({ where: {id: id}, relations: ["matches", "listChat"]});//id, { relations: ["matches", "listChat"] });
     if (user) {
       return user;
     }
@@ -599,7 +618,8 @@ export class UsersService {
   }
 
   async findOneByName(name: string) {
-    const user = await this.usersRepository.findOne({name}, { relations: ["matches", "listChat", "requestedRelationships", "requesteeRelationships"] });
+    //const user = await this.usersRepository.findOne({name}, { relations: ["matches", "listChat", "requestedRelationships", "requesteeRelationships"] });
+    const user = await this.usersRepository.findOne({ where: {name: name}, relations: ["matches", "listChat", "requestedRelationships", "requesteeRelationships"] });
     if (user) {
       return user;
     }
@@ -611,7 +631,8 @@ export class UsersService {
   }
 
   async getListChatUser(name: string) {
-    const user = await this.usersRepository.findOne({name}, { relations: ["matches", "listChat"]});
+    //const user = await this.usersRepository.findOne({name}, { relations: ["matches", "listChat"]});
+    const user = await this.usersRepository.findOne({ where: {name: name}, relations: ["matches", "listChat"]});
     if (user) {
       return JSON.stringify(user.listChat);
     }

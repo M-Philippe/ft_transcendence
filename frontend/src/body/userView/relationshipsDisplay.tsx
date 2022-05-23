@@ -27,12 +27,12 @@ export default function RelationshipsDisplay(props: { nameProfile: string }) {
 
 	return (
 		<div>
-			<p>FRIENDS</p>
 			{friendsList.length !== 0 &&
 				friendsList.map((element: any, index: number) => (
 					<Link key={index} to={"/userView/:" + element}>{element}<br /> </Link>
 				))
 			}
+			{friendsList.length === 0 && <p style={{color:'black'}}>This user don't have any friend...</p>}
 		</div>
 	)
 }

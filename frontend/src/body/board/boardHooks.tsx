@@ -69,9 +69,9 @@ export function draw(ctx: CanvasRenderingContext2D | null, coordinates: BoardPos
     }
   }
   if (coordinates.hasMessageToDisplay) {
-    ctx.fillStyle = "red";
+    ctx.fillStyle = "green";
     ctx.textAlign = "center";
-    ctx.fillText(coordinates.messageToDisplay, 200, 200);
+    ctx.fillText(coordinates.messageToDisplay, 250, 200);
   }
 }
 
@@ -111,7 +111,7 @@ export function useCanvas() {
   useEffect(() => {
     const canvasObj = canvasRef.current;
     if (canvasObj == null) {
-      console.log("CanvasObj NULL");
+      //console.log("CanvasObj NULL");
       return;
     }
     const ctx = canvasObj.getContext("2d");

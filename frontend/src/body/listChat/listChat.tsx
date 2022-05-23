@@ -3,7 +3,9 @@ import { connect } from 'react-redux';
 import { storeState } from '../../store/types';
 import { MouseEventHandler } from 'react';
 import { API_GET_LIST_CHAT, API_SUSCRIBE_CHAT } from '../../urlConstString';
-// import { Link } from "react-router-dom";
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
 
 const loadData = async (data: any[], setData: React.Dispatch<SetStateAction<any[]>>, url: string) => {
   let response: Response;
@@ -33,7 +35,7 @@ const suscribeToChat = async (username: string, idChat: number, setLoad: React.D
     response = await fetch(API_SUSCRIBE_CHAT, myInit);
     if (!response.ok)
       return null;
-    let returnedBody = await response.text();
+    // let returnedBody = await response.text();
     //if (returnedBody === "Chat not availaible")
     setLoad(false);
   } catch (error) {
@@ -60,17 +62,18 @@ function ListChat(props: any) {
   }, [load, data])
 
   return (
-    <div id = "chatListeDiv">
+		<Box sx={{ width: '100%' }}>
+
       <button id = "bulleButtonTricks"></button>
-      <p>Click on the chat button you want to join :</p>
-      {/* <img id = "bulleIm" src = { bulleImg }> </img> */}
+      {data.length !== 0 && <p>Click on the chat button you want to join :</p>}
+		<Box id = "chatListStack" sx={{ width: '100%' }}>
+    <Stack spacing={2}>
       {data.length !== 0 &&
         data.map((element: any, index: number) => (
           //index != 0 && Put this line to remove chat 0.
+          
           <div key={index}>
-          <button className="shadow animate joinChat" key={index} onClick={() => wrapperSuscribeToChat(props.username, element.idChat, setLoad)}> {element.chatName} </button>
-          <br />
-          <br />
+          <Button variant="contained" min-height="2vh" key={index} onClick={() => wrapperSuscribeToChat(props.username, element.idChat, setLoad)}> {element.chatName} </Button>
           </div>
         ))
       }
@@ -78,7 +81,9 @@ function ListChat(props: any) {
         data.length === 0 &&
         <p>No chat available</p>
       }
-    </div>
+			</Stack>
+    </Box>
+    </Box>
   );
 }
 

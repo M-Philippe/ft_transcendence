@@ -214,6 +214,12 @@ export class UsersController {
     }));
   }
 
+  @UseGuards(JwtGuard)
+  @Get("/gameInfos")
+  async getGameInfos(@Req() request: Request) {
+    let idUser = this.getIdUserFromCookie(request.cookies.authentication);
+    return await this.usersService.getGameInfos(idUser);
+  }
 
   @UseGuards(JwtGuard)
   @Get('/name/:input')
@@ -222,14 +228,18 @@ export class UsersController {
     try {
       userToFetch = await this.usersService.findOneByName(input);
     } catch (error) {
-      throw new Error(error);
+      throw new HttpException({
+        type: "No such User."
+      }, HttpStatus.NO_CONTENT);
     }
     let idUserInit: number = this.getIdUserFromCookie(request.cookies.authentication);
     let userInit: User;
     try {
       userInit = await this.usersService.findOne(idUserInit);
     } catch (error) {
-      throw new Error();
+      throw new HttpException({
+        type: "No such User."
+      }, HttpStatus.NO_CONTENT);
     }
     let relationshipStatus: string = "none";
     let relationship: Relationship | undefined;

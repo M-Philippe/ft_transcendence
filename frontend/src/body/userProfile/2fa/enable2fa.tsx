@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { API_AUTH_ENABLE_2FA, API_AUTH_SETUP_2FA, DISCONNECTING_URL } from "../../../urlConstString";
+// import Stack from '@mui/material/Stack';
+// import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 
 async function fetch2fa() {
 	fetch(API_AUTH_SETUP_2FA, {
@@ -62,11 +65,11 @@ export default function Enable2fa(props: any) {
 		return (
 			<section>
 				<p>
-					Scan the qr code with google authenticator then submit your validation code to enable 2fa.
+					Scan the qr code with google authenticator <br/> then submit your validation code to enable 2fa
 				</p>
 				{
 					errorMessage !== "" &&
-					<p style={{color: "red"}}>{errorMessage}</p>
+					<p className="errorMessage" >{errorMessage}</p>
 				}
 				{
 					askCode &&
@@ -78,12 +81,12 @@ export default function Enable2fa(props: any) {
 					</form>
 				}
 				<br />
-				<button className="action-button shadow animate green" onClick={() => {
+				<Button variant="contained" color="success" onClick={() => {
 					fetch2fa();
 					setAskCode(true);
-				}}>
-					Click here to generate a Qr code
-				</button><br /><br />
+				}}> Click here to generate a Qr code</Button>
+				<br />
+				<br />
 				<canvas id="canvasQr" height="0" width="0" ></canvas>
 			</section>
 		);

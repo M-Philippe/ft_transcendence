@@ -1,12 +1,22 @@
-import { useState } from "react";
-import { Navigate } from "react-router-dom";
-import store from "../../store/store";
+import { useEffect, useState } from "react";
 import { DISCONNECT_USER } from "../../store/userSlice/userSliceActionTypes";
 import { API_USER_DISCONNECT, BASE_URL } from "../../urlConstString";
+import { Navigate } from "react-router-dom";
+import { connect } from "react-redux";
+import { DispatchType, storeState } from "../../store/types";
+import { userState } from "../../store/userSlice/userSliceTypes";
 
-export default function Disconnecting(props: any) {
+function Disconnecting(props: { user: userState, dispatch: DispatchType }) {
 	const [leaving, setLeaving] = useState(false);
 	
+	useEffect(() => {
+		if (props.user.isConnected)
+			props.dispatch({
+				type: DISCONNECT_USER,
+				user: props.user,
+			});
+	})
+
 	fetch(API_USER_DISCONNECT, {
 		method: "put",
 		headers: {"Content-Type": "application/json"},
@@ -17,15 +27,17 @@ export default function Disconnecting(props: any) {
 		setLeaving(true);
 	});
 
-	if (store.getState().user.isConnected) {
-		store.dispatch({
-			type: DISCONNECT_USER,
-			user: {},
-		});
-	} 
-	if (leaving) {
-		window.location.assign(BASE_URL);
-		return(<p>Redirecting to /</p>);
+	if (!props.user.isConnected) {
+		return(<Navigate to={BASE_URL} />
+		);
 	}
-	return (<p>LEAVING THE SITE</p>);
+	return (<p>Leaving.</p>)
 }
+
+function mapStateToProps(state: storeState) {
+	return ({
+		user: state.user,
+	});
+}
+
+export default connect(mapStateToProps)(Disconnecting);

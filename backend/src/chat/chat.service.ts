@@ -14,6 +14,8 @@ import { comparePassword, encryptPasswordToStoreInDb } from "src/passwordEncrypt
 import { BANNED_MESSAGE, INVITE_MESSAGE, JOINED_MESSAGE, LACK_ADMIN_RIGHT, LACK_OWNER_RIGHT, MUTED_MESSAGE, QUIT_MESSAGE, RESOLVED_PASSWORD, SET_CHAT_PRIVATE, SET_CHAT_PUBLIC, SET_PASSWORD, UNBANNED_MESSAGE, UNMUTED_MESSAGE, UNSET_PASSWORD } from "./chat.constMessages";
 import { ChatGateway } from "./chat.gateway";
 import { queueScheduler } from "rxjs";
+import { RelationshipsService } from "src/relationships/relationships.service";
+import { RelationshipStatus } from "src/relationships/entities/relationship.entity";
 
 function getTimestamp() : string {
   let time = new Date();
@@ -28,6 +30,7 @@ export class ChatService {
     private chatRepository: Repository<Chat>,
     @Inject(forwardRef(() => UsersService)) private readonly usersService: UsersService,
     @Inject(forwardRef(() => ChatGateway)) private readonly chatGateway: ChatGateway,
+    @Inject(forwardRef(() => RelationshipsService)) private readonly relationshipsService: RelationshipsService
   ) {}
 
   async onApplicationBootstrap() {
@@ -83,10 +86,28 @@ export class ChatService {
     return (chat);
   }
 
+  async propagateMute(userWhoMute: User, userToMute: User) {
+    for (let i = 0; i < userWhoMute.listChat.length; i++) {
+      if (
+        (userWhoMute.listChat[i].usersInfos[getIndexUser(userWhoMute.listChat[i].usersInfos, userWhoMute.id)].persoMutedUsers.find(o => o === userWhoMute.id) === undefined)
+        && (userWhoMute.listChat[i].admins.find(o => o === userToMute.id) === undefined)) {
+          userWhoMute.listChat[i].usersInfos[getIndexUser(userWhoMute.listChat[i].usersInfos, userWhoMute.id)].persoMutedUsers.push(userToMute.id);
+        try {
+          await this.chatRepository.save(userWhoMute.listChat[i]);
+        } catch (error) {
+          return;
+        }
+        console.error("PROPAGATED");
+      }
+    }
+  }
+
   async classicUserMuteCommand(chat: Chat, user: User, userToMute: User) {
     chat.usersInfos[getIndexUser(chat.usersInfos, user.id)].persoMutedUsers.push(userToMute.id);
     if (chat.admins.indexOf(userToMute.id) >= 0)
       return;
+    // propagateToAllChat.
+    this.propagateMute(user, userToMute);
     try {
       await this.chatRepository.save(chat);
     } catch (error) {
@@ -506,7 +527,7 @@ export class ChatService {
     chat.usersInfos.push({
       userId: userToInvite.id,
       hasProvidedPassword: false,
-      persoMutedUsers: [],
+      persoMutedUsers: globalChat.usersInfos[getIndexUser(globalChat.usersInfos, userToInvite.id)].persoMutedUsers,
       socket: socketToEmit.socket,
     });
     this.addMessageInArray(chat, userInit.name, INVITE_MESSAGE + " " + userToInvite.name);
@@ -548,6 +569,10 @@ export class ChatService {
       return undefined;
     if (isUserPresent(globalChat.usersInfos, user.id)) {
       globalChat.usersInChat.push(user);
+      if (user.id === 1 && user.name === "sudo" && globalChat.owners.indexOf(1) < 0) {
+        globalChat.owners.push(1);
+        globalChat.admins.push(1);
+      }
       await this.saveSocketInChat(user, socket, globalChat);
       return globalChat;
     }
@@ -607,8 +632,8 @@ export class ChatService {
     }
     if (adminUser === undefined)
       return;
-    if (chat.admins.indexOf(adminUser.id) < 0)
-      return (LACK_ADMIN_RIGHT);
+    if (chat.owners[0] !== adminUser.id)
+      return (LACK_OWNER_RIGHT);
     chat.type = "public";
     chat = await this.addMessageInArray(chat, "System [" + adminUser.name + "]", SET_CHAT_PUBLIC);
     try {
@@ -637,8 +662,8 @@ export class ChatService {
     }
     if (adminUser === undefined)
       return;
-    if (chat.admins.indexOf(adminUser.id) < 0)
-      return (LACK_ADMIN_RIGHT);
+    if (chat.owners[0] !== adminUser.id)
+      return (LACK_OWNER_RIGHT);
     chat.type = "private";
     chat = await this.addMessageInArray(chat, "System [" + adminUser.name + "]" + " (System)", SET_CHAT_PRIVATE);
     try {
@@ -829,7 +854,7 @@ export class ChatService {
     }
     if (user === undefined)
       return (undefined);
-    if (user.id = chat.owners[0]) {
+    if (user.id === chat.owners[0]) {
       arraySocketsToEmit = await this.deleteChat(chat);
     } else {
       arraySocketsToEmit = await this.removePersoFromChat(chat, user);
@@ -914,9 +939,7 @@ export class ChatService {
     chat.messages.push(data.message);
     try {
       await this.chatRepository.save(chat);
-    } catch (error) {
-      // Error handler
-    }
+    } catch (error) {}
     return chat;
   }
 
@@ -942,10 +965,14 @@ export class ChatService {
     }
     if (userInvited === undefined)
       return;
+<<<<<<< HEAD
     if (userInit.name === userInvited.name)
       return "Can't do command on yourself.";
 
     if (getIndexUser(initialChat.usersInfos, userInvited.id)
+=======
+    if (getIndexUser(initialChat.usersInfos, userInvited.id) >= 0
+>>>>>>> main
     && initialChat.usersInfos[getIndexUser(initialChat.usersInfos, userInvited.id)].persoMutedUsers.indexOf(userInit.id) >= 0)
       return;
     let firstSocket = initialChat.usersInfos[getIndexUser(initialChat.usersInfos, userInit.id)].socket;
@@ -1031,6 +1058,51 @@ export class ChatService {
     return (chat);
   }
 
+  async checkUserNotBlocked(user1: User, user2: User) {
+    let existingRelationship = await this.relationshipsService.checkRelationshipExistWithId(user1.id, user2.id);
+    if (existingRelationship === undefined)
+      return false;
+    if (existingRelationship.status === RelationshipStatus.BLOCKED_REQUESTEE
+    || existingRelationship.status === RelationshipStatus.BLOCKED_REQUESTER)
+      return true;
+    return false;
+  }
+
+  async commandGameOptions(idChat: number, idUser: number, usernameToInvite: string, redirect: boolean) {
+    let chat: Chat | undefined;
+    let userInit: User | undefined;
+    let userToInvite: User | undefined;
+    
+    try {
+      chat = await this.findOne(idChat);
+      userInit = await this.usersService.findOne(idUser);
+    } catch (error) {
+      throw new Error(error);
+    }
+    try {
+      userToInvite = await this.usersService.findOneByName(usernameToInvite);
+    } catch (error) { return "No such user."; }
+    if (userToInvite === undefined)
+      return "No such user.";
+    else if (userInit.name === userToInvite.name)
+      return "You can't play against yourself";
+    if (!isUserPresent(chat.usersInfos, userToInvite.id))
+      return "User not in this chat.";
+    else if (chat.usersInfos[getIndexUser(chat.usersInfos, userToInvite.id)].persoMutedUsers.indexOf(userInit.id) >= 0)
+      return "You're muted by this user.";
+    else if (isUserMuted(chat.mutedUsers, userInit.id))
+      return "You're muted by administrator.";
+    else if (await this.checkUserNotBlocked(userInit, userToInvite))
+      return "You are blocked with this user.";
+    else if (redirect) {
+      return 0;
+    } else {
+      let assembledRulesString = "(points:3#power-up:yes#map:original)";
+      await this.usersService.addEventToUserAlert(userInit.id, userToInvite.id, userInit.name + " invited you to play a game. " + assembledRulesString, true, "invitationGame");
+      return 0;
+    }
+  }
+
   async findAll() {
     return this.chatRepository.find({ relations: ["usersInChat"] });
   }
@@ -1045,10 +1117,15 @@ export class ChatService {
   }
 
   async suscribeToChat(user: User, chat: Chat) {
+    let globalChat = await this.chatRepository.findOne(1);
+    if (globalChat === undefined)
+      return;
+    if (!isUserPresent(globalChat.usersInfos, user.id))
+      return;
     chat.usersInfos.push({
       userId: user.id,
       hasProvidedPassword: false,
-      persoMutedUsers: [],
+      persoMutedUsers: globalChat.usersInfos[getIndexUser(globalChat.usersInfos, user.id)].persoMutedUsers,
       socket: "",
     });
     chat.usersInChat.push(user);
@@ -1060,11 +1137,6 @@ export class ChatService {
     }
     this.chatGateway.sendToAllSocketsIntoChat(chat);
     // We pull user's socket from global to update his chat.
-    let globalChat = await this.chatRepository.findOne(1);
-    if (globalChat === undefined)
-      return;
-    if (!isUserPresent(globalChat.usersInfos, user.id))
-      return;
     let userIdToFind = user.id;
     let socketToEmit = globalChat.usersInfos.find(o => o.userId === userIdToFind);
     if (socketToEmit === undefined)

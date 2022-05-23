@@ -4,6 +4,8 @@ import { connect } from "react-redux";
 import { useState } from "react";
 import { API_USER_AVATAR_UPLOAD, DISCONNECTING_URL } from "../../urlConstString";
 import { UPDATE_AVATAR } from "../../store/userSlice/userSliceActionTypes";
+import Button from '@mui/material/Button';
+import { styled } from '@mui/material/styles';
 
 function AvatarUpload(props: { user: userState, dispatch: DispatchType }) {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -40,13 +42,20 @@ function AvatarUpload(props: { user: userState, dispatch: DispatchType }) {
 		document.getElementById('submitAvatarButton')?.remove();
 	}
 
+	const Input = styled('input')({
+		display: 'none',
+	  });
+
 	return (
 		<div>
-			<label>Upload your avatar (only jpg)</label><br />
-			<input type="file" accept=".jpg" name="avatar_upload" onChange={handleChange} />
-			<br /><br />
-			<button id = "submitAvatarButton" className="action-button shadow animate green" style={{visibility:"hidden"}} onClick={handleSubmit}>Submit</button>
-			<br />
+			<label>Modify your avatar :</label><br /><br />
+			<label htmlFor="contained-button-file">
+        <Input accept="image/*" id="contained-button-file" multiple type="file" onChange={handleChange} />
+			<Button variant="contained" color="info" component="span" >
+			Browse...
+			</Button><br /><br />
+		</label>
+			<Button id = "submitAvatarButton" variant="contained" color="success" style={{visibility:"hidden"}} onClick={handleSubmit}>Submit new avatar</Button>
 		</div>
 	);
 }

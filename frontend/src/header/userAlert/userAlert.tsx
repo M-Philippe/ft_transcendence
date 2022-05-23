@@ -1,31 +1,33 @@
 import { storeState } from "../../store/types";
 import { userState } from "../../store/userSlice/userSliceTypes";
 import { connect } from "react-redux";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { io, Socket } from "socket.io-client";
-import envelopeImg from '../../../src/styles/medias/envelope.png';
-import envelopeImgNotif from '../../../src/styles/medias/envelopeNotif.png';
 import { API_URL, API_USER_RESPONSE_ALERT, DISCONNECTING_URL, URL_INVITATION_GAME } from "../../urlConstString";
 
-interface IShowAlert {
-	alert: {message: string, needResponse: boolean, requesterId: number, requesteeId: number}[],
-	setShowAlert: React.Dispatch<React.SetStateAction<boolean>>,
-	setIcon: React.Dispatch<React.SetStateAction<string>>
-}
+import Badge from '@mui/material/Badge';
+import MailIcon from '@mui/icons-material/Mail';
+import IconButton from '@mui/material/IconButton';
+import * as React from 'react';
+import Popover from '@mui/material/Popover';
+import Typography from '@mui/material/Typography';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import Button from '@mui/material/Button';
 
 function assembleAlertToHtml(alert: {message: string, needResponse: boolean, requesterId: number, requesteeId: number}[]) {
 	const alertsHtml = [];
 	if (alert.length === 0)
-		return (<p>No alert, you don't look really popular...</p>)
+		return (<p className="userAlertP">No alert, you don't look really popular...</p>)
 	for (let i = 0; i < alert.length; i++) {
 		let elementsToPush: any;
 		if (alert[i].needResponse) {
 			elementsToPush = (
-				<section key={i}>
-					<p style={{borderBottom: "solid 1px"}}>
+				<section style={{borderBottom: "solid 1.5px", textAlign:'center'}} key={i}>
+					<p className="userAlertP">
 						{alert[i].message}
-					</p> <br />
-					<button  onClick={() => {
+					</p> 
+					<IconButton  onClick={() => {
 						let headers = new Headers();
 						headers.append("Content-Type", "application/json");
 						fetch(API_USER_RESPONSE_ALERT, {
@@ -44,9 +46,9 @@ function assembleAlertToHtml(alert: {message: string, needResponse: boolean, req
 								window.location.assign(DISCONNECTING_URL);
 						});
 					}}>
-						YES
-					</button>
-					<button  onClick={() => {
+						<CheckIcon color="success" />
+					</IconButton> 
+					<IconButton  onClick={() => {
 						let headers = new Headers();
 						headers.append("Content-Type", "application/json");
 						fetch(API_USER_RESPONSE_ALERT, {
@@ -65,17 +67,17 @@ function assembleAlertToHtml(alert: {message: string, needResponse: boolean, req
 								window.location.assign(DISCONNECTING_URL);
 						});
 					}}>
-						NO
-					</button>
+					<CloseIcon color="error" />
+					</IconButton>
 				</section>
 			);
 		} else {
 			elementsToPush = (
 				<section key={i}>
-					<p style={{border: "solid 1px"}}>
+					<p className="userAlertP">
 						{alert[i].message}
 					</p> <br />
-					<button onClick={() => {
+					<Button onClick={() => {
 						let headers = new Headers();
 						headers.append("Content-Type", "application/json");
 						fetch(API_USER_RESPONSE_ALERT, {
@@ -93,7 +95,7 @@ function assembleAlertToHtml(alert: {message: string, needResponse: boolean, req
 							if (response.status === 403)
 								window.location.assign(DISCONNECTING_URL);
 						})
-					}}>Clear</button>
+					}}>Clear</Button>
 				</section>
 			)
 		}
@@ -102,24 +104,14 @@ function assembleAlertToHtml(alert: {message: string, needResponse: boolean, req
 	return (alertsHtml);
 }
 
-function ShowAlert(props: IShowAlert) {
-	return (
-		<div style={{backgroundColor: "lightblue", position: "absolute", border: "solid 1px", width:"150px"}}>
-			{assembleAlertToHtml(props.alert)}
-			<button onClick={() => { props.setIcon(envelopeImg); props.setShowAlert(false);}}>CLOSE</button>
-		</div>
-	);
-}
-
-
 function UserAlert(props: {user: userState}) {
 	// Connect Socket.
 	const [socket, setSocket] = useState<Socket>();
-	const [showAlert, setShowAlert] = useState(false);
 	const [showPopUp, setShowPopUp] = useState<{show: boolean, message: string}>({show: false, message: ""});
 	const [alert, setAlert] = useState<Array<{message: string, needResponse: boolean, requesterId: number, requesteeId: number}>>([]);
-	const [icon, setIcon] = useState(envelopeImg);
-
+	const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
+	const [alertNbr, setIcon] = useState(0);
+	
 	if (socket === undefined) {
 		setSocket(io(API_URL, {
 			path: "/user/userAlert",
@@ -140,8 +132,10 @@ function UserAlert(props: {user: userState}) {
 			socket.off("getUserAlert");
 			socket.on("getUserAlert", (...args) => {
 				//console.log("RECEIVED ALERT: ", args[0].data);
+				//console.log("LENGTH_RECEIVED: ", args[0].data.length);
 				setAlert(args[0].data);
-				setIcon(envelopeImgNotif);
+				if (args[0].data !== undefined)
+					setIcon(args[0].data.length);
 			})
 
 			socket.off("messageReceived");
@@ -166,21 +160,46 @@ function UserAlert(props: {user: userState}) {
 			socket.on("connect_error", (error) => {});
 	}
 
+	const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+		setIcon(0);
+	  setAnchorEl(event.currentTarget);
+	};
+  
+	const handleClose = () => {
+		setIcon(0);
+	  setAnchorEl(null);
+	};
+  
+	const open = Boolean(anchorEl);
+	const id = open ? 'simple-popover' : undefined;
+
 	return (
 		<div>
-			{
-				showAlert &&
-				<ShowAlert alert={alert} setShowAlert={setShowAlert} setIcon={setIcon} />
-			}
-			{
-				showPopUp.show &&
-				<p>
-					{showPopUp.message}
-				</p>
-			}
-			<input id = "alert" className="imgHeader" type="image" src={ icon } alt="Alert"
-				onClick={() => { setShowAlert(true); setIcon(envelopeImg); }}
-			/>
+		{
+			showPopUp.show &&
+			<p>	{showPopUp.message}	</p>
+		}
+
+		<IconButton aria-describedby={id} onClick={handleClick} size="large"  color="inherit">
+		<Badge badgeContent={alertNbr} color="error">
+		<MailIcon />
+		</Badge>
+		</IconButton>
+		<Popover
+			id={id}
+			open={open}
+			anchorEl={anchorEl}
+			onClose={handleClose}
+			max-height="20vh"
+			anchorOrigin={{
+			vertical: 'bottom',
+			horizontal: 'left',
+			}}
+		>
+		<Typography variant="subtitle1" sx={{ p: 2 }}> 
+			{assembleAlertToHtml(alert)}
+		</Typography>
+		</Popover>
 		</div>
 	);
 }
