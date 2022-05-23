@@ -67,22 +67,22 @@ function Board(props: BoardProps) {
 				idGame: idBoard,
 				direction: "down",
 			});
-			if (palletAssigned === 0)
-				coordinates.palletAY += coordinates.speedPalet;
-			else if (palletAssigned === 1)
-				coordinates.palletBY += coordinates.speedPalet;
-			setCoordinates(coordinates);
+			// if (palletAssigned === 0)
+				// coordinates.palletAY += coordinates.speedPalet;
+			// else if (palletAssigned === 1)
+			// 	coordinates.palletBY += coordinates.speedPalet;
+			// setCoordinates(coordinates);
 		} else if (event.key === "ArrowUp") {
 			props.socket.emit("movePallet", {
 				username: props.user.username,
 				idGame: idBoard,
 				direction: "up",
 			});
-			if (palletAssigned === 0)
-				coordinates.palletAY -= coordinates.speedPalet;
-			else if (palletAssigned === 1)
-				coordinates.palletBY -= coordinates.speedPalet;
-			setCoordinates(coordinates);
+			// if (palletAssigned === 0)
+			// 	coordinates.palletAY -= coordinates.speedPalet;
+			// else if (palletAssigned === 1)
+			// 	coordinates.palletBY -= coordinates.speedPalet;
+			// setCoordinates(coordinates);
 		}
 	}
 
