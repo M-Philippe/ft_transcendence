@@ -189,12 +189,12 @@ export class MatchesOnGoingGateway {
   @ConnectedSocket() socket: Socket) {
     // let d = Date.now();
     if (data.direction === "up") {
-      if (data.inGame === 0)
+      if (data.palletAssigned === 0)
         await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletayfromuser: () => "palletayfromuser - 1"}).where("p1 = :name", {name: data.username}).execute();
       else
         await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletbyfromuser: () => "palletbyfromuser - 1"}).where("p2 = :name", {name: data.username}).execute();
     } else if (data.direction === "down") {
-      if (data.inGame === 0)
+      if (data.palletAssigned === 0)
         await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletayfromuser: () => "palletayfromuser + 1"}).where("p1 = :name", {name: data.username}).execute();
       else
         await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletbyfromuser: () => "palletbyfromuser + 1"}).where("p2 = :name", {name: data.username}).execute();

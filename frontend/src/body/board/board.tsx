@@ -66,9 +66,11 @@ function Board(props: BoardProps) {
 				username: props.user.username,
 				idGame: idBoard,
 				direction: "down",
+				palletAssigned: palletAssigned,
+
 			});
 			// if (palletAssigned === 0)
-				// coordinates.palletAY += coordinates.speedPalet;
+			// 	coordinates.palletAY += coordinates.speedPalet;
 			// else if (palletAssigned === 1)
 			// 	coordinates.palletBY += coordinates.speedPalet;
 			// setCoordinates(coordinates);
@@ -77,6 +79,7 @@ function Board(props: BoardProps) {
 				username: props.user.username,
 				idGame: idBoard,
 				direction: "up",
+				palletAssigned: palletAssigned,
 			});
 			// if (palletAssigned === 0)
 			// 	coordinates.palletAY -= coordinates.speedPalet;
