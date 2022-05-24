@@ -150,6 +150,7 @@ caption {
   height: 24vh;
   min-width: 200px;
   min-height: 200px;
+  max-height: 300px;
   max-width: 280px;
 
 }
@@ -172,6 +173,7 @@ caption {
 	width: 15vw;
   min-width: 200px;
   min-height: 200px;
+  max-height: 300px;
   max-width: 280px;
 	background-size: 100% 100%;
 }
@@ -191,16 +193,26 @@ caption {
 
 /* ------------------------------------- */
 /* MEDIA QUERIES TO BE MORE RESPONSIVE */
+
+/* ---------- WIDTH ---------- */
 @media all and (min-width: 550px) {
   .chatForm {
     position: fixed;
   }
 }
 
+@media all and (max-width: 1450px) {
+
+  #board {
+    max-height: 55vh;
+  }
+}
+
+
   @media all and (max-width: 920px) {
 
   #board {
-    max-height: 50%;
+    max-height: 40vh;
   }
 }
 
@@ -223,3 +235,4 @@ caption {
   }
 
 }
+

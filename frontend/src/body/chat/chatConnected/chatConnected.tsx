@@ -9,9 +9,13 @@ import DisplayButtonsChat from './displayButtonsChat';
 import ChatInput from './chatInput';
 import ChatCommandHelp from './chatCommandHelp';
 import ChatErrorMessage from './chatErrorMessage';
-import { API_USER_LIST_CHAT, DISCONNECTING_URL } from "../../../urlConstString";
+import { API_USER_LIST_CHAT, API_USER_VIEW, DISCONNECTING_URL } from "../../../urlConstString";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import IconButton from '@mui/material/IconButton';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Modal from '@mui/material/Modal';
+import InvitationGameQueryBox from "../../userView/invitationGameQueryBox";
 
 interface PropsChatConnected {
   name: string,
@@ -98,24 +102,18 @@ function reducer (state: State, action: Action): State {
   }
 }
 
-type SortArrayType = <T>(arr: T[]) => T[];
-
-const sortArray: SortArrayType = (arr) => {
-  return arr.sort((a, b) => {
-    const strA = JSON.stringify(a);
-    const strB = JSON.stringify(b);
-    if (strA < strB) {
-      return -1;
-    }
-    if (strA > strB) {
-      return 1;
-    }
-    return 0;
-  });
-};
-
 export function ChatConnected(props: PropsChatConnected) {
   const url = API_USER_LIST_CHAT + props.name;
+
+  const [openGameInvit, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const [data, setData] = useState({
+    name: "",
+    online: false,
+  }
+);
 
   const [state, dispatch] = useReducer(reducer, {
     messages: [],
@@ -190,11 +188,27 @@ export function ChatConnected(props: PropsChatConnected) {
   });
 
   props.socket.on("redirectToInviteProfile", (...args: any) => {
-    let h = window.history;
-    h.pushState({ "showGameOptions": true }, "", "/userView/:" + args[0].usernameToRedirect);
-    h.go(0);
+    let urlInvite = API_USER_VIEW + args[0].usernameToRedirect;
+    console.log(urlInvite);
+    fetch(urlInvite, { credentials: "include" })
+      .then(res => {
+        if (res.status === 403)
+          window.location.assign(DISCONNECTING_URL);
+        return (res.json());
+      })
+      .then(
+        (res) => {
+          if (res["code"] === "e2300")
+            return;
+          let tmp = {
+            name: res["name"],
+            online: res["online"],
+          };
+          setData(tmp);
+        }
+      );
+      handleOpen();
   });
-
 
   useEffect(() => {
     const controller = new AbortController();
@@ -242,8 +256,40 @@ export function ChatConnected(props: PropsChatConnected) {
   var chatWindow = document.getElementById('txtWrap');
   chatWindow?.scrollTo(0, chatWindow?.scrollHeight);
 
+  const style = {
+    position: 'absolute' as 'absolute',
+    top: '50%',
+    left: '40%',
+    transform: 'translate(-50%, -50%)',
+    width: 'auto',
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+  };
+
   return (
     <div >
+      <Modal
+        open={openGameInvit}
+        onClose={handleClose}
+      >
+        <Box id ="inviteGamePopup" sx={style}>
+          { 
+            data.online &&
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              Choose your rules to play against :   
+            </Typography>
+          }
+          <Typography variant="subtitle1" id="modal-modal-description" sx={{ mt: 2, textAlign: 'center' }}>
+        {
+          data.online &&
+          <InvitationGameQueryBox nameProfile={data.name} closePopUp={handleClose}/>
+        }
+          </Typography>
+        { !data.online && <p className="errorMessage"> {data.name} is not connected. </p> }
+        </Box>
+      </Modal>
 			<div id = "chatButtonTop">
       {state.lstId.length !== 0 &&
 			<div style={{display: 'flex', margin:'auto', justifyContent:'center', alignItems: 'center', flexWrap: 'wrap'}}>

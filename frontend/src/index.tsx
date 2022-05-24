@@ -10,7 +10,6 @@ import './styles/index.css';
 import './styles/chat.css';
 
 function App () {
-  //let t = 0;
   return (
     <Router>
       <div id = "App">
@@ -27,13 +26,6 @@ function App () {
     </Router>
   );
 }
-
-// ReactDOM.render(
-//   <Provider store={store}>
-//   <App />
-//   </Provider>,
-//   document.getElementById('root')
-// );
 
 const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
 root.render(

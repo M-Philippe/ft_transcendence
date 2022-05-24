@@ -10,7 +10,11 @@ import Box from '@mui/material/Box';
 const loadData = async (data: any[], setData: React.Dispatch<SetStateAction<any[]>>, url: string) => {
   let response: Response;
   try {
-    response = await fetch(url, {credentials: "include"});
+    response = await fetch(url, {
+      method: 'GET',
+      credentials: "include",
+      mode: 'cors'
+    });
     if (!response.ok)
       return null;
     data = await response.json();
@@ -33,6 +37,7 @@ const suscribeToChat = async (username: string, idChat: number, setLoad: React.D
   let response: Response;
   try {
     response = await fetch(API_SUSCRIBE_CHAT, myInit);
+    console.log("IS THIS HERE?");
     if (!response.ok)
       return null;
     // let returnedBody = await response.text();

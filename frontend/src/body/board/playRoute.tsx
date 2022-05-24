@@ -76,7 +76,7 @@ const theme = createTheme({
   }
   else
     return (
-      <div id ="test2">
+      <div>
         <img id = "pongImgPlayMenu" src= {pong} alt="pong"></img>
         <Typography id="modal-modal-title" variant="h5" sx={{ textAlign: 'center', color:"white"}}>
         <br /><br /> Choose your game rules : <br/><br/>
@@ -84,10 +84,10 @@ const theme = createTheme({
         <ThemeProvider theme={theme}>
         <Stack direction="row" sx={{ justifyContent:"center" }} spacing={7}>
         <FormControl >
-        <InputLabel sx={{ color:"white" }} variant="standard" htmlFor="uncontrolled-native">
+        <InputLabel variant="standard" htmlFor="uncontrolled-native">
           Points
         </InputLabel>
-        <NativeSelect color="primary" sx={{ color:"white" }} onChange={(event) => {setRules({...rules, scoreMax: parseInt(event.target.value)}); }}
+        <NativeSelect color="primary" onChange={(event) => {setRules({...rules, scoreMax: parseInt(event.target.value)}); }}
           defaultValue={"3"}
           inputProps={{
             name: 'Points',
@@ -98,27 +98,26 @@ const theme = createTheme({
           <option value="7">7</option>
           </NativeSelect>
           </FormControl>
-        <FormControl sx={{ color:"white" }} >
-        <InputLabel variant="standard" htmlFor="uncontrolled-native" sx={{ color:"white" }}>
+        <FormControl >
+        <InputLabel variant="standard" htmlFor="uncontrolled-native">
           Power-Ups
         </InputLabel>
         <NativeSelect color="primary" onChange={(event) => {
           if (event.target.value === "yes")
           setRules({...rules, powerUp: true});
           else
-          setRules({...rules, powerUp: false});
-        }} sx={{ color:"white" }}>
+          setRules({...rules, powerUp: false}); }}>
           <option value="yes">Yes</option>
           <option value="no">No</option>
         </NativeSelect>
         </FormControl>
         <FormControl >
-        <InputLabel variant="standard" htmlFor="uncontrolled-native" sx={{ color:"white" }}>
+        <InputLabel variant="standard" htmlFor="uncontrolled-native">
           Map
         </InputLabel>
         <NativeSelect color="primary" onChange={(event) => {
           setRules({...rules, map: event.target.value})
-        }} sx={{ color:"white" }}>
+        }}>
           <option value="original">Original</option>
           <option value="desert">Desert</option>
           <option value="jungle">Jungle</option>

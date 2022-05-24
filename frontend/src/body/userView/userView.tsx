@@ -12,7 +12,6 @@ import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
-import * as React from 'react';
 
 function assembleAchievements(achievements: any[]) {
   let retJsx = [];
@@ -32,15 +31,15 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
   const url = API_USER_VIEW + username;
   const [refresh, setRefresh] = useState(0);
 
-  const [open, setOpen] = React.useState(false);
+  const [openGameInvit, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   
-  const [openFriend, setOpenFriend] = React.useState(false);
+  const [openFriend, setOpenFriend] = useState(false);
   const handleOpenFriend = () => setOpenFriend(true);
   const handleCloseFriend = () => setOpenFriend(false);
 
-  const [openAchievements, setOpenAchievements] = React.useState(false);
+  const [openAchievements, setOpenAchievements] = useState(false);
   const handleOpenAchievements = () => setOpenAchievements(true);
   const handleCloseAchievements = () => setOpenAchievements(false);
 
@@ -56,7 +55,6 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
   );
 
   const [load, setLoad] = useState(false);
-  // const [showBox, setShowBox] = useState(false);
 
   const style = {
     position: 'absolute' as 'absolute',
@@ -72,10 +70,7 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
 
 
   useEffect(() => {
-    if (window.history.state.showGameOptions === null || window.history.state.showGameOptions === undefined)
-      console.log("NO CORRESPONDING STATE");
-    else
-      setOpen(window.history.state.showGameOptions);
+    setOpen(window.history.state.showGameOptions === undefined ? false : true);
     
     const controller = new AbortController();
     fetch(url, { credentials: "include", signal: controller.signal })
@@ -84,6 +79,7 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
           window.location.assign(DISCONNECTING_URL);
         return (res.json());
       })
+
       .then(
         (res) => {
           if (res["code"] === "e2300")
@@ -103,6 +99,7 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
         },
         (error) => {}
       );
+
       return () => {
         controller.abort();
       }
@@ -136,12 +133,12 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
             Invite to play a game</Button>
         }
       <Modal
-        open={open}
+        open={openGameInvit}
         onClose={handleClose}
       >
         <Box id ="inviteGamePopup" sx={style}>
           <Typography id="modal-modal-title" variant="h6" component="h2">
-          Choose your rules to play against :   
+            Choose your rules to play against :   
           </Typography>
           <Typography variant="subtitle1" id="modal-modal-description" sx={{ mt: 2, textAlign: 'center' }}>
         {

@@ -6,7 +6,6 @@ import { API_AUTH_42_LOGIN, API_AUTH_LOCAL_LOGIN } from '../../urlConstString';
 import store from '../../store/store';
 import { Navigate, NavLink } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 
 interface ConnectFormProps {
@@ -21,6 +20,7 @@ interface UserInput {
 
 function LoginForm(props: ConnectFormProps) {
 	const [errorMessage, setErrorMessage] = useState("");
+	const [redirectUrl, setRedirectUrl] = useState("");
 	const [userInput, setUserInput] = useState<UserInput>({
 		username: "",
 		password: "",
@@ -53,9 +53,9 @@ function LoginForm(props: ConnectFormProps) {
 				let payload = await response.json();
 				setErrorMessage(payload.type);
 			} else if (response.status === 201) {
-				let redirectUrl: string | null = response.headers.get("Location");
-				if (redirectUrl !== null)
-					window.location.assign(redirectUrl);
+				let url: string | null = response.headers.get("Location");
+				if (url !== null)
+					setRedirectUrl(url.slice("http://localhost:3005".length));
 			}
 		});
   };
@@ -63,9 +63,13 @@ function LoginForm(props: ConnectFormProps) {
 	if (props.user.isConnected) {
 		return (<div><p>You're already connected</p></div>);
 	}
+	if (redirectUrl !== "")
+		return (
+			<Navigate to={redirectUrl}/>
+		)
 
 	return (
-        <Grid >
+        <div >
 			<h2>Sign In</h2>
 			{
 				errorMessage !== "" &&
@@ -82,7 +86,7 @@ function LoginForm(props: ConnectFormProps) {
 		<Button type='submit' color='primary' variant="contained" style={{margin:'8px 0'}} fullWidth onClick={handleSubmit}>Login</Button><br />
 		<Button variant="contained" href={API_AUTH_42_LOGIN} style={{margin:'8px 0'}} fullWidth >LOGIN WITH 42</Button>
 		</Stack>
-	</Grid>
+	</div>
   );
 }
 

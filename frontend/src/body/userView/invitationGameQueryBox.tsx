@@ -83,11 +83,11 @@ export default function InvitationGameQueryBox(props: { nameProfile: string, clo
 						if (response.status === 403)
 							window.location.assign(DISCONNECTING_URL);
 					});
-          props.closePopUp()}}>
+          props.closePopUp(true)}}>
 					Invite
 			 </Button>
        &nbsp;
-				<Button variant="contained" color="error" onClick={() => props.closePopUp()} >Cancel</Button>
+				<Button variant="contained" color="error" onClick={() => props.closePopUp(true)} >Cancel</Button>
 		</div>
 	);
 }
