@@ -61,7 +61,7 @@ export default function SpectateGame(props: SpectateGameProps) {
 				listGame.map((element: ListGame, index: number) => (
 					<div key={index}>
 						<p style={{display:"inline"}}>{element.idGame} | {element.playerOne} vs {element.playerTwo}</p>
-						<button
+						<Button variant="contained"
 							key={index}
 							onClick={() => {
 								props.socket.emit("addSpectator", {
@@ -69,7 +69,7 @@ export default function SpectateGame(props: SpectateGameProps) {
 								});
 							}}>
 							Spectate
-						</button>
+						</Button>
 					</div>
 				))
 			}

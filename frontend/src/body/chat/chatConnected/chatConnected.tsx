@@ -258,15 +258,13 @@ export function ChatConnected(props: PropsChatConnected) {
             errorMessage={state.errorMessage}
           />
         }
-      <div className="chatFormDiv">
+      </div>
       <ChatInput
         socket={props.socket}
         state={state}
         dispatch={dispatch}
         username={props.name}
       />
-      </div>
-    </div>
     </div>
   );
 }

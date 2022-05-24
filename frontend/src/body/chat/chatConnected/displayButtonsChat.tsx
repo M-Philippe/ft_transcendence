@@ -15,7 +15,7 @@ export default function DisplayButtonsChat(props: Props) {
       if (props.state.lstButtonsGreen.indexOf(props.state.lstId[i]) >= 0) {
         buttons.push(
           <Button variant="contained" key={i}
-            style={{margin:"3px", borderRadius:"10px", backgroundColor:"rgb(8, 133, 25)", color: props.state.lstId[i] === 1 ? "black": "grey" }}
+            style={{margin:"3px", borderRadius:"10px", backgroundColor:"rgb(8, 133, 25)", color: "black", fontWeight: props.state.lstId[i] === 1 ? "bold" : "lighter" }}
             onClick={() => {
               props.state.lstButtonsGreen.splice(props.state.lstButtonsGreen.indexOf(props.state.lstId[i]), 1)
               props.dispatch({
@@ -29,7 +29,7 @@ export default function DisplayButtonsChat(props: Props) {
       } else if (props.state.lstId[i] === props.state.chatFocusId + 1) {
         buttons.push(
           <Button variant="contained" key={i}
-            style={{margin:"3px",borderRadius:"10px", outline: "1px solid darkblue", color: props.state.lstId[i] === 1 ? "black" : "grey" }}
+            style={{margin:"3px",borderRadius:"10px", border: "1px solid darkblue", color: "black", fontWeight: props.state.lstId[i] === 1 ? "bold" : "lighter" }}
             onClick={() => {
             props.dispatch({type: "UPDATE_FOCUS", chatFocusId: props.state.lstId[i] - 1});
             }}>
@@ -38,7 +38,7 @@ export default function DisplayButtonsChat(props: Props) {
   } else {
         buttons.push(
           <Button variant="contained" key={i}
-            style={{margin:"3px", borderRadius:"10px" , backgroundColor: "rgb(27, 120, 150)", color: props.state.lstId[i] === 1 ? "black" : "grey" }}
+            style={{margin:"3px", borderRadius:"10px" , backgroundColor: "rgb(27, 120, 150)", color: "black", fontWeight: props.state.lstId[i] === 1 ? "bold" : "lighter" }}
             onClick={() => {
               props.dispatch({type: "UPDATE_FOCUS", chatFocusId: props.state.lstId[i] - 1});
             }}>

@@ -86,7 +86,7 @@ label {
 }
 
 footer {
-  bottom: 0;
+  bottom: 2px;
   min-height: 1vh;
   max-height: 1vh;
   text-align: center;
@@ -99,12 +99,12 @@ footer {
 }
 
 /* ------ Ranking table ------ */
-#RankingArrayDiv
+/* #RankingArrayDiv
 {
   overflow-y: auto;
   height: 87vh;
 
-}
+} */
 
 table {
   overflow-y: auto;
