@@ -17,7 +17,6 @@ export class MatchesOnGoing {
   @Column("text") bakckgroundColor: string;
   @Column("text") objectColor: string;
 
-  @Column("bigint") startTime: number;
   @Column("bigint") lastUpdateTime: number;
 
   @Column({

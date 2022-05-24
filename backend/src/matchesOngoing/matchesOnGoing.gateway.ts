@@ -23,7 +23,8 @@ const updatePlayers: HashMap<number> = {};
 
 interface IQueue {
   id: number,
-  rules: string
+  rules: string,
+  socket: string,
 }
 
 const queue = new Map<number /* timestamp */, IQueue>(); 
@@ -118,8 +119,22 @@ export class MatchesOnGoingGateway {
   @SubscribeMessage("cancelMatch")
   async cancelMatch(
   @MessageBody() data: any,
+  @ConnectedSocket() socket: Socket,
   ) {
-    await this.matchesOnGoingService.cancelMatch(data.username);
+    if (socket.handshake.headers.cookie === undefined)
+      return;
+    let idUser: number = 0;
+    try {
+      const jwtToken = extractJwtFromCookie(socket.handshake.headers.cookie);
+      idUser = await this.jwtService.verify(jwtToken).idUser;
+    } catch (error) { return; }
+    for (let entries of queue.entries()) {
+      if (entries[1].id === idUser) {
+        queue.delete(entries[0]);
+        this.printQueue();
+        return;
+      }
+    }
   }
 
   async handleDisconnect(client: any) {
@@ -175,20 +190,6 @@ export class MatchesOnGoingGateway {
       ++updatePlayers[data.username];
   }
 
-  async checkUserAlreadyInGame(idUser: number) {
-    let user: User | undefined;
-    try {
-      user = await this.usersService.findOne(idUser);
-    } catch (error) {
-      return { response: false, game: null };
-    }
-    let existingGame = await this.matchesOnGoingService.findOneWithUser(user.name);
-    if (existingGame !== undefined)
-      return { response: true, game: existingGame };
-    else
-      return { response: false, game: null };
-  }
-
   checkUserAlreadyInQueue(idUser: number) {
     for (let value of queue.values())
       if (value.id === idUser)
@@ -209,20 +210,7 @@ export class MatchesOnGoingGateway {
     let mapExtracted = arrayRules[2].substring(arrayRules[2].indexOf(":") + 1, arrayRules[2].length - 1);
     if (mapExtracted === "original" || mapExtracted === "desert" || mapExtracted === "jungle")
     parsedRules.map = mapExtracted;
-    console.error("PARSED_RULES: ", parsedRules);
     return parsedRules;
-  }
-
-  checkSimilarGame(idUser: number, rulesConcat: string) {
-    let rulesSearching = this.disassembleRulesString(rulesConcat);
-    for (let entries of queue.entries()) {
-      let rulesPulled = this.disassembleRulesString(entries[1].rules);
-      if (rulesPulled.scoreMax === rulesSearching.scoreMax && rulesPulled.powerUp === rulesSearching.powerUp) {
-        queue.delete(entries[0]);
-        return { response: true, playerOneId: entries[1].id, playerTwoId: idUser, rules: rulesPulled };
-      }
-    }
-    return { response: false };
   }
 
   assembleRulesString(rules: any) {
@@ -233,10 +221,29 @@ export class MatchesOnGoingGateway {
     return assembledRulesString;
   }
 
+  checkSimilarGame(idUser: number, rulesConcat: string) {
+    let rulesSearching = this.disassembleRulesString(rulesConcat);
+    for (let entries of queue.entries()) {
+      let rulesPulled = this.disassembleRulesString(entries[1].rules);
+      if (rulesPulled.scoreMax === rulesSearching.scoreMax && rulesPulled.powerUp === rulesSearching.powerUp) {
+        queue.delete(entries[0]);
+        return { response: true, playerOneId: entries[1].id, playerTwoId: idUser, rules: rulesPulled, socketUserOne: entries[1].socket };
+      }
+    }
+    return { response: false, playerOneId: 0, playerTwoId: 0, rules: rulesSearching, socketUserOne: "" };
+  }
+
   removeUserFromQueue(idUser: number) {
     for (let entries of queue.entries())
       if (entries[1].id === idUser)
         queue.delete(entries[0]);
+  }
+
+  printQueue() {
+    console.error("\t=== PRINT_QUEUE ===");
+    for (let entries of queue.entries()) {
+      console.error(entries[0], " | ", entries[1]);
+    }
   }
 
   @UseGuards(JwtGatewayGuard)
@@ -253,69 +260,42 @@ export class MatchesOnGoingGateway {
     try {
       const jwtToken = extractJwtFromCookie(socket.handshake.headers.cookie);
       idUser = await this.jwtService.verify(jwtToken).idUser;
-      console.error("IDUSER: ", idUser);
     } catch (error) {
       socket.disconnect();
       return;
     }
+    
     const user = await this.usersService.findOne(idUser);
-    let rulesConcat = this.assembleRulesString(data);
-    if ((await this.checkUserAlreadyInGame(idUser)).response) { // We can reconnect player to his previous game
-      /*  */
-    } else if (this.checkUserAlreadyInQueue(idUser)) { // Search continue
-      this.server.to(socket.id).emit("alreadyCreatedMatch", { idGame: -1 });
-    } else if (this.checkSimilarGame(idUser, rulesConcat).response) { // We create the match
-      /*  */
-    } else {
-      queue.set(Date.now(), { id: idUser, rules: rulesConcat })
-    }
-    // Only here to return.
-    let t = 0;
-    if (t === 0)
-      return;
-
-
-    if (data.map !== "original" && data.map !== "desert" && data.map !== "jungle")
-      data.map = "original";
-    if (data.scoreMax != 3 && data.scoreMax != 5 && data.scoreMax != 7)
-      data.scoreMax = 3;
-    data.username
-    // Check if user has a pending or disconnected game
-    let existingGame = await this.matchesOnGoingService.checkUserAlreadyInGame(data.username, socket.id);
-    if (existingGame !== undefined) {
-      if (existingGame.pending) {
-        this.server.to(socket.id).emit("alreadyCreatedMatch", {
-          idGame: existingGame.id,
-        });
-        return;
-      } else
-        await this.sendToAllSockets(existingGame);
-      return;
-    }
     await this.usersService.setInGame(data.username);
-    // Check if game pending with same rules (except map)
-    let joinPendingGame = await this.matchesOnGoingService.checkSimilarGamePending(data, socket.id);
-    if (joinPendingGame !== undefined) {
-      this.server.to(joinPendingGame.players[1].socket).emit("idGame", {
-        idGame: joinPendingGame.id,
-      });
-      this.usersService.setUserInGame(joinPendingGame.players[0].username, joinPendingGame.players[1].username);
-      updatePlayers[joinPendingGame.players[0].username] = 0;
-      updatePlayers[joinPendingGame.players[1].username] = 0;
-      console.error("Add the two players in the map");
-      this.gameLoop(joinPendingGame);
-      return;
+    let rulesConcat = this.assembleRulesString(data);
+    let responseMatchmaking: MatchesOnGoing | undefined;
+    let responseCheckSimilar: {response: boolean, playerOneId: number, playerTwoId: number, socketUserOne: string, rules: { powerUp: boolean, scoreMax: number, map: "original" | "desert" | "jungle"}};
+    if ((responseMatchmaking = (await this.matchesOnGoingService.findOneWithUser(user.name))) !== undefined) { // 1. We can reconnect player to his previous game
+      //await this.matchesOnGoingService.updateSocketPlayers(responseMatchmaking, socket.id, user.inGame);
+      this.server.to(socket.id).emit("alreadyCreatedMatch", { idGame: responseMatchmaking.id});
+    } else if (this.checkUserAlreadyInQueue(idUser)) { // 2. Search continue
+      this.server.to(socket.id).emit("alreadyCreatedMatch", { idGame: -1 });
+    } else if ((responseCheckSimilar = this.checkSimilarGame(idUser, rulesConcat)).response) { // 3. We create the match
+      /* Users are already deleted from queue. */
+      let createdGame =
+        await this.matchesOnGoingService.createMatchFromGateway(
+          responseCheckSimilar.playerOneId,
+          responseCheckSimilar.playerTwoId,
+          responseCheckSimilar.rules,
+          responseCheckSimilar.socketUserOne,
+          socket.id);
+      if (createdGame === undefined) {
+        socket.disconnect();
+        // disconnect second socket.
+        return;
+      }
+      updatePlayers[createdGame.p1] = 0;
+      updatePlayers[createdGame.p2] = 0;
+      this.server.to([responseCheckSimilar.socketUserOne, socket.id]).emit("idGame", { idGame: createdGame.id });
+      this.gameLoop(createdGame);
+    } else { // 4. Simply add to queue
+      queue.set(Date.now(), { id: idUser, rules: rulesConcat, socket: socket.id })
     }
-    let response: MatchesOnGoing;
-    try {
-      response = await this.matchesOnGoingService.createMatchFromGateway(data, socket.id);
-    } catch (error) {
-      return;
-    }
-    this.server.to(response.players[0].socket).emit("idGame", {
-      idGame: response.id
-    });
-    return;
   }
 
   @UseGuards(JwtGatewayGuard)
