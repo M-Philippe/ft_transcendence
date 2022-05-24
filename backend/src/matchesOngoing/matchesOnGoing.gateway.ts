@@ -199,7 +199,7 @@ export class MatchesOnGoingGateway {
       else
         await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletbyfromuser: () => "palletbyfromuser + 1"}).where("p2 = :name", {name: data.username}).execute();
     }
-    // console.error("Mvt " + data.username + ": " + (Date.now() - d));
+    // console.error("Mvt: " + data.username + ", pallet: " + data.palletAssigned);
   }
 
   checkUserAlreadyInQueue(idUser: number) {
@@ -278,7 +278,7 @@ export class MatchesOnGoingGateway {
     }
 
     const user = await this.usersService.findOne(idUser);
-    await this.usersService.setInGame(data.username);
+    await this.usersService.setInGame(data.username, 0);
     let rulesConcat = this.assembleRulesString(data);
     let responseMatchmaking: MatchesOnGoing | undefined;
     let responseCheckSimilar: {response: boolean, playerOneId: number, playerTwoId: number, socketUserOne: string, rules: { powerUp: boolean, scoreMax: number, map: "original" | "desert" | "jungle"}};
@@ -301,7 +301,9 @@ export class MatchesOnGoingGateway {
         // disconnect second socket.
         return;
       }
-      this.server.to([responseCheckSimilar.socketUserOne, socket.id]).emit("idGame", { idGame: createdGame.id });
+    await this.usersService.setInGame(createdGame.p1, 1);
+    await this.usersService.setInGame(createdGame.p2, 2);
+    this.server.to([responseCheckSimilar.socketUserOne, socket.id]).emit("idGame", { idGame: createdGame.id });
       this.gameLoop(createdGame);
     } else { // 4. Simply add to queue
       queue.set(Date.now(), { id: idUser, rules: rulesConcat, socket: socket.id })
@@ -380,7 +382,7 @@ export class MatchesOnGoingGateway {
         await this.usersService.checkUserAchievements(game.p2);
         await this.usersService.setNotInGame(game.p1);
         await this.usersService.setNotInGame(game.p2);
-        console.error("moy: " + y / c);
+        // console.error("moy: " + y / c);
         return;
       }
       // let a = updatePlayers[match.p1];

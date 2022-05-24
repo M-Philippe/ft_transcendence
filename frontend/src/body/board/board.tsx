@@ -67,7 +67,6 @@ function Board(props: BoardProps) {
 				idGame: idBoard,
 				direction: "down",
 				palletAssigned: palletAssigned,
-
 			});
 			// if (palletAssigned === 0)
 			// 	coordinates.palletAY += coordinates.speedPalet;
@@ -99,11 +98,12 @@ function Board(props: BoardProps) {
 
 	props.socket.off("updatePositions");
 	props.socket.on("updatePositions", (...args: any) => {
+		if (palletAssigned === -1) {
+			setPalletAssigned(args[0].palletAssigned);
+		}
+		console.error("PALLET_ASSIGNED_UPDATE: ", palletAssigned);
 		setCoordinates(args[0].positions);
 		setIdBoard(args[0].id);
-		if (palletAssigned === -1) {
-			setPalletAssigned(args.palletAssigned);
-		}
 		// if first positions dispatch inGame
 		if (!props.user.isInGame) {
 			props.dispatch({

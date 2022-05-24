@@ -640,7 +640,7 @@ export class MatchesOnGoingService {
     });
     match.p1 = userOne.name;
     match.p2 = userTwo.name;
-    match.socketsToEmit = [socketUserOne];
+    match.socketsToEmit = [];
     match.scoreMax = rules.scoreMax;
     this.setColorMap(match, rules.map);
     match.generatePowerUp = rules.powerUp;
