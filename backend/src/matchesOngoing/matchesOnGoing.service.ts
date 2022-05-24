@@ -25,6 +25,7 @@ import {
   POWERUP_HEIGHT,
   POWERUP_WIDTH,
 } from "./matchesOnGoing.constBoard";
+import { match } from "assert";
 
 function delay(ms: number) {
   return new Promise( resolve => setTimeout(resolve, ms) );
@@ -74,6 +75,14 @@ function initStartingPositions(game: MatchesOnGoing) {
   game.scorePlayerB = 0;
   game.finishedGame = false;
   game.winnerUsername = "";
+  game.lastUpdateTime = Date.now();
+  game.hasMessageToDisplay = false;
+  game.messageToDisplay = "";
+  game.playerDisconnected = false;
+  game.usernameDisconnectedPlayer = "";
+  game.timeOfDisconnection = 0;
+  game.pending = false;
+  game.players = [];
 }
 
 @Injectable()
@@ -96,6 +105,21 @@ export class MatchesOnGoingService {
     throw new HttpException({
       description: "No match corresponding."
     }, HttpStatus.NOT_FOUND);
+  }
+
+  async findOneWithUser(username: string) {
+    let game;
+    try {
+      game = await getConnection()
+        .getRepository(MatchesOnGoing)
+        .createQueryBuilder("game")
+        .where("p1 = :name1", { name1: username })
+        .orWhere("p2 = :name2", { name2: username })
+        .getOneOrFail();
+    } catch (error) {
+      return undefined;
+    }
+    return game;
   }
 
   async initStartingPositionsAfterScore(game: MatchesOnGoing, who: string) {
@@ -546,6 +570,9 @@ export class MatchesOnGoingService {
     match.powerUpY = 0;
   }
 
+  /*
+  **  VROTH_DI
+  */
   async createMatchFromInvitation(playerOne: User, playerTwo: User, rules: any) {
     let match;
     try {
@@ -576,7 +603,7 @@ export class MatchesOnGoingService {
       this.setPowerUp(match);
     else
       this.setPowerUpToNull(match);
-    const d = new Date();
+    match.lastUpdateTime = Date.now();
     match.hasMessageToDisplay = false;
     match.messageToDisplay = "";
     match.playerDisconnected = false;
@@ -590,23 +617,30 @@ export class MatchesOnGoingService {
     }
   }
 
-  async createMatchFromGateway(rules: any, socket: string) {
+  async createMatchFromGateway(idPlayerOne: number, idPlayerTwo: number, rules: any, socketUserOne: string, socketUserTwo: string) {
     let match;
+    let userOne: User;
+    let userTwo: User;
     try {
+      userOne = await this.usersService.findOne(idPlayerOne);
+      userTwo = await this.usersService.findOne(idPlayerTwo);
       match = this.matchesOnGoingRepository.create();
-    } catch (error) {
-      throw new Error(error);
-    }
+    } catch (error) { return undefined; }
+
     initStartingPositions(match);
-    match.pending = true;
-    match.players = [];
     match.players.push({
-      username: rules.username,
+      username: userOne.name,
       palletAssigned: 0,
-      socket: socket,
+      socket: socketUserOne,
     });
-    match.p1 = rules.username;
-    match.socketsToEmit = [socket];
+    match.players.push({
+      username: userTwo.name,
+      palletAssigned: 1,
+      socket: socketUserTwo,
+    });
+    match.p1 = userOne.name;
+    match.p2 = userTwo.name;
+    match.socketsToEmit = [socketUserOne];
     match.scoreMax = rules.scoreMax;
     this.setColorMap(match, rules.map);
     match.generatePowerUp = rules.powerUp;
@@ -614,15 +648,10 @@ export class MatchesOnGoingService {
       this.setPowerUp(match);
     else
       this.setPowerUpToNull(match);
-    match.hasMessageToDisplay = false;
-    match.messageToDisplay = "";
-    match.playerDisconnected = false;
-    match.usernameDisconnectedPlayer = "";
-    match.timeOfDisconnection = 0;
     try {
       await this.matchesOnGoingRepository.save(match);
     } catch (error) {
-      throw new Error(error);
+      return undefined;
     }
     return (match);
   }
@@ -680,8 +709,8 @@ export class MatchesOnGoingService {
           .execute();
   }
 
-  async updateSocketPlayers(game: MatchesOnGoing, socket: string, playerIndex: 0 | 1) {
-    game.players[playerIndex].socket = socket;
+  async updateSocketPlayers(game: MatchesOnGoing, socket: string, playerIndex: number) {
+    game.players[playerIndex - 1].socket = socket;
     game.hasMessageToDisplay = false;
     game.playerDisconnected = false;
     game.usernameDisconnectedPlayer = "";

@@ -24,10 +24,15 @@ const FPS = 80;
 
 // type HashMap<T> = { [key: string]: T };
 
-// const updatePlayers: HashMap<number> = {};
-// const mutex = new Mutex();
+interface IQueue {
+  id: number,
+  rules: string,
+  socket: string,
+}
 
-// let updatePlayers = new Map<string, number>();
+const queue = new Map<number /* timestamp */, IQueue>();
+
+// let updatePlayers = new Map<string, match>();
 
 @WebSocketGateway({ path:"/matchesOnGoing", transports: ['websocket'] })
 @Injectable()
@@ -116,9 +121,23 @@ export class MatchesOnGoingGateway {
   @UseGuards(JwtGatewayGuard)
   @SubscribeMessage("cancelMatch")
   async cancelMatch(
-  @MessageBody() data: any) {
-    await this.matchesOnGoingService.cancelMatch(data.username);
-    await this.usersService.setNotInGame(data.username);
+  @MessageBody() data: any,
+  @ConnectedSocket() socket: Socket,
+  ) {
+    if (socket.handshake.headers.cookie === undefined)
+      return;
+    let idUser: number = 0;
+    try {
+      const jwtToken = extractJwtFromCookie(socket.handshake.headers.cookie);
+      idUser = await this.jwtService.verify(jwtToken).idUser;
+    } catch (error) { return; }
+    for (let entries of queue.entries()) {
+      if (entries[1].id === idUser) {
+        queue.delete(entries[0]);
+        this.printQueue();
+        return;
+      }
+    }
   }
 
   async handleDisconnect(client: any) {
@@ -135,8 +154,8 @@ export class MatchesOnGoingGateway {
         let game: MatchesOnGoing = await getConnection()
           .getRepository(MatchesOnGoing)
           .createQueryBuilder('game')
-          .where("p1 = :name", { name: usr.name })
-          .orWhere("p2 = :name", { name: usr.name })
+          .where("p1 = :name1", { name1: usr.name })
+          .orWhere("p2 = :name2", { name2: usr.name })
           .getOneOrFail();
         if (game.pending) {
           await getConnection()
@@ -170,12 +189,12 @@ export class MatchesOnGoingGateway {
   @ConnectedSocket() socket: Socket) {
     // let d = Date.now();
     if (data.direction === "up") {
-      if (data.inGame === 1)
+      if (data.inGame === 0)
         await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletayfromuser: () => "palletayfromuser - 1"}).where("p1 = :name", {name: data.username}).execute();
       else
         await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletbyfromuser: () => "palletbyfromuser - 1"}).where("p2 = :name", {name: data.username}).execute();
     } else if (data.direction === "down") {
-      if (data.inGame === 1)
+      if (data.inGame === 0)
         await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletayfromuser: () => "palletayfromuser + 1"}).where("p1 = :name", {name: data.username}).execute();
       else
         await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletbyfromuser: () => "palletbyfromuser + 1"}).where("p2 = :name", {name: data.username}).execute();
@@ -183,53 +202,110 @@ export class MatchesOnGoingGateway {
     // console.error("Mvt " + data.username + ": " + (Date.now() - d));
   }
 
+  checkUserAlreadyInQueue(idUser: number) {
+    for (let value of queue.values())
+      if (value.id === idUser)
+        return true;
+    return false;
+  }
+
+  disassembleRulesString(rulesToDisassemble: string) {
+    let parsedRules: {powerUp: boolean, scoreMax: number, map: "original" | "desert" | "jungle"}
+      = { powerUp: false, scoreMax: 3, map: "original"};
+    let rules = rulesToDisassemble;
+    rules.indexOf("(");
+    let rulesReturn = rules.substring(rules.indexOf("("));
+    let arrayRules = rules.split("#");
+    parsedRules.scoreMax = parseInt(arrayRules[0].substring(arrayRules[0].indexOf(":") + 1));
+    parsedRules.powerUp
+      = (arrayRules[1].substring(arrayRules[1].indexOf(":") + 1)) === "yes" ? true : false;
+    let mapExtracted = arrayRules[2].substring(arrayRules[2].indexOf(":") + 1, arrayRules[2].length - 1);
+    if (mapExtracted === "original" || mapExtracted === "desert" || mapExtracted === "jungle")
+    parsedRules.map = mapExtracted;
+    return parsedRules;
+  }
+
+  assembleRulesString(rules: any) {
+    let assembledRulesString =
+      "(points:" + rules.scoreMax
+      + "#power-up:" + (rules.powerUp ? "yes" : "no")
+      + "#map:" + rules.map + ")";
+    return assembledRulesString;
+  }
+
+  checkSimilarGame(idUser: number, rulesConcat: string) {
+    let rulesSearching = this.disassembleRulesString(rulesConcat);
+    for (let entries of queue.entries()) {
+      let rulesPulled = this.disassembleRulesString(entries[1].rules);
+      if (rulesPulled.scoreMax === rulesSearching.scoreMax && rulesPulled.powerUp === rulesSearching.powerUp) {
+        queue.delete(entries[0]);
+        return { response: true, playerOneId: entries[1].id, playerTwoId: idUser, rules: rulesPulled, socketUserOne: entries[1].socket };
+      }
+    }
+    return { response: false, playerOneId: 0, playerTwoId: 0, rules: rulesSearching, socketUserOne: "" };
+  }
+
+  removeUserFromQueue(idUser: number) {
+    for (let entries of queue.entries())
+      if (entries[1].id === idUser)
+        queue.delete(entries[0]);
+  }
+
+  printQueue() {
+    console.error("\t=== PRINT_QUEUE ===");
+    for (let entries of queue.entries()) {
+      console.error(entries[0], " | ", entries[1]);
+    }
+  }
+
   @UseGuards(JwtGatewayGuard)
   @SubscribeMessage('createMatch')
   async handleAsync(
   @MessageBody() data: any,
   @ConnectedSocket() socket: Socket) {
-    if (data.map !== "original" && data.map !== "desert" && data.map !== "jungle")
-      data.map = "original";
-    if (data.scoreMax != 3 && data.scoreMax != 5 && data.scoreMax != 7)
-      data.scoreMax = 3;
-    data.username
-    // Check if user has a pending or disconnected game
-    let existingGame = await this.matchesOnGoingService.checkUserAlreadyInGame(data.username, socket.id);
-    if (existingGame !== undefined) {
-      if (existingGame.pending) {
-        this.server.to(socket.id).emit("alreadyCreatedMatch", {
-          idGame: existingGame.id,
-        });
-        return;
-      } else
-        await this.sendToAllSockets(existingGame);
+    /* NEW_CODE */
+    if (socket.handshake.headers.cookie === undefined) {
+      socket.disconnect();
       return;
     }
-    // Check if game pending with same rules (except map)
-    let joinPendingGame = await this.matchesOnGoingService.checkSimilarGamePending(data, socket.id);
-    if (joinPendingGame !== undefined) {
-      this.server.to(joinPendingGame.players[1].socket).emit("idGame", {
-        idGame: joinPendingGame.id,
-      });
-      await this.usersService.setInGame(data.username, 2);
-      // this.usersService.setUserInGame(joinPendingGame.players[0].username, joinPendingGame.players[1].username);
-      // updatePlayers[joinPendingGame.players[0].username] = 0;
-      // updatePlayers[joinPendingGame.players[1].username] = 0;
-      console.error("Add the two players in the map");
-      this.gameLoop(joinPendingGame);
-      return;
-    }
-    let response: MatchesOnGoing;
+    let idUser: number = 0;
     try {
-      response = await this.matchesOnGoingService.createMatchFromGateway(data, socket.id);
+      const jwtToken = extractJwtFromCookie(socket.handshake.headers.cookie);
+      idUser = await this.jwtService.verify(jwtToken).idUser;
     } catch (error) {
+      socket.disconnect();
       return;
     }
-    await this.usersService.setInGame(data.username, 1);
-    this.server.to(response.players[0].socket).emit("idGame", {
-      idGame: response.id
-    });
-    return;
+
+    const user = await this.usersService.findOne(idUser);
+    await this.usersService.setInGame(data.username);
+    let rulesConcat = this.assembleRulesString(data);
+    let responseMatchmaking: MatchesOnGoing | undefined;
+    let responseCheckSimilar: {response: boolean, playerOneId: number, playerTwoId: number, socketUserOne: string, rules: { powerUp: boolean, scoreMax: number, map: "original" | "desert" | "jungle"}};
+    if ((responseMatchmaking = (await this.matchesOnGoingService.findOneWithUser(user.name))) !== undefined) { // 1. We can reconnect player to his previous game
+      //await this.matchesOnGoingService.updateSocketPlayers(responseMatchmaking, socket.id, user.inGame);
+      this.server.to(socket.id).emit("alreadyCreatedMatch", { idGame: responseMatchmaking.id});
+    } else if (this.checkUserAlreadyInQueue(idUser)) { // 2. Search continue
+      this.server.to(socket.id).emit("alreadyCreatedMatch", { idGame: -1 });
+    } else if ((responseCheckSimilar = this.checkSimilarGame(idUser, rulesConcat)).response) { // 3. We create the match
+      /* Users are already deleted from queue. */
+      let createdGame =
+        await this.matchesOnGoingService.createMatchFromGateway(
+          responseCheckSimilar.playerOneId,
+          responseCheckSimilar.playerTwoId,
+          responseCheckSimilar.rules,
+          responseCheckSimilar.socketUserOne,
+          socket.id);
+      if (createdGame === undefined) {
+        socket.disconnect();
+        // disconnect second socket.
+        return;
+      }
+      this.server.to([responseCheckSimilar.socketUserOne, socket.id]).emit("idGame", { idGame: createdGame.id });
+      this.gameLoop(createdGame);
+    } else { // 4. Simply add to queue
+      queue.set(Date.now(), { id: idUser, rules: rulesConcat, socket: socket.id })
+    }
   }
 
   @UseGuards(JwtGatewayGuard)

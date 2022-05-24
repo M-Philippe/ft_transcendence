@@ -17,6 +17,7 @@ export class MatchesOnGoing {
   @Column("text") bakckgroundColor: string;
   @Column("text") objectColor: string;
 
+  @Column("bigint") lastUpdateTime: number;
 
   @Column({
     type: 'jsonb',
