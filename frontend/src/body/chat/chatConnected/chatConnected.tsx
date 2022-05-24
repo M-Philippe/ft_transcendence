@@ -98,6 +98,22 @@ function reducer (state: State, action: Action): State {
   }
 }
 
+type SortArrayType = <T>(arr: T[]) => T[];
+
+const sortArray: SortArrayType = (arr) => {
+  return arr.sort((a, b) => {
+    const strA = JSON.stringify(a);
+    const strB = JSON.stringify(b);
+    if (strA < strB) {
+      return -1;
+    }
+    if (strA > strB) {
+      return 1;
+    }
+    return 0;
+  });
+};
+
 export function ChatConnected(props: PropsChatConnected) {
   const url = API_USER_LIST_CHAT + props.name;
 
@@ -141,7 +157,7 @@ export function ChatConnected(props: PropsChatConnected) {
       return;
     let tmp = state.lstId;
     tmp.push(args[0].newChatId);
-    tmp = tmp.sort();
+    tmp.sort(function(a, b){return a - b});
     dispatch({type: "CHANGE_LST_ID", lstId: tmp});
     state.lstButtonsGreen.push(args[0].newChatId);
     dispatch({type: "UPDATE_BUTTONS_GREEN", lstButtonsGreen: state.lstButtonsGreen});
@@ -232,7 +248,7 @@ export function ChatConnected(props: PropsChatConnected) {
       {state.lstId.length !== 0 &&
 			<div style={{display: 'flex', margin:'auto', justifyContent:'center', alignItems: 'center', flexWrap: 'wrap'}}>
         	<IconButton size="large" onClick={() => {
-            if (Date.now() - dateClick > 1000) {
+            if (Date.now() - dateClick > 200) {
               props.socket.emit("createChat", {nameUser: props.name});
               setDateClick(Date.now());
             }
