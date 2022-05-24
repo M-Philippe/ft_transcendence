@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { API_USER_INVITE_MATCH, DISCONNECTING_URL } from '../../urlConstString';
 import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import NativeSelect from '@mui/material/NativeSelect';
 
 interface rules {
   scoreMax: number,
@@ -18,32 +22,49 @@ export default function InvitationGameQueryBox(props: { nameProfile: string, clo
 	return (
 		<div>
 			<h3>{props.nameProfile}</h3>
-			<p>Points</p>
-        <select onChange={(event) => {
-          setRules({...rules, scoreMax: parseInt(event.target.value)});
-        }}>
+      <Stack sx={{alignItems:"center"}} spacing={5}>
+      <FormControl >
+        <InputLabel variant="standard" htmlFor="uncontrolled-native">
+          Points
+        </InputLabel>
+        <NativeSelect color="primary" onChange={(event) => {setRules({...rules, scoreMax: parseInt(event.target.value)}); }}
+          defaultValue={"3"}
+          inputProps={{
+            name: 'Points',
+            id: 'uncontrolled-native',
+          }} >
           <option value="3">3</option>
           <option value="5">5</option>
           <option value="7">7</option>
-        </select>
-        <p>Power-Ups</p>
-        <select onChange={(event) => {
+          </NativeSelect>
+          </FormControl>
+        <FormControl >
+        <InputLabel variant="standard" htmlFor="uncontrolled-native">
+          Power-Ups
+        </InputLabel>
+        <NativeSelect color="primary" onChange={(event) => {
           if (event.target.value === "yes")
-            setRules({...rules, powerUp: true});
+          setRules({...rules, powerUp: true});
           else
-            setRules({...rules, powerUp: false});
+          setRules({...rules, powerUp: false});
         }}>
           <option value="yes">Yes</option>
           <option value="no">No</option>
-        </select>
-        <p>Map</p>
-        <select onChange={(event) => {
+        </NativeSelect>
+        </FormControl>
+        <FormControl >
+        <InputLabel variant="standard" htmlFor="uncontrolled-native">
+          Map
+        </InputLabel>
+        <NativeSelect color="primary" onChange={(event) => {
           setRules({...rules, map: event.target.value})
         }}>
           <option value="original">Original</option>
           <option value="desert">Desert</option>
           <option value="jungle">Jungle</option>
-        </select>
+        </NativeSelect>
+        </FormControl>
+		  	</Stack>
 				<br /><br />
 				<Button variant="contained" color="success" onClick={() => {
 					let headers = new Headers();

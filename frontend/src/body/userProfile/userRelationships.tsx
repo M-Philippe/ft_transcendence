@@ -130,6 +130,9 @@ export default function UserRelationships(props: any) {
 					listRelationships.length === 0 &&
 					<p style={{color:'black'}}>You don't have any relation...</p>
 				}
+				<Button variant="contained" color="error" onClick={handleClose}>
+					Close
+				</Button>
 				</Stack>
 				</Typography>
 				</Box>

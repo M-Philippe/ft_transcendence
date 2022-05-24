@@ -8,6 +8,11 @@ import SpectateGame from './spectateGame/spectateGame';
 import pong from '../../styles/medias/ping-pong.png';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import NativeSelect from '@mui/material/NativeSelect';
+import Typography from '@mui/material/Typography';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 interface rules {
   scoreMax: number,
@@ -25,6 +30,16 @@ function PlayRoute(props: any) {
     powerUp: true,
     map: "original",
   });
+
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#ffffff',
+    },
+  },
+});
+
 
   if ((inGame || spectate) && socket === undefined)
     return(
@@ -61,35 +76,57 @@ function PlayRoute(props: any) {
   }
   else
     return (
-      <div>
+      <div id ="test2">
         <img id = "pongImgPlayMenu" src= {pong} alt="pong"></img>
-        <p>Points</p>
-        <select onChange={(event) => {
-          setRules({...rules, scoreMax: parseInt(event.target.value)});
-        }}>
+        <Typography id="modal-modal-title" variant="h5" sx={{ textAlign: 'center', color:"white"}}>
+        <br /><br /> Choose your game rules : <br/><br/>
+        </Typography>
+        <ThemeProvider theme={theme}>
+        <Stack direction="row" sx={{ justifyContent:"center" }} spacing={7}>
+        <FormControl >
+        <InputLabel sx={{ color:"white" }} variant="standard" htmlFor="uncontrolled-native">
+          Points
+        </InputLabel>
+        <NativeSelect color="primary" sx={{ color:"white" }} onChange={(event) => {setRules({...rules, scoreMax: parseInt(event.target.value)}); }}
+          defaultValue={"3"}
+          inputProps={{
+            name: 'Points',
+            id: 'uncontrolled-native',
+          }} >
           <option value="3">3</option>
           <option value="5">5</option>
           <option value="7">7</option>
-        </select>
-        <p>Power-Ups</p>
-        <select onChange={(event) => {
+          </NativeSelect>
+          </FormControl>
+        <FormControl sx={{ color:"white" }} >
+        <InputLabel variant="standard" htmlFor="uncontrolled-native" sx={{ color:"white" }}>
+          Power-Ups
+        </InputLabel>
+        <NativeSelect color="primary" onChange={(event) => {
           if (event.target.value === "yes")
-            setRules({...rules, powerUp: true});
+          setRules({...rules, powerUp: true});
           else
-            setRules({...rules, powerUp: false});
-        }}>
+          setRules({...rules, powerUp: false});
+        }} sx={{ color:"white" }}>
           <option value="yes">Yes</option>
           <option value="no">No</option>
-        </select>
-        <p>Map</p>
-        <select onChange={(event) => {
+        </NativeSelect>
+        </FormControl>
+        <FormControl >
+        <InputLabel variant="standard" htmlFor="uncontrolled-native" sx={{ color:"white" }}>
+          Map
+        </InputLabel>
+        <NativeSelect color="primary" onChange={(event) => {
           setRules({...rules, map: event.target.value})
-        }}>
+        }} sx={{ color:"white" }}>
           <option value="original">Original</option>
           <option value="desert">Desert</option>
           <option value="jungle">Jungle</option>
-        </select>
-        <br /><br />
+        </NativeSelect>
+        </FormControl>
+		  	</Stack>
+        </ThemeProvider>
+        <br /><br /><br />
         <Stack margin="auto" sx={{ width: '35%', }} spacing={2}>
         <Button color='success' variant="contained" onClick={() => setInGame(true)}>PLAY</Button>
         <Button variant="contained" onClick={() => setSpectate(true)}>SPECTATE</Button>

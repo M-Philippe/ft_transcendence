@@ -1,12 +1,11 @@
 import { useCanvas } from "./boardHooks";
 import { Socket } from 'socket.io-client';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { connect } from 'react-redux';
 import { DispatchType, storeState } from '../../store/types';
 import { SET_ID_GAME, SET_USER_INGAME, UNSET_USER_INGAME } from "../../store/userSlice/userSliceActionTypes";
 import { Navigate } from "react-router-dom";
 import { userState } from "../../store/userSlice/userSliceTypes";
-import { API_MATCHES_PLAYER_LEAVING } from "../../urlConstString";
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -36,24 +35,27 @@ function Board(props: BoardProps) {
 	const [cancelGame, setCancelGame] = useState(false);
 	const [searchingMessage, setSearchingMessage] = useState("Searching for a similar game or creating a new one.");
 
+	useEffect(() => {
+		return () => { props.socket.disconnect(); }
+	}, []);
 
-	props.socket.off("disconnect");
-	props.socket.on("disconnect", () => {
-		let params = {
-			username: props.user.username,
-			idGame: props.user.idGame,
-		};
-		let req = new XMLHttpRequest();
-		req.open(
-			"post",
-			API_MATCHES_PLAYER_LEAVING);
-		req.setRequestHeader("Content-Type", "application/json");
-		req.send(JSON.stringify(params));
-		props.dispatch({
-			type: UNSET_USER_INGAME,
-			user: {...props.user},
-		})
-	});
+	// props.socket.off("disconnect");
+	// props.socket.on("disconnect", () => {
+	// 	let params = {
+	// 		username: props.user.username,
+	// 		idGame: props.user.idGame,
+	// 	};
+	// 	let req = new XMLHttpRequest();
+	// 	req.open(
+	// 		"post",
+	// 		API_MATCHES_PLAYER_LEAVING);
+	// 	req.setRequestHeader("Content-Type", "application/json");
+	// 	req.send(JSON.stringify(params));
+	// 	props.dispatch({
+	// 		type: UNSET_USER_INGAME,
+	// 		user: {...props.user},
+	// 	})
+	// });
 
 	if (cancelGame || endGame)
 		return (
@@ -65,6 +67,7 @@ function Board(props: BoardProps) {
 			props.socket.emit("movePallet", {
 				username: props.user.username,
 				direction: "down",
+				palletAssigned: palletAssigned,
 			});
 			if (palletAssigned === 0)
 				coordinates.palletAY += coordinates.speedPalet / 2;
@@ -75,6 +78,7 @@ function Board(props: BoardProps) {
 			props.socket.emit("movePallet", {
 				username: props.user.username,
 				direction: "up",
+				palletAssigned: palletAssigned,
 			});
 			if (palletAssigned === 0)
 				coordinates.palletAY -= coordinates.speedPalet / 2;

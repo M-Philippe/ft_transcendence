@@ -175,7 +175,7 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
 				</Modal>
         {chooseRelationshipButton(data.relationshipStatus, data.name, setRefresh)}
         <Button variant="contained" onClick={() => {handleOpenFriend()}}>
-           Friend list</Button>
+           Friends list</Button>
         <Modal
 				open={openFriend}
 				onClose={handleCloseFriend}
@@ -188,6 +188,9 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
 				{
           data.name !== "" && <RelationshipsDisplay nameProfile={data.name} />
 				}
+        <Button variant="contained" color="error" onClick={handleCloseFriend}>
+					  Close
+				</Button>
 				</Typography>
 				</Box>
 				</Modal>

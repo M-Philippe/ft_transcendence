@@ -1,8 +1,8 @@
 #chat {
   flex: 0 22vw;
   order: 2;
-  max-height: 87vh;
-  min-height: 87vh;
+  max-height: 89vh;
+  min-height: 89vh;
   max-width: 24vw;
   min-width: 24vw;
   border-radius: 15px;
@@ -20,25 +20,29 @@
 
  .chatForm {
   right: 0;
-  bottom: 0;
-  height: 2vh;
+  bottom: 3vh;
+  min-height: 3vh;
   width: 22vw;
+  max-width: 22vw;
   padding-right: 1%;
   padding-left: 1%;
   border:0;
-  padding-bottom: 1%;
   border-radius: 5px;
   align-items: center;
 }
+
+/* .chatFormDiv {
+  padding-top: 50vh;
+} */
 
 #chatCmdHelp p{
   color:black;
 }
 
 #txtWrap {
-  padding-right: 5%;
-  padding-left: 5%;
-  max-height: 71vh;
+  padding-right: 3%;
+  padding-left: 3%;
+  max-height: 69vh;
   padding-bottom: 8%;
   word-wrap: break-word;
   overflow-y: auto;
