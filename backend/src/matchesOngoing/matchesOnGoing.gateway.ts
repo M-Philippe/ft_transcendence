@@ -29,7 +29,7 @@ const FPS = 80;
 
 // let updatePlayers = new Map<string, number>();
 
-@WebSocketGateway({ path:"/matchesOnGoing", transports: ['websocket'], namespace: "matchesOnGoing" })
+@WebSocketGateway({ path:"/matchesOnGoing", transports: ['websocket'] })
 @Injectable()
 export class MatchesOnGoingGateway {
   constructor(private readonly matchesOnGoingService: MatchesOnGoingService,
@@ -168,7 +168,7 @@ export class MatchesOnGoingGateway {
   async movePallet(
   @MessageBody() data: any,
   @ConnectedSocket() socket: Socket) {
-    let mvt: number;
+    // let d = Date.now();
     if (data.direction === "up") {
       if (data.inGame === 1)
         await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletayfromuser: () => "palletayfromuser - 1"}).where("p1 = :name", {name: data.username}).execute();
@@ -180,6 +180,7 @@ export class MatchesOnGoingGateway {
       else
         await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletbyfromuser: () => "palletbyfromuser + 1"}).where("p2 = :name", {name: data.username}).execute();
     }
+    // console.error("Mvt " + data.username + ": " + (Date.now() - d));
   }
 
   @UseGuards(JwtGatewayGuard)
@@ -270,9 +271,9 @@ export class MatchesOnGoingGateway {
     let pid: NodeJS.Timer;
     let y = 0;
     let c = 0;
-    let d = Date.now();
+    // let d = Date.now();
     pid = setInterval(async () => {
-      d = Date.now();
+      // d = Date.now();
       let game = await this.matchesOnGoingService.movePuck(match.id);
       // let game = await this.matchesOnGoingService.movePuck(match.id, updatePlayers[match.p1], updatePlayers[match.p2]);
       if (game === undefined)
@@ -310,8 +311,8 @@ export class MatchesOnGoingGateway {
       // updatePlayers[match.p1] = 0;
       // updatePlayers[match.p2] = 0;
       await this.sendToAllSockets(game);
-      ++c;
-      y += Date.now()- d;
+      // ++c;
+      // y += Date.now()- d;
     }, 1000 / FPS);
   }
 }

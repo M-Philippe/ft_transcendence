@@ -1,5 +1,5 @@
 
-export const SPEED_PALLET = 12;
+export const SPEED_PALLET = 6;
 export const SPEED_PALET_FRONT = SPEED_PALLET / 2;
 
 export const START_PALLET_HEIGHT = 90;

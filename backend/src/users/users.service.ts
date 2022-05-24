@@ -182,7 +182,6 @@ export class UsersService {
       .execute();
   }
 
-<<<<<<< HEAD
   // async setUserInGame(usernameOne: string, usernameTwo: string) {
 
   //   await getConnection()
@@ -198,18 +197,6 @@ export class UsersService {
   //     .where("name = :secondName", { secondName: usernameTwo })
   //     .execute();
   // }
-=======
-  async setUserInGame(usernameOne: string, usernameTwo: string) {
-    await getConnection()
-      .createQueryBuilder()
-      .update(User)
-      .set({
-        inGame: true,
-      })
-      .where("name = :firstName OR name = :secondName", { firstName: usernameOne, secondName: usernameTwo })
-      .execute();
-  }
->>>>>>> main
 
   async setUserOfflineAndSocketToNull(idUser: number) {
     let user = await this.findOne(idUser);
