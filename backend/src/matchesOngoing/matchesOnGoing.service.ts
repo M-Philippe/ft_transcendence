@@ -25,7 +25,6 @@ import {
   POWERUP_HEIGHT,
   POWERUP_WIDTH,
 } from "./matchesOnGoing.constBoard";
-import { match } from "assert";
 
 function delay(ms: number) {
   return new Promise( resolve => setTimeout(resolve, ms) );
@@ -49,17 +48,16 @@ interface Coord {
 };
 
 function initStartingPositions(game: MatchesOnGoing) {
+  game.palletL = START_PALLET_WIDTH;
   game.width = BOARD_WIDTH;
   game.height = BOARD_HEIGHT;
   game.palletAX = START_PALLETAX;
   game.palletAY = START_PALLETAY;
-  game.palletAWidth = START_PALLET_WIDTH;
   game.palletAHeight = START_PALLET_HEIGHT;
   game.palletAXFromUser = START_PALLETAX;
   game.palletayfromuser = 0;
   game.palletBX = START_PALLETBX;
   game.palletBY = START_PALLETBY;
-  game.palletBWidth = START_PALLET_WIDTH;
   game.palletBHeight = START_PALLET_HEIGHT;
   game.palletBXFromUser = START_PALLETBX;
   game.palletbyfromuser = 0;
@@ -67,8 +65,7 @@ function initStartingPositions(game: MatchesOnGoing) {
   game.puckY = START_PUCKY;
   game.puckVX = START_PUCK_VEL;
   game.puckVY =  (Math.round(Math.random() * (100 - 1) + 1) * ((Math.random() * (100 -1) + 1) % 2 == 0 ? -1 : 1) / 100);
-  game.puckHeight = START_PUCK_HEIGHT;
-  game.puckWidth = START_PUCK_WIDTH;
+  game.puckL = START_PUCK_HEIGHT;
   game.p1 = "";
   game.p2 = "";
   game.scorePlayerA = 0;
@@ -317,12 +314,12 @@ export class MatchesOnGoingService {
   checkCollisionPowerUp(game: MatchesOnGoing, coord: Coord) {
     let collision: boolean = false;
     if ((coord.puckVX > 0 && coord.puckVY > 0) || (coord.puckVX <= 0 && coord.puckVY <= 0)) {
-      let actualPuckLowerLeft = new Point(coord.puckX, (coord.puckY + game.puckHeight));
-      let actualPuckTopRight = new Point((coord.puckX + game.puckWidth), coord.puckY);
-      let nextPuckLowerLeft = new Point(coord.puckX + coord.puckVX, (coord.puckY + coord.puckVY + game.puckHeight));
-      let nextPuckTopRight = new Point((coord.puckX + coord.puckVX + game.puckWidth), coord.puckY + coord.puckVY);
-      let powerUpLowerLeft = new Point(game.powerUpX, (game.powerUpY + game.powerUpHeight));
-      let powerUpTopRight = new Point((game.powerUpX + game.powerUpWidth), game.powerUpY);
+      let actualPuckLowerLeft = new Point(coord.puckX, (coord.puckY + game.puckL));
+      let actualPuckTopRight = new Point((coord.puckX + game.puckL), coord.puckY);
+      let nextPuckLowerLeft = new Point(coord.puckX + coord.puckVX, (coord.puckY + coord.puckVY + game.puckL));
+      let nextPuckTopRight = new Point((coord.puckX + coord.puckVX + game.puckL), coord.puckY + coord.puckVY);
+      let powerUpLowerLeft = new Point(game.powerUpX, (game.powerUpY + game.powerUpL));
+      let powerUpTopRight = new Point((game.powerUpX + game.powerUpL), game.powerUpY);
       if (coord.puckVX > 0) {  //  ↘
         collision = this.doIntersect(actualPuckTopRight, nextPuckTopRight, powerUpLowerLeft, powerUpTopRight);
         if (!collision)
@@ -336,11 +333,11 @@ export class MatchesOnGoingService {
     }
     else {
       let actualPuckTopLeft = new Point(coord.puckX, coord.puckY);
-      let actualPuckLowerRight = new Point((coord.puckX + game.puckWidth), (coord.puckY + game.puckHeight));
+      let actualPuckLowerRight = new Point((coord.puckX + game.puckL), (coord.puckY + game.puckL));
       let nextPuckTopLeft = new Point(coord.puckX + coord.puckVX, coord.puckY + coord.puckVY);
-      let nextPuckLowerRight = new Point((coord.puckX + coord.puckVX + game.puckWidth), (coord.puckY + coord.puckVY + game.puckHeight));
+      let nextPuckLowerRight = new Point((coord.puckX + coord.puckVX + game.puckL), (coord.puckY + coord.puckVY + game.puckL));
       let powerUpTopLeft = new Point(game.powerUpX, game.powerUpY);
-      let powerUpLowerRight = new Point((game.powerUpX + game.powerUpWidth), (game.powerUpY + game.powerUpHeight));
+      let powerUpLowerRight = new Point((game.powerUpX + game.powerUpL), (game.powerUpY + game.powerUpL));
       if (coord.puckVX > 0) {  // ↗
         collision = this.doIntersect(actualPuckTopLeft, nextPuckTopLeft, powerUpTopLeft, powerUpLowerRight);
         if (!collision)
@@ -420,15 +417,51 @@ export class MatchesOnGoingService {
     }
   }
 
+  // collisionLeftPallet(game: MatchesOnGoing, coord: Coord)
+  // {
+  //   const middlePallet = game.palletAHeight / 2 + game.palletAY;
+  //   const absPuckVX = Math.abs(coord.puckVX);
+  //   const restDistX = coord.puckX - game.palletAX - game.palletL;                  // dist x remaining
+  //   const coefY = restDistX * 100 / absPuckVX;                              // % dist y remaining
+  //   const restDistY = coefY * coord.puckVY / 100;
+  //   const impactAt = coord.puckY + (game.puckL / 2) + coord.puckVY > 0 ? restDistY : -restDistY;                            // contact with pallet At
+  //   const distFromCenter = Math.abs(middlePallet - impactAt);                           // dist contact from center
+  //   const degree = (distFromCenter / (game.palletAHeight / 2)) * START_MAX_VEL_Y;       // % vel max
+  //   coord.puckVY = impactAt < middlePallet ? -degree : degree;                        // new PuckVY
+  //   const restDistXAfterCollision = absPuckVX - restDistX;
+  //   coord.puckY += (restDistXAfterCollision * coord.puckVY) / absPuckVX;
+  //   coord.puckX += restDistXAfterCollision;
+  //   coord.puckVX = coord.puckVX * -1.1;
+  //   return true;
+  // }
+
+  // collisionRightPallet(game: MatchesOnGoing, coord: Coord)
+  // {
+  //   const middlePallet = game.palletBHeight / 2 + game.palletBY;
+  //   const absPuckVX = Math.abs(coord.puckVX);
+  //   const restDistX = game.palletBX - coord.puckX;                                      // dist x remaining
+  //   const coefY = restDistX * 100 / absPuckVX;                              // % dist y remaining
+  //   const restDistY = coefY * coord.puckVY / 100;
+  //   const impactAt = coord.puckY + (game.puckL / 2) + coord.puckVY > 0 ? restDistY : -restDistY;                            // contact with pallet At
+  //   const distFromCenter = Math.abs(middlePallet - impactAt);                           // dist contact from center
+  //   const degree = (distFromCenter / (game.palletBHeight / 2)) * START_MAX_VEL_Y;       // % vel max
+  //   coord.puckVY = impactAt < middlePallet ? -degree : degree;                        // new PuckVY
+  //   const restDistXAfterCollision = absPuckVX - restDistX;
+  //   coord.puckY += (restDistXAfterCollision * coord.puckVY) / absPuckVX;
+  //   coord.puckX -= restDistXAfterCollision;
+  //   coord.puckVX = coord.puckVX * -1.1;
+  //   return true;
+  // }
+
   collisionLeftPallet(game: MatchesOnGoing, coord: Coord)
   {
     let middlePallet = game.palletAHeight;
     middlePallet = middlePallet / 2 + game.palletAY;
     let absPuckVX = Math.abs(coord.puckVX);
-    let restDistX = coord.puckX - game.palletAX - game.palletAWidth;                  // dist x remaining
+    let restDistX = coord.puckX - game.palletAX - game.palletL;                  // dist x remaining
     let coefY = Math.round(restDistX * 100 / absPuckVX);                              // % dist y remaining
     let restDistY = coefY * coord.puckVY / 100;
-    let impactAt = coord.puckY + (game.puckHeight / 2);
+    let impactAt = coord.puckY + (game.puckL / 2);
     impactAt += coord.puckVY > 0 ? restDistY : -restDistY;                            // contact with pallet At
     let distFromCenter = Math.abs(middlePallet - impactAt);                           // dist contact from center
     let degree = (distFromCenter / (game.palletAHeight / 2)) * START_MAX_VEL_Y;       // % vel max
@@ -448,7 +481,7 @@ export class MatchesOnGoingService {
     let restDistX = game.palletBX - coord.puckX;                                      // dist x remaining
     let coefY = Math.round(restDistX * 100 / absPuckVX);                              // % dist y remaining
     let restDistY = coefY * coord.puckVY / 100;
-    let impactAt = coord.puckY + (game.puckHeight / 2);
+    let impactAt = coord.puckY + (game.puckL / 2);
     impactAt += coord.puckVY > 0 ? restDistY : -restDistY;                            // contact with pallet At
     let distFromCenter = Math.abs(middlePallet - impactAt);                           // dist contact from center
     let degree = (distFromCenter / (game.palletBHeight / 2)) * START_MAX_VEL_Y;       // % vel max
@@ -461,34 +494,32 @@ export class MatchesOnGoingService {
   }
   /*                                  Move Puck                                 */
 
-  async movePuck(gameId: number) {
-    // async movePuck(gameId: number, p1: number, p2: number) {
+  // async movePuck(gameId: number, move1: number = 0, move2: number = 0) {
+    async movePuck(gameId: number, move1: number, move2: number) {
     let game: MatchesOnGoing = await getConnection()
         .getRepository(MatchesOnGoing)
         .createQueryBuilder('matches')
         .where("id = :id", { id: gameId})
         .getOneOrFail();
-    // if (p1 === undefined || p2 == undefined) {
-    //   console.error("player undefined");
-    //   return undefined;
-    // }
+
     if (game.finishedGame)
       return  undefined;
     if (game.playerDisconnected)
       return game;
     let collisionPallet: boolean = false;
     let coord: Coord = {puckX: Number(game.puckX), puckY: Number(game.puckY), puckVX: Number(game.puckVX), puckVY:  Number(game.puckVY)};
-    game.palletAY += game.palletayfromuser * SPEED_PALLET;
+   
+    game.palletAY += move1;
     if (game.palletAY + game.palletAHeight > BOARD_HEIGHT)
       game.palletAY = BOARD_HEIGHT - game.palletAHeight;
     else if (game.palletAY < 0)
       game.palletAY = 0;
-    game.palletBY += game.palletbyfromuser * SPEED_PALLET;
+    game.palletBY += move2;    
     if (game.palletBY + game.palletBHeight > BOARD_HEIGHT)
       game.palletBY = BOARD_HEIGHT - game.palletBHeight;
     else if (game.palletBY < 0)
       game.palletBY = 0;
-    // console.error("\n--> PuckX = ", coord.puckX, " and puckVX = ", coord.puckVX, ", puckY = ", coord.puckY, ", puckVY = ", coord.puckVY,);
+
     if (coord.puckX + coord.puckVX <= 0.0 || coord.puckX + coord.puckVX >= game.width)
       await this.goal(game, coord.puckX < game.width / 2 ? "right" : "left");
     else {
@@ -496,9 +527,9 @@ export class MatchesOnGoingService {
         this.powerUpCollisions(game, coord);
       if (coord.puckY + coord.puckVY <= 0.0 || coord.puckY + coord.puckVY >= game.height)
         this.roof(game, coord);
-      else if (coord.puckX + coord.puckVX <= (game.palletAX + game.palletAWidth) && coord.puckY >= game.palletAY - game.puckHeight && coord.puckY <= game.palletAY + game.palletAHeight)
+      else if (coord.puckX + coord.puckVX <= (game.palletAX + game.palletL) && coord.puckY >= game.palletAY - game.puckL && coord.puckY <= game.palletAY + game.palletAHeight)
         collisionPallet = this.collisionLeftPallet(game, coord);
-      else if (coord.puckX + coord.puckVX >= game.palletBX && coord.puckY >= game.palletBY - game.puckHeight && coord.puckY <= game.palletBY + game.palletBHeight)
+      else if (coord.puckX + coord.puckVX >= game.palletBX && coord.puckY >= game.palletBY - game.puckL && coord.puckY <= game.palletBY + game.palletBHeight)
         collisionPallet = this.collisionRightPallet(game, coord);
       else {
         coord.puckX += coord.puckVX;
@@ -511,18 +542,12 @@ export class MatchesOnGoingService {
           .createQueryBuilder()
           .update(MatchesOnGoing)
           .set({
-            puckX: Math.round(coord.puckX),
-            puckY: Math.round(coord.puckY),
-            puckVX: Math.round(coord.puckVX),
-            puckVY: Math.round(coord.puckVY),
-            // puckX: Math.round(coord.puckX * 100) / 100,
-            // puckY: Math.round(coord.puckY * 100) / 100,
-            // puckVX: Math.round(coord.puckVX * 100) / 100,
-            // puckVY: Math.round(coord.puckVY * 100) / 100,
+            puckX: coord.puckX,
+            puckY: coord.puckY,
+            puckVX: coord.puckVX,
+            puckVY: coord.puckVY,
             palletAY: game.palletAY,
             palletBY: game.palletBY,
-            palletayfromuser: 0,
-            palletbyfromuser: 0,
           })
           .where("id = :id", {id: game.id})
           .execute();
@@ -554,8 +579,7 @@ export class MatchesOnGoingService {
       match.powerUpShrink = true;
     else
       match.powerUpInvisible = true;
-    match.powerUpHeight = POWERUP_HEIGHT;
-    match.powerUpWidth = POWERUP_WIDTH;
+    match.powerUpL = POWERUP_HEIGHT;
     match.powerUpX = Math.round(Math.random() * ((BOARD_WIDTH * 0.75) -  (BOARD_WIDTH * 0.25) + 1) + BOARD_WIDTH * 0.25);
     match.powerUpY = Math.round(Math.random() * ((BOARD_HEIGHT - POWERUP_HEIGHT) - 0 + 1));
   }
@@ -564,8 +588,7 @@ export class MatchesOnGoingService {
     match.powerUpState = -1;
     match.powerUpInvisible = false;
     match.powerUpShrink = false;
-    match.powerUpHeight = 0;
-    match.powerUpWidth = 0;
+    match.powerUpL = 0;
     match.powerUpX = 0;
     match.powerUpY = 0;
   }
@@ -670,25 +693,6 @@ export class MatchesOnGoingService {
       return undefined;
     }
     return (match);
-  }
-
-  async checkSimilarGamePending(rules: any, socket: string) {
-    let allGames: MatchesOnGoing[];
-    try {
-      allGames = await this.findAll();
-    } catch (error) {
-      return (undefined);
-    }
-    console.log(allGames.length);
-    for (let i = 0; i < allGames.length; i++) {
-      if (!allGames[i].pending)
-        break;
-      if (allGames[i].pending && allGames[i].players !== rules.username
-      && allGames[i].scoreMax == rules.scoreMax
-      && allGames[i].generatePowerUp == rules.powerUp)
-        return (await this.addPlayerInPendingGame(allGames[i], rules.username, socket));
-    }
-    return (undefined);
   }
 
   async deleteFromGateway(game: MatchesOnGoing) {

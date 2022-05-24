@@ -64,27 +64,23 @@ function Board(props: BoardProps) {
     if (event.key === "ArrowDown") {
 			props.socket.emit("movePallet", {
 				username: props.user.username,
-				idGame: idBoard,
 				direction: "down",
-				palletAssigned: palletAssigned,
 			});
-			// if (palletAssigned === 0)
-			// 	coordinates.palletAY += coordinates.speedPalet;
-			// else if (palletAssigned === 1)
-			// 	coordinates.palletBY += coordinates.speedPalet;
-			// setCoordinates(coordinates);
+			if (palletAssigned === 0)
+				coordinates.palletAY += coordinates.speedPalet / 2;
+			else if (palletAssigned === 1)
+				coordinates.palletBY += coordinates.speedPalet / 2;
+			setCoordinates(coordinates);
 		} else if (event.key === "ArrowUp") {
 			props.socket.emit("movePallet", {
 				username: props.user.username,
-				idGame: idBoard,
 				direction: "up",
-				palletAssigned: palletAssigned,
 			});
-			// if (palletAssigned === 0)
-			// 	coordinates.palletAY -= coordinates.speedPalet;
-			// else if (palletAssigned === 1)
-			// 	coordinates.palletBY -= coordinates.speedPalet;
-			// setCoordinates(coordinates);
+			if (palletAssigned === 0)
+				coordinates.palletAY -= coordinates.speedPalet / 2;
+			else if (palletAssigned === 1)
+				coordinates.palletBY -= coordinates.speedPalet / 2;
+			setCoordinates(coordinates);
 		}
 	}
 
@@ -101,7 +97,7 @@ function Board(props: BoardProps) {
 		if (palletAssigned === -1) {
 			setPalletAssigned(args[0].palletAssigned);
 		}
-		console.error("PALLET_ASSIGNED_UPDATE: ", palletAssigned);
+		// console.error("PALLET_ASSIGNED_UPDATE: ", palletAssigned);
 		setCoordinates(args[0].positions);
 		setIdBoard(args[0].id);
 		// if first positions dispatch inGame

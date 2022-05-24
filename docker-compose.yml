@@ -58,7 +58,8 @@ services:
       context: ./frontend/
       dockerfile: Dockerfile-frontend
     depends_on:
-      - backend
+      - db
+      # - backend
     volumes:
     - ./frontend/:/app_frontend
     networks:

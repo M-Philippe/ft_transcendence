@@ -3,20 +3,20 @@ import React, { useEffect, useRef } from 'react';
 export const canvasWidth = window.innerWidth * .2;
 export const canvasHeight = window.innerHeight * .6;
 
+let a = Date.now();
+
 export interface BoardPositions {
+	palletL: number;
 	palletAX: number;
   palletAY: number;
-	palletAWidth: number;
 	palletAHeight: number;
   palletBX: number;
   palletBY: number;
-	palletBWidth: number;
 	palletBHeight: number;
   speedPalet: number;
 	puckX: number;
   puckY: number;
-  puckWidth: number;
-  puckHeight: number;
+  puckL: number;
 	width: number;
 	height: number;
   scoreA: number,
@@ -27,8 +27,7 @@ export interface BoardPositions {
   powerUpShrink: boolean;
   powerUpX: number;
   powerUpY: number;
-  powerUpWidth: number;
-  powerUpHeight: number;
+  powerUpL: number;
   hasMessageToDisplay: boolean;
   messageToDisplay: string;
   powerUpState: number;
@@ -38,21 +37,18 @@ export function draw(ctx: CanvasRenderingContext2D | null, coordinates: BoardPos
   if (ctx == null)
     return;
 
-  // console.log("PowerUp State: ", coordinates.powerUpState, coordinates.powerUpInvisible === true ? " (invisible)" : " (shrink)");
-  // first racket
   ctx.fillStyle = coordinates.objectColor;
-  ctx.fillRect(coordinates.palletAX, coordinates.palletAY, coordinates.palletAWidth, coordinates.palletAHeight);
-  // second racket
-  ctx.fillRect(coordinates.palletBX, coordinates.palletBY, coordinates.palletBWidth, coordinates.palletBHeight);
+  // pallet
+  ctx.fillRect(coordinates.palletAX, coordinates.palletAY, coordinates.palletL, coordinates.palletAHeight);
+  ctx.fillRect(coordinates.palletBX, coordinates.palletBY, coordinates.palletL, coordinates.palletBHeight);
   // puck
   if (coordinates.powerUpShrink || (coordinates.powerUpInvisible && coordinates.powerUpState !== 1) || coordinates.powerUpState === -1)
-    ctx.fillRect(coordinates.puckX, coordinates.puckY, coordinates.puckWidth, coordinates.puckHeight);
+    ctx.fillRect(coordinates.puckX, coordinates.puckY, coordinates.puckL, coordinates.puckL);
   // middle line
   ctx.fillRect(coordinates.width / 2, 0, 1, coordinates.height);
   // PowerUpFilling
   if (coordinates.powerUpState === 0)
-    ctx.fillRect(coordinates.powerUpX, coordinates.powerUpY, coordinates.powerUpWidth, coordinates.powerUpHeight);
-
+    ctx.fillRect(coordinates.powerUpX, coordinates.powerUpY, coordinates.powerUpL, coordinates.powerUpL);
   // Text
   ctx.font = "30px Arial";
   ctx.fillText(coordinates.scoreA.toString(), 30, 30);
@@ -61,11 +57,11 @@ export function draw(ctx: CanvasRenderingContext2D | null, coordinates: BoardPos
     if ( coordinates.powerUpInvisible) {
       ctx.textAlign = "center";
       ctx.fillStyle = coordinates.backgroundColor;
-      ctx.fillText("I", coordinates.powerUpX + (coordinates.powerUpWidth / 2), (coordinates.powerUpY + (coordinates.powerUpHeight / 2) + 10));
+      ctx.fillText("I", coordinates.powerUpX + (coordinates.powerUpL / 2), (coordinates.powerUpY + (coordinates.powerUpL / 2) + 10));
     } else if (coordinates.powerUpShrink) {
       ctx.textAlign = "center";
       ctx.fillStyle = coordinates.backgroundColor;
-      ctx.fillText("S", coordinates.powerUpX + (coordinates.powerUpWidth / 2), (coordinates.powerUpY + (coordinates.powerUpHeight / 2) + 10));
+      ctx.fillText("S", coordinates.powerUpX + (coordinates.powerUpL / 2), (coordinates.powerUpY + (coordinates.powerUpL / 2) + 10));
     }
   }
   if (coordinates.hasMessageToDisplay) {
@@ -78,19 +74,17 @@ export function draw(ctx: CanvasRenderingContext2D | null, coordinates: BoardPos
 export function useCanvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [coordinates, setCoordinates] = React.useState<BoardPositions>({
+    palletL: 0,
     palletAX: 0,
     palletAY: 0,
-    palletAWidth: 0,
     palletAHeight: 0,
     palletBX: 0,
     palletBY: 0,
-    palletBWidth: 0,
     palletBHeight: 0,
     speedPalet: 0,
     puckX: 0,
     puckY: 0,
-    puckWidth: 0,
-    puckHeight: 0,
+    puckL: 0,
     width: 0,
     height: 0,
     scoreA: 0,
@@ -101,8 +95,7 @@ export function useCanvas() {
     powerUpShrink: false,
     powerUpX: 0,
     powerUpY: 0,
-    powerUpWidth: 0,
-    powerUpHeight: 0,
+    powerUpL: 0,
     hasMessageToDisplay: false,
     messageToDisplay: "",
     powerUpState: 0,

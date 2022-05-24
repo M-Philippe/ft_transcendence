@@ -10,29 +10,14 @@ import { extractJwtFromCookie, JwtGatewayGuard } from "src/guards/jwtGateway.gua
 import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
 import { UsersService } from "src/users/users.service";
 import { User } from "src/users/entities/user.entity";
-import { Connection, getConnection, Repository } from "typeorm";
+import { getConnection} from "typeorm";
+import { MvtsMap, IQueue } from "./matchesOngoing.interfaces";
 
-import internal from "stream";
-import { join } from "path";
-// import { DataTypeNotSupportedError, getConnection, MetadataWithSuchNameAlreadyExistsError } from "typeorm";
-// import {Mutex, MutexInterface, Semaphore, SemaphoreInterface, withTimeout} from 'async-mutex';
-// import { Mutex }from 'async-mutex';
-// import {Mutex, MutexInterface, Semaphore, SemaphoreInterface, withTimeout} from 'async-mutex';
+// let a = Date.now();
 
-
-const FPS = 80;
-
-// type HashMap<T> = { [key: string]: T };
-
-interface IQueue {
-  id: number,
-  rules: string,
-  socket: string,
-}
+const FPS = 25;
 
 const queue = new Map<number /* timestamp */, IQueue>();
-
-// let updatePlayers = new Map<string, match>();
 
 @WebSocketGateway({ path:"/matchesOnGoing", transports: ['websocket'] })
 @Injectable()
@@ -42,6 +27,8 @@ export class MatchesOnGoingGateway {
               private jwtService: JwtAuthService,
               @Inject(forwardRef(() => UsersService)) private readonly usersService: UsersService) {}
 
+  private moves: MvtsMap = {};
+  
   @WebSocketServer()
   server: Server;
 
@@ -49,17 +36,15 @@ export class MatchesOnGoingGateway {
     let tmp = {
       palletAX: match.palletAX,
       palletAY: match.palletAY,
-      palletAWidth: match.palletAWidth,
+      palletL: match.palletL,
       palletAHeight: match.palletAHeight,
       palletBX: match.palletBX,
       palletBY: match.palletBY,
-      palletBWidth: match.palletBWidth,
       palletBHeight: match.palletBHeight,
       speedPallet: SPEED_PALET_FRONT,
       puckX: match.puckX,
       puckY: match.puckY,
-      puckWidth: match.puckWidth,
-      puckHeight: match.puckHeight,
+      puckL: match.puckL,
       width: match.width,
       height: match.height,
       scoreA: match.scorePlayerA,
@@ -70,8 +55,7 @@ export class MatchesOnGoingGateway {
       powerUpShrink: match.powerUpShrink,
       powerUpX: match.powerUpX,
       powerUpY: match.powerUpY,
-      powerUpWidth: match.powerUpWidth,
-      powerUpHeight: match.powerUpHeight,
+      powerUpL: match.powerUpL,
       hasMessageToDisplay: match.hasMessageToDisplay,
       messageToDisplay: match.messageToDisplay,
       powerUpState: match.powerUpState,
@@ -187,19 +171,12 @@ export class MatchesOnGoingGateway {
   async movePallet(
   @MessageBody() data: any,
   @ConnectedSocket() socket: Socket) {
-    // let d = Date.now();
-    if (data.direction === "up") {
-      if (data.palletAssigned === 0)
-        await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletayfromuser: () => "palletayfromuser - 1"}).where("p1 = :name", {name: data.username}).execute();
-      else
-        await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletbyfromuser: () => "palletbyfromuser - 1"}).where("p2 = :name", {name: data.username}).execute();
-    } else if (data.direction === "down") {
-      if (data.palletAssigned === 0)
-        await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletayfromuser: () => "palletayfromuser + 1"}).where("p1 = :name", {name: data.username}).execute();
-      else
-        await getConnection().createQueryBuilder().update(MatchesOnGoing).set({palletbyfromuser: () => "palletbyfromuser + 1"}).where("p2 = :name", {name: data.username}).execute();
-    }
-    // console.error("Mvt: " + data.username + ", pallet: " + data.palletAssigned);
+    // console.error(Date.now() - a);
+    // a = Date.now();
+    if (data.direction == "up")
+      this.moves[data.username].move[0].up = true;
+    if (data.direction == "down")
+      this.moves[data.username].move[0].down = true;
   }
 
   checkUserAlreadyInQueue(idUser: number) {
@@ -338,22 +315,45 @@ export class MatchesOnGoingGateway {
       });
       this.usersService.setInGame(matchOrId.p1, 1);
       this.usersService.setInGame(matchOrId.p2, 2);
-      // this.usersService.setUserInGame(matchOrId.players[0].username, matchOrId.players[1].username);
       this.gameLoop(matchOrId);
     } else
       return;
   }
 
+  initMoves(username1: string, username2: string) {
+    this.moves[username1] = {
+      move: [
+        {up: false, down: false},
+      ],
+    };
+    this.moves[username2] = {
+      move: [
+        {up: false, down: false},
+      ],
+    };
+  
+    // this.moves[username1].move[0].up = false;
+    // this.moves[username1].move[0].down = false;
+    // this.moves[username2].move[0].up = false;
+    // this.moves[username2].move[0].down = false;
+  }
+
+  moveToInt(username: string) {
+    let n: number = 0;
+    if (this.moves[username].move[0].up && !this.moves[username].move[0].down)
+      n = -SPEED_PALLET;
+    if (!this.moves[username].move[0].up && this.moves[username].move[0].down)
+      n = SPEED_PALLET;
+    return n;
+  } 
+
   async gameLoop(match: MatchesOnGoing) {
     await this.sendToAllSockets(match);
     let pid: NodeJS.Timer;
-    let y = 0;
-    let c = 0;
-    // let d = Date.now();
+    // let a = Date.now();
+    this.initMoves(match.p1, match.p2);
     pid = setInterval(async () => {
-      // d = Date.now();
-      let game = await this.matchesOnGoingService.movePuck(match.id);
-      // let game = await this.matchesOnGoingService.movePuck(match.id, updatePlayers[match.p1], updatePlayers[match.p2]);
+      let game = await this.matchesOnGoingService.movePuck(match.id, this.moveToInt(match.p1), this.moveToInt(match.p2));
       if (game === undefined)
         return;
       if (game.playerDisconnected)
@@ -382,15 +382,12 @@ export class MatchesOnGoingGateway {
         await this.usersService.checkUserAchievements(game.p2);
         await this.usersService.setNotInGame(game.p1);
         await this.usersService.setNotInGame(game.p2);
-        // console.error("moy: " + y / c);
         return;
       }
-      // let a = updatePlayers[match.p1];
-      // updatePlayers[match.p1] = 0;
-      // updatePlayers[match.p2] = 0;
+      this.initMoves(match.p1, match.p2);
       await this.sendToAllSockets(game);
-      // ++c;
-      // y += Date.now()- d;
+      // console.error("Back: " + (Date.now() - a));
+      // a = Date.now();
     }, 1000 / FPS);
   }
 }

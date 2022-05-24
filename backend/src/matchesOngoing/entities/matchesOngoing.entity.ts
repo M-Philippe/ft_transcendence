@@ -33,30 +33,32 @@ export class MatchesOnGoing {
   @Column({ type: 'decimal', precision: 6, scale: 2}) puckVX: number;
   @Column({ type: 'decimal', precision: 6, scale: 2}) puckVY: number;
 
+  // @Column("int") puckX: number;
+  // @Column("int") puckY: number;
+  // @Column("int") puckVX: number;
+  // @Column("int") puckVY: number;
+  @Column("int") puckL: number;
+  @Column("int") powerUpL: number;
+  @Column("int") palletL: number;
+
   @Column("int") palletAX: number;
   @Column("int") palletAY: number;
-  @Column("int") palletAWidth: number;
   @Column("int") palletAHeight: number;
   @Column("int") palletAXFromUser: number;
   @Column("int") palletayfromuser: number;
 
   @Column("int") palletBX: number;
   @Column("int") palletBY: number;
-  @Column("int") palletBWidth: number;
   @Column("int") palletBHeight: number;
   @Column("int") palletBXFromUser: number;
   @Column("int") palletbyfromuser: number;
 
-  @Column("int") puckWidth: number;
-  @Column("int") puckHeight: number;
 
   @Column() generatePowerUp: boolean;
   @Column() powerUpInvisible: boolean;
   @Column() powerUpShrink: boolean;
   @Column("int") powerUpX: number;
   @Column("int") powerUpY: number;
-  @Column("int") powerUpWidth: number;
-  @Column("int") powerUpHeight: number;
   @Column("int") powerUpState: number;
 
   @Column("int") width: number;
