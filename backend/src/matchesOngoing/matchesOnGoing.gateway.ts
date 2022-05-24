@@ -19,7 +19,7 @@ const FPS = 25;
 
 const queue = new Map<number /* timestamp */, IQueue>();
 
-@WebSocketGateway({ path:"/matchesOnGoing", transports: ['websocket'] })
+@WebSocketGateway({ path:"/matchesOnGoing/matchesOnGoingSocket", transports: ['websocket'] })
 @Injectable()
 export class MatchesOnGoingGateway {
   constructor(private readonly matchesOnGoingService: MatchesOnGoingService,

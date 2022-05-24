@@ -16,7 +16,7 @@ export function SocketHandler(props: ISocketHandler) {
   useEffect(() => {
     let pid: NodeJS.Timer;
     const socket = io(API_URL, {
-      path: SOCKET_CHAT,
+      path: "/chat/chatSocket",
       withCredentials: true,
       reconnection: false,
       transports: ["websocket"],
