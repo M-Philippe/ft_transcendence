@@ -31,10 +31,6 @@
   align-items: center;
 }
 
-/* .chatFormDiv {
-  padding-top: 50vh;
-} */
-
 #chatCmdHelp p{
   color:black;
 }
@@ -42,36 +38,15 @@
 #txtWrap {
   padding-right: 3%;
   padding-left: 3%;
-  max-height: 69vh;
-  padding-bottom: 8%;
+  max-height: 70vh;
+  padding-bottom: 10%;
   word-wrap: break-word;
   overflow-y: auto;
 }
 
 
-/* @media all and (max-width: 1920px) {
 
-  #chat {
-    min-width: 35%;
-  }
-
-  .chatForm {
-    min-width: 28vw;
-  }
-
-}
-
-@media all and (max-width: 920px) {
-
-  #chat {
-    min-width: 40%;
-  }
-
-  .chatForm {
-    min-width: 28vw;
-  }
-
-} */
+/* MEDIA QUERIES */
 
 @media all and (max-width: 550px) {
 
@@ -86,5 +61,26 @@
     min-width: 75vw;
   }
 
+}
+
+@media all and (max-height: 800px) {
+
+  .chatForm {
+    bottom: 0;
+    min-height: 30px;
+  }
+
+  #txtWrap {
+    max-height: 65vh;
+  }
+  
+}
+ 
+@media all and (max-height: 400px) {
+
+  #txtWrap {
+    max-height: 55vh;
+  }
+  
 }
  

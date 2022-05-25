@@ -109,8 +109,8 @@ function RankingUsers(props: any) {
                 <tr key={index}>
                     <th style={props.username === element.name ? {background: "rgba(200, 200, 200, 0.6)"} : {}}>
                     <div style={{display: 'flex', alignItems: 'center', flexWrap: 'wrap'}}>
-                    &nbsp; &nbsp;<Avatar alt="avatar" src={element.avatar} /> &nbsp;&nbsp; 
-                    <Link style={{textDecoration:'none'}} to={"/userView/:" + element.name}>{element.name}</Link>
+                    &nbsp;<Avatar alt="avatar" src={element.avatar} /> &nbsp;&nbsp; 
+                    <Link style={{textDecoration:'none'}} to={"/userView/:" + element.name}>{element.name}</Link>&nbsp;&nbsp;
                     </div>
                     </th>
                   <th style={{textAlign:"center"}}>{element.wonCount}</th>

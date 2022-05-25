@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { API_USER_CHANGE_PASSWORD, DISCONNECTING_URL } from "../../urlConstString";
+import { API_USER_CHANGE_PASSWORD } from "../../urlConstString";
 import Button from '@mui/material/Button';
 
 interface UserInput {

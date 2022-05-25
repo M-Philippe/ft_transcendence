@@ -794,4 +794,19 @@ export class ChatGateway {
       newChatId: data.chatToSend.id,
     });
   }
+
+  @UseGuards(JwtGatewayGuard)
+  @SubscribeMessage("getAvatar")
+  async getAvatar(
+    @MessageBody() data: {username: string, key: number},
+    @ConnectedSocket() socket: Socket,
+  ) {
+    let user;
+    try {
+      user = await this.usersService.findOneByName(data.username);
+    } catch (error) { return; }
+    this.server.to(socket.id).emit("receivedAvatar" + data.key, {
+      avatar: user.avatar,
+    });
+  }
 }

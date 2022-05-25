@@ -18,12 +18,12 @@ export function ChatDisplay(props: Interx) {
         <ChatLine
           socket={props.socket}
           id={props.state.chatFocusId +1}
+          keyEvent={i}
           currentUsername={props.username}
           key={i}
           username={props.state.usernames[i]}
           timeMessage={props.state.timeMessages[i]}
           message={props.state.messages[i]}
-          avatar={props.state.avatar[i]}
       />);
     }
     return (lines);

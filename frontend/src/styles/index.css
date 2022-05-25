@@ -87,6 +87,7 @@ label {
 
 footer {
   bottom: 2px;
+  padding-top: 2vh;
   min-height: 1vh;
   max-height: 1vh;
   text-align: center;
@@ -146,10 +147,10 @@ caption {
 }
 
 #pongImgPlayMenu {
-  width: 16vw;
-  height: 24vh;
-  min-width: 200px;
-  min-height: 200px;
+  height: auto;
+  width: auto;
+  min-width: 100px;
+  min-height: 100px;
   max-height: 300px;
   max-width: 280px;
 
@@ -179,7 +180,6 @@ caption {
 }
 
 #board {
-  width: 85%;
   border-radius: 15px;
 }
 
@@ -189,6 +189,7 @@ caption {
   font-weight:bold;
   font-family: Arial, Helvetica, sans-serif;
 }
+
 
 /* ------------------------------------- */
 /* MEDIA QUERIES TO BE MORE RESPONSIVE */

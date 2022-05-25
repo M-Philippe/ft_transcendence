@@ -1,4 +1,4 @@
-import { useCanvas, canvasHeight } from './boardHooks';
+import { useCanvas } from "./boardHooks";
 import { Socket } from 'socket.io-client';
 import { useState, useEffect } from "react";
 import { connect } from 'react-redux';
@@ -154,8 +154,6 @@ function Board(props: BoardProps) {
 			</div>
 		);
 	}
-	var heightRatio = 0.5;
-	coordinates.height = coordinates.width * heightRatio;
 
 	return (
 			<div>

@@ -26,7 +26,6 @@ export type State = {
   messages: string[];
   timeMessages: string[];
   usernames: string[];
-  avatar: string[];
   lstId: number[];
   lstButtonsGreen: number[];
   load: boolean;
@@ -120,7 +119,6 @@ export function ChatConnected(props: PropsChatConnected) {
     messages: [],
     timeMessages: [],
     usernames: [],
-    avatar: [],
     lstId: [],
     lstButtonsGreen: [],
     load: false,
@@ -313,6 +311,7 @@ export function ChatConnected(props: PropsChatConnected) {
         dispatch={dispatch} />
       </div>
       <div id="txtWrap" >
+      <br/>
       <ChatDisplay
         socket={props.socket}
         username={props.name}
@@ -325,13 +324,13 @@ export function ChatConnected(props: PropsChatConnected) {
             errorMessage={state.errorMessage}
           />
         }
-      </div>
       <ChatInput
         socket={props.socket}
         state={state}
         dispatch={dispatch}
         username={props.name}
-      />
+        />
+        </div>
     </div>
   );
 }
