@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { DispatchType, storeState } from '../../store/types';
 import { connect } from 'react-redux';
 import { userState } from '../../store/userSlice/userSliceTypes';
-import { API_AUTH_42_LOGIN, API_AUTH_LOCAL_LOGIN } from '../../urlConstString';
+import { API_AUTH_42_LOGIN, API_AUTH_LOCAL_LOGIN, BASE_URL } from '../../urlConstString';
 import store from '../../store/store';
 import { Navigate, NavLink } from 'react-router-dom';
 import Button from '@mui/material/Button';
@@ -55,7 +55,7 @@ function LoginForm(props: ConnectFormProps) {
 			} else if (response.status === 201) {
 				let url: string | null = response.headers.get("Location");
 				if (url !== null)
-					setRedirectUrl(url.slice("http://localhost:3005".length));
+					setRedirectUrl(url.slice(BASE_URL.length));
 			}
 		});
   };

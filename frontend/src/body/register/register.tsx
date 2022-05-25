@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { connect } from "react-redux";
 import { storeState } from "../../store/types";
 import { userState } from "../../store/userSlice/userSliceTypes";
-import { API_AUTH_42_LOGIN, API_AUTH_LOCAL_REGISTER, BASE_URL, CONNECT_FORM_URL } from "../../urlConstString";
+import { API_AUTH_42_LOGIN, API_AUTH_LOCAL_REGISTER, BASE_URL, API_AUTH_LOCAL_LOGIN } from "../../urlConstString";
+import { Navigate } from 'react-router-dom';
+
 import Button from '@mui/material/Button';
 // import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
@@ -23,7 +25,9 @@ function Register(props: {user: userState}) {
 		password: "",
 		confirmPassword: "",
 	});
+
 	const [errorMessage, setErrorMessage] = useState("");
+	const [redirectUrl, setRedirectUrl] = useState("");
 
 	const handleSubmit = () => {
 		let headers = new Headers();
@@ -40,7 +44,23 @@ function Register(props: {user: userState}) {
 				console.log(payload);
 				setErrorMessage(payload.description);
 			} else if (response.status === 201) {
-				window.location.assign(CONNECT_FORM_URL);
+				fetch(API_AUTH_LOCAL_LOGIN, {
+					method: "post",
+					headers: headers,
+					body: JSON.stringify(userInput),
+					// Even if there are no credentials to include from client-side, to be able to set cookie received by server-side, we must set credentials to "include" else the browser will ignore cookies.
+					credentials: "include"
+				})
+				.then(async response => {
+					if (response.status === 401) {
+						let payload = await response.json();
+						setErrorMessage(payload.type);
+					} else if (response.status === 201) {
+						let url: string | null = response.headers.get("Location");
+						if (url !== null)
+							setRedirectUrl(url.slice(BASE_URL.length));
+					}
+				});
 			}
 		})
 		.catch (error => {});
@@ -53,6 +73,11 @@ function Register(props: {user: userState}) {
 			[fieldToUpdate]: event.target.value,
 		});
 	}
+
+	if (redirectUrl !== "")
+	return (
+		<Navigate to={redirectUrl}/>
+	)
 
 	return (
         <Grid>
