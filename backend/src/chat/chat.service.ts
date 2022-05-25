@@ -551,6 +551,17 @@ export class ChatService {
   }
 
   async saveSocketInChat(user: User, socket: string, chat: Chat) {
+    if (getIndexUser(chat.usersInfos, user.id) === -1) {
+      chat.usersInfos.push({
+        userId: user.id,
+        hasProvidedPassword: false,
+        persoMutedUsers: [],
+        socket: socket
+      });
+      try {
+        await this.chatRepository.save(chat);
+      } catch (error) { return; }
+    }
     if (chat.usersInfos[getIndexUser(chat.usersInfos, user.id)].socket === undefined) {
       /**/
       try {

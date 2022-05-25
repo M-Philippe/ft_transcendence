@@ -24,9 +24,11 @@ function Chat(props: IChatProps) {
     return (null);
 
   if (socket !== undefined && !props.isConnected) {
+    console.log("DISCONNECT A");
     socket.disconnect();
     setSocket(undefined);
   } else if (socket !== undefined && props.inGame) {
+    console.log("DISCONNECT B");
     socket.disconnect();
     setSocket(undefined);
   }

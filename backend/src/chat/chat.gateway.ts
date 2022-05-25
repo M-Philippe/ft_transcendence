@@ -23,6 +23,8 @@ export class ChatGateway {
   @WebSocketServer()
   server: Server;
 
+  async handleConnection(client: any, ...args: any[]) {}
+
   /*
   **    COMMANDS
   */
@@ -723,6 +725,7 @@ export class ChatGateway {
   async fetchMessagesGateway(
   @MessageBody() data: FetchMessages,
   @ConnectedSocket() socket: Socket) {
+    console.error("FETCHED");
     let chat;
     let tmpChat;
     let idUser: number;
@@ -764,10 +767,10 @@ export class ChatGateway {
       });
     }
     if (chat !== undefined) {
+      await this.sendToOneSocketIntoChat(chat, socket, user.id);
       socket.emit("newChat", {
         newChatId: chat.id,
       });
-      await this.sendToOneSocketIntoChat(chat, socket, user.id);
     }
   }
 

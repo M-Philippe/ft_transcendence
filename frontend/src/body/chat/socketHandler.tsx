@@ -16,7 +16,7 @@ export function SocketHandler(props: ISocketHandler) {
     const socket = io(API_URL, {
       path: "/chat/chatSocket",
       withCredentials: true,
-      reconnection: false,
+      reconnection: true,
       transports: ["websocket"],
     });
 

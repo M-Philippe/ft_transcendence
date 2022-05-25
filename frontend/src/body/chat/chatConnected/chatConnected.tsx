@@ -191,7 +191,6 @@ export function ChatConnected(props: PropsChatConnected) {
 
   props.socket.on("redirectToInviteProfile", (...args: any) => {
     let urlInvite = API_USER_VIEW + args[0].usernameToRedirect;
-    console.log(urlInvite);
     fetch(urlInvite, { credentials: "include" })
       .then(res => {
         if (res.status === 403)
@@ -242,13 +241,13 @@ export function ChatConnected(props: PropsChatConnected) {
           tmpArray.sort();
           dispatch({type: "CHANGE_LIST_ID_LOAD", load: true, lstId: tmpArray});
           props.socket.emit("fetchMessages", {chatId: state.chatFocusId + 1, username: props.name});
+        },
         (error) => {}
       )
     } else if (state.refresh) {
       props.socket.emit("fetchMessages", {chatId: state.chatFocusId + 1, username: props.name});
       dispatch({type: "FRESH_FALSE"});
     }
-    console.log(url);
     return () => {
       controller.abort();
     }
