@@ -54,7 +54,6 @@ export class ChatController {
   @UseGuards(JwtGuard)
   @Get("getListChat")
   async getListChat(@Req() request: Request) {
-    console.error("IS THIS HERE?");
     let idUser = this.getIdUserFromCookie(request.cookies.authentication);
     
     return (this.chatService.getListPublicChat(idUser));

@@ -97,7 +97,6 @@ export class ChatService {
         } catch (error) {
           return;
         }
-        console.error("PROPAGATED");
       }
     }
   }
@@ -107,7 +106,7 @@ export class ChatService {
     if (chat.admins.indexOf(userToMute.id) >= 0)
       return;
     // propagateToAllChat.
-    this.propagateMute(user, userToMute);
+    await this.propagateMute(user, userToMute);
     try {
       await this.chatRepository.save(chat);
     } catch (error) {
@@ -145,6 +144,7 @@ export class ChatService {
     }
     if (chat === undefined)
       return undefined;
+
     try {
       adminUser = await this.usersService.findOne(idUser);
     } catch (error) {
@@ -543,6 +543,7 @@ export class ChatService {
 
   async saveSocketInChat(user: User, socket: string, chat: Chat) {
     if (chat.usersInfos[getIndexUser(chat.usersInfos, user.id)].socket === undefined) {
+      /**/
       try {
         await this.chatRepository.save(chat);
       } catch (error) {
