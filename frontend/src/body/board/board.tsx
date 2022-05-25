@@ -39,24 +39,6 @@ function Board(props: BoardProps) {
 		return () => { props.socket.disconnect(); }
 	}, []);
 
-	// props.socket.off("disconnect");
-	// props.socket.on("disconnect", () => {
-	// 	let params = {
-	// 		username: props.user.username,
-	// 		idGame: props.user.idGame,
-	// 	};
-	// 	let req = new XMLHttpRequest();
-	// 	req.open(
-	// 		"post",
-	// 		API_MATCHES_PLAYER_LEAVING);
-	// 	req.setRequestHeader("Content-Type", "application/json");
-	// 	req.send(JSON.stringify(params));
-	// 	props.dispatch({
-	// 		type: UNSET_USER_INGAME,
-	// 		user: {...props.user},
-	// 	})
-	// });
-
 	if (cancelGame || endGame)
 		return (
 			<Navigate replace to="/ranking" />
@@ -85,6 +67,35 @@ function Board(props: BoardProps) {
 			else if (palletAssigned === 1)
 				coordinates.palletBY -= coordinates.speedPalet / 2;
 			setCoordinates(coordinates);
+		}
+	}
+
+	//const keyDown = (event: KeyboardEvent) => {
+	const keyDown = (event: React.KeyboardEvent<HTMLCanvasElement>) => {
+		if (event.key === "ArrowUp") {
+			props.socket.emit("keyDown", {
+				username: props.user.username,
+				direction: "up"
+			});
+		} else if (event.key === "ArrowDown") {
+			props.socket.emit("keyDown", {
+				username: props.user.username,
+				direction: "down",
+			});
+		}
+	}
+
+	const keyUp = (event: React.KeyboardEvent<HTMLCanvasElement>) => {
+		if (event.key === "ArrowUp") {
+			props.socket.emit("keyUp", {
+				username: props.user.username,
+				direction: "up"
+			});
+		} else if (event.key === "ArrowDown") {
+			props.socket.emit("keyUp", {
+				username: props.user.username,
+				direction: "down",
+			});
 		}
 	}
 
@@ -151,7 +162,8 @@ function Board(props: BoardProps) {
 					id="board"
 					width={coordinates.width}
 					height={coordinates.height}
-					onKeyDown={(e) => moveRacket(e)}
+					onKeyDown={(e) => keyDown(e)}
+					onKeyUp={(e) => keyUp(e)}
 					tabIndex={0}
 				>
 				</canvas>

@@ -13,9 +13,7 @@ import { User } from "src/users/entities/user.entity";
 import { getConnection} from "typeorm";
 import { MvtsMap, IQueue } from "./matchesOngoing.interfaces";
 
-// let a = Date.now();
-
-const FPS = 25;
+const FPS = 40;
 
 const queue = new Map<number /* timestamp */, IQueue>();
 
@@ -174,16 +172,24 @@ export class MatchesOnGoingGateway {
 		}
 	}
 
-  @SubscribeMessage("movePallet")
-  async movePallet(
-  @MessageBody() data: any,
-  @ConnectedSocket() socket: Socket) {
-    // console.error(Date.now() - a);
-    // a = Date.now();
+  @SubscribeMessage('keyDown')
+  KeyDown(
+  @MessageBody() data: any, 
+  @ConnectedSocket() client: Socket) {
     if (data.direction == "up")
       this.moves[data.username].move[0].up = true;
     if (data.direction == "down")
       this.moves[data.username].move[0].down = true;
+  }
+
+  @SubscribeMessage("keyUp")
+  KeyUp(
+  @MessageBody() data: any, 
+  @ConnectedSocket() client: Socket) {
+    if (data.direction == "up")
+      this.moves[data.username].move[0].up = false;
+    if (data.direction == "down")
+      this.moves[data.username].move[0].down = false;
   }
 
   checkUserAlreadyInQueue(idUser: number) {
@@ -397,7 +403,7 @@ export class MatchesOnGoingGateway {
         await this.usersService.setNotInGame(game.p2);
         return;
       }
-      this.initMoves(match.p1, match.p2);
+      //this.initMoves(match.p1, match.p2);
       await this.sendToAllSockets(game);
       // console.error("Back: " + (Date.now() - a));
       // a = Date.now();
