@@ -460,13 +460,13 @@ export class MatchesOnGoingService {
 
   // async movePuck(gameId: number, move1: number = 0, move2: number = 0) {
     async movePuck(gameId: number, move1: number, move2: number) {
-    let game: MatchesOnGoing = await getConnection()
+      let a = Date.now();
+      let game: MatchesOnGoing = await getConnection()
         .getRepository(MatchesOnGoing)
         .createQueryBuilder('matches')
         .where("id = :id", { id: gameId})
         .getOneOrFail();
-
-    let a = Date.now();
+      let b = Date.now();
     if (game.finishedGame)
       return  undefined;
     if (game.playerDisconnected)
@@ -490,7 +490,7 @@ export class MatchesOnGoingService {
       this.powerUpCollisions(game, coord);
     if (coord.puckY + coord.puckVY <= 0.0 || coord.puckY + coord.puckVY >= game.height)
       this.roof(game, coord);
-    else if (coord.puckVX < 0 && coord.puckX + coord.puckVX <= (game.palletAX + game.palletL) && coord.puckY >= game.palletAY - game.puckL && coord.puckY <= game.palletAY + game.palletAHeight && coord.puckX + coord.puckVX - game.puckL >= game.palletAX)
+    else if (coord.puckVX < 0 && coord.puckX + coord.puckVX <= (game.palletAX + game.palletL) && coord.puckY >= game.palletAY - game.puckL && coord.puckY <= game.palletAY + game.palletAHeight && coord.puckX + coord.puckVX + game.puckL >= game.palletAX)
       collisionPallet = this.collisionLeftPallet(game, coord);
     else if (coord.puckX + coord.puckVX >= game.palletBX && coord.puckY >= game.palletBY - game.puckL && coord.puckY <= game.palletBY + game.palletBHeight && coord.puckX + coord.puckVX <= game.palletBX + game.palletL)
       collisionPallet = this.collisionRightPallet(game, coord);
@@ -503,7 +503,7 @@ export class MatchesOnGoingService {
     }
     if (!goal && game.powerUpState == 1 && game.powerUpInvisible && collisionPallet)
       this.removePowerUp(game, collisionPallet);
-    console.error("Algo: ", Date.now() - a);
+    console.error("Algo: ", Date.now() - b);
     if (!goal) {
       await getConnection()
         .createQueryBuilder()
@@ -519,6 +519,7 @@ export class MatchesOnGoingService {
         .where("id = :id", {id: game.id})
         .execute();
     }
+    console.error("Algo with query: ", Date.now() - a);
     return (game);
   }
 
