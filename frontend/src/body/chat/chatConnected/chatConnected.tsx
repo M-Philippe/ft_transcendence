@@ -138,7 +138,8 @@ export function ChatConnected(props: PropsChatConnected) {
   props.socket.on("removeChat", (...args: any) => {
     if (state.lstButtonsGreen.indexOf(args[0].oldIdChat) >= 0)
       state.lstButtonsGreen.splice(state.lstButtonsGreen.indexOf(args[0].oldIdChat));
-    state.lstId.splice(state.lstId.indexOf(args[0].oldIdChat), 1);
+    if (args[0].oldIdChat !== -1)
+      state.lstId.splice(state.lstId.indexOf(args[0].oldIdChat), 1);
     dispatch({
       type: "UPDATE_LST_ID_AND_CHAT_AND_FOCUS",
       lstId: state.lstId,
@@ -240,7 +241,6 @@ export function ChatConnected(props: PropsChatConnected) {
           tmpArray.sort();
           dispatch({type: "CHANGE_LIST_ID_LOAD", load: true, lstId: tmpArray});
           props.socket.emit("fetchMessages", {chatId: state.chatFocusId + 1, username: props.name});
-        },
         (error) => {}
       )
     } else if (state.refresh) {

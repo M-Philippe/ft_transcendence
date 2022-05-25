@@ -78,8 +78,10 @@ export class ChatGateway {
         errorMessage: response,
       });
     } else {
+      console.error("ID_CHAT: ", idChat);
+      console.error("TERN: ", idChat === 1 ? -1 : idChat);
       this.server.to(response.socket).emit("removeChat", {
-        oldIdChat: idChat,
+        oldIdChat: idChat === 1 ? -1 : idChat,
         newMessages: response.transitionChat.messages,
         newTimeMessages: response.transitionChat.timeMessages,
         newUsernames: response.transitionChat.usernames,
@@ -128,7 +130,7 @@ export class ChatGateway {
           await this.sendToAllSocketsIntoChat(response.chat);
         }, timer * 1000);
       this.server.to(response.socket).emit("removeChat", {
-        oldIdChat: idChat,
+        oldIdChat: idChat === 1 ? -1 : idChat,
         newMessages: response.transitionChat.usernames,
         NewTimeMessages: response.transitionChat.timeMessages,
         newUsernames: response.transitionChat.usernames,
@@ -559,24 +561,25 @@ export class ChatGateway {
   async sendToAllSocketsIntoChat(chat: Chat) {
     for (let i = 0; i < chat.usersInfos.length; i++) {
       let tmpSocket = chat.usersInfos[i].socket;
-      //if (chat.id == 1 && isUserBanned(chat.bannedUsers, chat.usersInfos[i].userId)) {
-      //  let tmpChat = new Chat();
-      //  tmpChat.id = chat.id;
-      //  tmpChat.usernames = [];
-      //  tmpChat.timeMessages = [];
-      //  tmpChat.messages = [];
-      //  tmpChat.usernames = ["System"];
-      //  tmpChat.timeMessages = ["01:23:45"];
-      //  tmpChat.messages = ["You're not allowed here"];
-      //  this.server.to(tmpSocket).emit("receivedMessages", {
-      //    usernames: tmpChat.usernames,
-      //    messages: tmpChat.messages,
-      //    timeMessages: tmpChat.timeMessages,
-      //    chatRefreshed: tmpChat.id,
-      //  });
-      //}
-      if (isUserBanned(chat.bannedUsers, chat.usersInfos[i].userId))
+      if (chat.id == 1 && isUserBanned(chat.bannedUsers, chat.usersInfos[i].userId)) {
+        let tmpChat = new Chat();
+        tmpChat.id = chat.id;
+        tmpChat.usernames = [];
+        tmpChat.timeMessages = [];
+        tmpChat.messages = [];
+        tmpChat.usernames = ["System"];
+        tmpChat.timeMessages = ["01:23:45"];
+        tmpChat.messages = ["You're not allowed here"];
+        this.server.to(tmpSocket).emit("receivedMessages", {
+          usernames: tmpChat.usernames,
+          messages: tmpChat.messages,
+          timeMessages: tmpChat.timeMessages,
+          chatRefreshed: tmpChat.id,
+        });
+      }
+      if (isUserBanned(chat.bannedUsers, chat.usersInfos[i].userId)) {
         continue;
+      }
       else if (!isPasswordEmpty(chat.password) && chat.usersInfos[i].hasProvidedPassword === false) {
         let tmpChat = new Chat();
         tmpChat.id = chat.id;
@@ -723,7 +726,6 @@ export class ChatGateway {
     let chat;
     let tmpChat;
     let idUser: number;
-
     if ((idUser = this.extractIdUserFromCookie(socket.handshake.headers)) < 0)
       return;
 
@@ -746,19 +748,26 @@ export class ChatGateway {
         console.error(error);
         throw new Error ("ERROR SAVE SOCKET");
       }
-      if (tmpChat !== undefined && tmpChat.messages.length != chat.messages.length) {
-        await this.sendToAllSocketsIntoChat(tmpChat);
-        socket.emit("newChat", {
-          newChatId: tmpChat.id,
-        });
+      if (tmpChat === undefined) {
         return;
       }
+      if (tmpChat.messages.length != chat.messages.length) // means new User joined chat.
+        await this.sendToAllSocketsIntoChat(tmpChat);
+      socket.emit("receivedMessages", {
+        chatRefreshed: tmpChat.id,
+        messages: tmpChat.messages,
+        usernames: tmpChat.timeMessages,
+        timeMessages: tmpChat.timeMessages
+      });
+      socket.emit("newChat", {
+        newChatId: tmpChat.id,
+      });
     }
     if (chat !== undefined) {
-      await this.sendToOneSocketIntoChat(chat, socket, user.id);
       socket.emit("newChat", {
         newChatId: chat.id,
       });
+      await this.sendToOneSocketIntoChat(chat, socket, user.id);
     }
   }
 

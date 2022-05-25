@@ -12,9 +12,7 @@ interface ISocketHandler {
 }
 
 export function SocketHandler(props: ISocketHandler) {
-
   useEffect(() => {
-    let pid: NodeJS.Timer;
     const socket = io(API_URL, {
       path: "/chat/chatSocket",
       withCredentials: true,
@@ -23,11 +21,6 @@ export function SocketHandler(props: ISocketHandler) {
     });
 
     socket.on("connect", () => {
-      clearInterval(pid);
-      // in case of restart server, needs to update socket manually in backend.
-      //socket.emit("updateSocket", {
-      //  username: props.username,
-      //});
     });
 
     socket.on("ERROR", (...args) => {
@@ -43,11 +36,9 @@ export function SocketHandler(props: ISocketHandler) {
     });
 
     socket.on("disconnect", () => {
-      //pid = setInterval(() =>{socket.connect();}, 10);
     });
 
     socket.on("connect_error", (error) => {
-      console.log("Error Connect: ", error.message);
     });
     props.setSocket(socket);
   });
