@@ -68,6 +68,12 @@ function LoginForm(props: ConnectFormProps) {
 			<Navigate to={redirectUrl}/>
 		)
 
+	const keyDownHandler = (event: React.KeyboardEvent<HTMLInputElement>) => {
+		if (event.code === "Enter" || event.code === "NumpadEnter") {
+			handleSubmit();
+		}
+	};
+		
 	return (
         <div >
 			<h2>Sign In</h2>
@@ -77,9 +83,9 @@ function LoginForm(props: ConnectFormProps) {
 			}
 			<form>
 			<label>Username</label><br />
-			<input  type="text" onChange={(event) => {handleChange(event, "username") }} /><br /><br />
+			<input  type="text" onKeyDown={keyDownHandler} onChange={(event) => {handleChange(event, "username") }} /><br /><br />
 			<label>Password</label><br />
-			<input  type="password" onChange={(event) => {handleChange(event, "password")} }/><br /><br />
+			<input  type="password" onKeyDown={keyDownHandler} onChange={(event) => {handleChange(event, "password")} }/><br /><br />
 			<p>Not yet registered ? <br /><NavLink to="/register"> create an account </NavLink> </p>
 			</form><br />
 		<Stack margin="auto" sx={{ width: '20%', }} spacing={2}>

@@ -26,6 +26,7 @@ export type State = {
   messages: string[];
   timeMessages: string[];
   usernames: string[];
+  avatar: string[];
   lstId: number[];
   lstButtonsGreen: number[];
   load: boolean;
@@ -119,6 +120,7 @@ export function ChatConnected(props: PropsChatConnected) {
     messages: [],
     timeMessages: [],
     usernames: [],
+    avatar: [],
     lstId: [],
     lstButtonsGreen: [],
     load: false,
@@ -127,6 +129,7 @@ export function ChatConnected(props: PropsChatConnected) {
     errorDisplay: false,
     errorMessage: "",
   });
+
   const [dateClick, setDateClick] = useState(Date.now());
 
   props.socket.off("removeChat");
@@ -247,6 +250,7 @@ export function ChatConnected(props: PropsChatConnected) {
       props.socket.emit("fetchMessages", {chatId: state.chatFocusId + 1, username: props.name});
       dispatch({type: "FRESH_FALSE"});
     }
+    console.log(url);
     return () => {
       controller.abort();
     }
@@ -296,8 +300,7 @@ export function ChatConnected(props: PropsChatConnected) {
         	<IconButton size="large" onClick={() => {
             if (Date.now() - dateClick > 200) {
               props.socket.emit("createChat", {nameUser: props.name});
-              setDateClick(Date.now());
-            }
+              setDateClick(Date.now());            }
             }
           }
           >
@@ -311,6 +314,8 @@ export function ChatConnected(props: PropsChatConnected) {
       </div>
       <div id="txtWrap" >
       <ChatDisplay
+        socket={props.socket}
+        username={props.name}
         state={state}
         dispatch={dispatch}
         />

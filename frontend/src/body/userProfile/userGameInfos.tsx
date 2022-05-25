@@ -65,7 +65,7 @@ export default function UserGameInfos(props: any) {
 			>
 			<Box sx={style}>
 			<Typography id="modal-modal-title" variant="h5" sx={{borderBottom: 2, textAlign: 'center'}}>
-			 your achivements
+			 Your achivements
 			</Typography>
 			<Typography id="modal-modal-description" variant="subtitle1" sx={{ mt: 2, textAlign: 'center' }}>
 			{

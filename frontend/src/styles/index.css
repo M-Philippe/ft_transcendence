@@ -179,8 +179,7 @@ caption {
 }
 
 #board {
-  height: 80vh;
-  width: 70vw;
+  width: 85%;
   border-radius: 15px;
 }
 
@@ -201,20 +200,20 @@ caption {
   }
 }
 
-@media all and (max-width: 1450px) {
+/* @media all and (max-width: 1450px) {
 
   #board {
     max-height: 55vh;
   }
-}
+} */
 
 
-  @media all and (max-width: 920px) {
+  /* @media all and (max-width: 920px) {
 
   #board {
     max-height: 40vh;
   }
-}
+} */
 
 @media all and (max-width: 550px) {
   

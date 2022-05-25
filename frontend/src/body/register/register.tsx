@@ -79,6 +79,12 @@ function Register(props: {user: userState}) {
 		<Navigate to={redirectUrl}/>
 	)
 
+	const keyDownHandler = (event: React.KeyboardEvent<HTMLInputElement>) => {
+		if (event.code === "Enter" || event.code === "NumpadEnter") {
+			handleSubmit();
+		}
+		console.log(event.code);
+	};
 	return (
         <Grid>
                 <h2>Register</h2>
@@ -87,11 +93,11 @@ function Register(props: {user: userState}) {
                 	{/* <TextField label='Username' placeholder='Enter username' fullWidth required /><br /><br /> */}
                 	{/* <TextField label='Password' placeholder='Enter password' type='password' fullWidth required /> */}
 				<label>Username</label><br />
-					<input type="text" onChange={(event) => {handleChange(event ,"username")}}/><br /><br />
+					<input type="text" onKeyDown={keyDownHandler} onChange={(event) => {handleChange(event ,"username")}}/><br /><br />
 				<label>Password</label><br />
-					<input type="password" onChange={(event) => {handleChange(event, "password")}}/><br /><br />
+					<input type="password" onKeyDown={keyDownHandler} onChange={(event) => {handleChange(event, "password")}}/><br /><br />
 				<label>Confirm Password</label><br />
-					<input type="password" onChange={(event) => {handleChange(event, "confirmPassword")}}/> <br /><br />
+					<input type="password" onKeyDown={keyDownHandler} onChange={(event) => {handleChange(event, "confirmPassword")}}/> <br /><br />
 				</form><br />
 				<Stack margin="auto" sx={{ width: '20%', }} spacing={2}>
                 <Button type='submit' color='primary' variant="contained" style={{margin:'8px 0'}} fullWidth onClick={handleSubmit}>Register</Button><br />

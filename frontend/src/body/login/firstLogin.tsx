@@ -98,7 +98,7 @@ export default function FirstLogin(props: any) {
 				<label>
 					<input type="text" onChange={(event) => handleChange(event)} />
 				</label>
-			</form>
+			</form><br/>
 			<Button variant="contained" onClick={(event) => { handleSubmit(undefined) }}>
 				Change username 
 			</Button><br />
