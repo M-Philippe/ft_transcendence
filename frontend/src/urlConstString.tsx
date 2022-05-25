@@ -2,7 +2,7 @@
 **	FRONT_URL
 */
 
-const domain = "192.168.1.69";
+const domain = "localhost";
 const port = "3005";
 export const BASE_URL = "http://" + domain + ":" + port;
 export const BASE_API_URL = "http://" + domain + ":3000";
