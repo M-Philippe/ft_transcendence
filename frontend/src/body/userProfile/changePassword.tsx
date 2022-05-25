@@ -30,7 +30,7 @@ const handleSubmit = () => {
 			let payload = await response.json();
 			setErrorMessage(payload.description);
 		} else if (response.status === 201 || response.status === 403) {
-			window.location.assign(DISCONNECTING_URL);
+			props.closePopUp();
 		}
 	})
 	.catch (error => {});
