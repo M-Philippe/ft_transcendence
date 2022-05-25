@@ -47,7 +47,7 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	}
 
 	async handleDisconnect(client: any) {
-		console.error("DISCONNECT: ", client.id);
+		//console.error("DISCONNECT: ", client.id);
 		if (client.handshake.headers.cookie) {
 			//console.error("COOKIES: ", typeof(client.handshake.headers.cookie));
 			let cookie: string = client.handshake.headers.cookie;

@@ -125,31 +125,38 @@ export class MatchesOnGoingGateway {
   }
 
   async handleDisconnect(client: any) {
-		if (client.handshake.headers.cookie) {
-			// console.error("COOKIES: ", typeof(client.handshake.headers.cookie));
+    if (client.handshake.headers.cookie) {
+      // console.error("COOKIES: ", typeof(client.handshake.headers.cookie));
 			let jwt = extractJwtFromCookie(client.handshake.headers.cookie);
-			try {
-				let payload = this.jwtService.verify(jwt);
+			// check
+      try {
+        let payload = this.jwtService.verify(jwt);
         let usr: User = await getConnection()
           .getRepository(User)
           .createQueryBuilder('user')
           .where("id = :id", { id: payload.idUser})
           .getOneOrFail();
+        if (this.removeUserFromQueue(payload.idUser)) {
+          await this.usersService.setNotInGame(usr.name);
+          return;
+        }
         let game: MatchesOnGoing = await getConnection()
           .getRepository(MatchesOnGoing)
           .createQueryBuilder('game')
           .where("p1 = :name1", { name1: usr.name })
           .orWhere("p2 = :name2", { name2: usr.name })
           .getOneOrFail();
-        if (game.pending) {
+        if (game.playerDisconnected) {
           await getConnection()
                 .createQueryBuilder()
                 .delete()
                 .from(MatchesOnGoing)
                 .where("id = :id", { id: game.id })
                 .execute();
+          console.error("HAS DELETED GAME");
           this.usersService.setNotInGame(game.p1);
           this.usersService.setNotInGame(game.p2);
+          console.error("HAS SETNOTINGAME");
         }
         else {
           await getConnection()
@@ -224,8 +231,11 @@ export class MatchesOnGoingGateway {
 
   removeUserFromQueue(idUser: number) {
     for (let entries of queue.entries())
-      if (entries[1].id === idUser)
+      if (entries[1].id === idUser) {
         queue.delete(entries[0]);
+        return true;
+      }
+    return false;
   }
 
   printQueue() {
@@ -240,7 +250,6 @@ export class MatchesOnGoingGateway {
   async handleAsync(
   @MessageBody() data: any,
   @ConnectedSocket() socket: Socket) {
-    /* NEW_CODE */
     if (socket.handshake.headers.cookie === undefined) {
       socket.disconnect();
       return;
@@ -260,7 +269,7 @@ export class MatchesOnGoingGateway {
     let responseMatchmaking: MatchesOnGoing | undefined;
     let responseCheckSimilar: {response: boolean, playerOneId: number, playerTwoId: number, socketUserOne: string, rules: { powerUp: boolean, scoreMax: number, map: "original" | "desert" | "jungle"}};
     if ((responseMatchmaking = (await this.matchesOnGoingService.findOneWithUser(user.name))) !== undefined) { // 1. We can reconnect player to his previous game
-      //await this.matchesOnGoingService.updateSocketPlayers(responseMatchmaking, socket.id, user.inGame);
+      await this.matchesOnGoingService.updateSocketPlayers(responseMatchmaking, socket.id, user.inGame);
       this.server.to(socket.id).emit("alreadyCreatedMatch", { idGame: responseMatchmaking.id});
     } else if (this.checkUserAlreadyInQueue(idUser)) { // 2. Search continue
       this.server.to(socket.id).emit("alreadyCreatedMatch", { idGame: -1 });
@@ -275,7 +284,7 @@ export class MatchesOnGoingGateway {
           socket.id);
       if (createdGame === undefined) {
         socket.disconnect();
-        // disconnect second socket.
+        this.server.to(responseCheckSimilar.socketUserOne).disconnectSockets();
         return;
       }
     await this.usersService.setInGame(createdGame.p1, 1);
@@ -356,6 +365,10 @@ export class MatchesOnGoingGateway {
       let game = await this.matchesOnGoingService.movePuck(match.id, this.moveToInt(match.p1), this.moveToInt(match.p2));
       if (game === undefined)
         return;
+      else if (game === null) {
+        clearInterval(pid);
+        return;
+      }
       if (game.playerDisconnected)
         game = await this.matchesOnGoingService.checkTimeoutDisconnectedUser(game);
 

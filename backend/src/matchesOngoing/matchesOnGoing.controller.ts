@@ -30,12 +30,4 @@ export class MatchesOnGoingController {
   async findOne(@Param('id') id: string) {
     return this.matchesOnGoingService.findOne(+id);
   }
-
-  @Post("/playerLeaving")
-  async playerLeaving(@Body() playerLeavingDto: PlayerLeavingDto) {
-    // Check validity user.
-    if (playerLeavingDto.username === undefined || playerLeavingDto.idGame === undefined)
-      return;
-    await this.matchesOnGoingService.playerDisconnected(playerLeavingDto.idGame, playerLeavingDto.username);
-  }
 }

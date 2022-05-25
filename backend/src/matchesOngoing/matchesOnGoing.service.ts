@@ -152,14 +152,11 @@ export class MatchesOnGoingService {
       return undefined;
     }
     for (let i = 0; i < games.length; i++) {
-      if (!games[i].pending) {
-        ret.push({
-          idGame: games[i].id,
-          playerOne: games[i].players[0].username,
-          playerTwo: games[i].players[1].username,
-        });
-      }
-      console.error("FETCHING HERE");
+      ret.push({
+        idGame: games[i].id,
+        playerOne: games[i].players[0].username,
+        playerTwo: games[i].players[1].username,
+      });
     }
     return (ret);
   }
@@ -252,27 +249,6 @@ export class MatchesOnGoingService {
             .execute();
     }
     return (game);
-  }
-
-  async cancelMatch(username: string) {
-    let game: MatchesOnGoing[] = [];
-    try {
-      game = await this.matchesOnGoingRepository.find()
-    } catch (error) {
-      console.error(error);
-      return;
-    }
-    for (let i = 0; i < game.length; i++) {
-      if (game[i].players[0].username === username && game[i].pending) {
-        await getConnection()
-              .createQueryBuilder()
-              .delete()
-              .from(MatchesOnGoing)
-              .where("id = :id", { id: game[i].id})
-              .execute();
-      } else if (game[i].players[0].username === username && !game[i].pending)
-        return;
-    }
   }
 
   /*                                   Power Up                                  */
@@ -496,11 +472,16 @@ export class MatchesOnGoingService {
 
   // async movePuck(gameId: number, move1: number = 0, move2: number = 0) {
     async movePuck(gameId: number, move1: number, move2: number) {
-    let game: MatchesOnGoing = await getConnection()
+    let game: MatchesOnGoing
+    try {
+      game = await getConnection()
         .getRepository(MatchesOnGoing)
         .createQueryBuilder('matches')
         .where("id = :id", { id: gameId})
         .getOneOrFail();
+    } catch (error) {
+      return null;
+    }
 
     if (game.finishedGame)
       return  undefined;
@@ -714,6 +695,7 @@ export class MatchesOnGoingService {
   }
 
   async updateSocketPlayers(game: MatchesOnGoing, socket: string, playerIndex: number) {
+    console.error("IN_GAME_PASSED: ", playerIndex);
     game.players[playerIndex - 1].socket = socket;
     game.hasMessageToDisplay = false;
     game.playerDisconnected = false;
