@@ -26,7 +26,7 @@ export class MatchesOnGoingGateway {
               @Inject(forwardRef(() => UsersService)) private readonly usersService: UsersService) {}
 
   private moves: MvtsMap = {};
-  
+
   @WebSocketServer()
   server: Server;
 
@@ -174,7 +174,7 @@ export class MatchesOnGoingGateway {
 
   @SubscribeMessage('keyDown')
   KeyDown(
-  @MessageBody() data: any, 
+  @MessageBody() data: any,
   @ConnectedSocket() client: Socket) {
     if (data.direction == "up")
       this.moves[data.username].move[0].up = true;
@@ -184,7 +184,7 @@ export class MatchesOnGoingGateway {
 
   @SubscribeMessage("keyUp")
   KeyUp(
-  @MessageBody() data: any, 
+  @MessageBody() data: any,
   @ConnectedSocket() client: Socket) {
     if (data.direction == "up")
       this.moves[data.username].move[0].up = false;
@@ -346,7 +346,7 @@ export class MatchesOnGoingGateway {
         {up: false, down: false},
       ],
     };
-  
+
     // this.moves[username1].move[0].up = false;
     // this.moves[username1].move[0].down = false;
     // this.moves[username2].move[0].up = false;
@@ -360,7 +360,7 @@ export class MatchesOnGoingGateway {
     if (!this.moves[username].move[0].up && this.moves[username].move[0].down)
       n = SPEED_PALLET;
     return n;
-  } 
+  }
 
   async gameLoop(match: MatchesOnGoing) {
     await this.sendToAllSockets(match);
@@ -368,6 +368,7 @@ export class MatchesOnGoingGateway {
     // let a = Date.now();
     this.initMoves(match.p1, match.p2);
     pid = setInterval(async () => {
+      let a = Date.now();
       let game = await this.matchesOnGoingService.movePuck(match.id, this.moveToInt(match.p1), this.moveToInt(match.p2));
       if (game === undefined)
         return;
@@ -405,7 +406,7 @@ export class MatchesOnGoingGateway {
       }
       //this.initMoves(match.p1, match.p2);
       await this.sendToAllSockets(game);
-      // console.error("Back: " + (Date.now() - a));
+      console.error("Complete Loop: " + (Date.now() - a));
       // a = Date.now();
     }, 1000 / FPS);
   }

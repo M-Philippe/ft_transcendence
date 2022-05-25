@@ -152,11 +152,14 @@ export class MatchesOnGoingService {
       return undefined;
     }
     for (let i = 0; i < games.length; i++) {
-      ret.push({
-        idGame: games[i].id,
-        playerOne: games[i].players[0].username,
-        playerTwo: games[i].players[1].username,
-      });
+      if (!games[i].pending) {
+        ret.push({
+          idGame: games[i].id,
+          playerOne: games[i].players[0].username,
+          playerTwo: games[i].players[1].username,
+        });
+      }
+      console.error("FETCHING HERE");
     }
     return (ret);
   }
@@ -180,42 +183,6 @@ export class MatchesOnGoingService {
           })
           .where("id = :id", { id: idGame })
           .execute();
-  }
-
-  async playerDisconnected(idGame: number, username: string) {
-    let game: MatchesOnGoing | undefined;
-    console.error("-> Player Disconnected <- " + Date.now());
-    try {
-      game = await this.matchesOnGoingRepository.findOne(idGame);
-    } catch (error) {
-      console.error(error);
-      return;
-    }
-    if (game === undefined || game.players[0].username !== username && game.players[1].username !== username)
-      return;
-
-    // If pending game just delete it.
-    if (game.pending) {
-      await getConnection()
-            .createQueryBuilder()
-            .delete()
-            .from(MatchesOnGoing)
-            .where("id = :id", { id: idGame })
-            .execute();
-    }
-    else {
-      await getConnection()
-            .createQueryBuilder()
-            .update(MatchesOnGoing)
-            .set({
-              playerDisconnected: true,
-              usernameDisconnectedPlayer: username,
-              timeOfDisconnection: Date.now(),
-            })
-            .where("id = :id", { id: idGame })
-            .execute();
-    }
-    return;
   }
 
   async checkTimeoutDisconnectedUser(game: MatchesOnGoing) {
@@ -249,6 +216,27 @@ export class MatchesOnGoingService {
             .execute();
     }
     return (game);
+  }
+
+  async cancelMatch(username: string) {
+    let game: MatchesOnGoing[] = [];
+    try {
+      game = await this.matchesOnGoingRepository.find()
+    } catch (error) {
+      console.error(error);
+      return;
+    }
+    for (let i = 0; i < game.length; i++) {
+      if (game[i].players[0].username === username && game[i].pending) {
+        await getConnection()
+              .createQueryBuilder()
+              .delete()
+              .from(MatchesOnGoing)
+              .where("id = :id", { id: game[i].id})
+              .execute();
+      } else if (game[i].players[0].username === username && !game[i].pending)
+        return;
+    }
   }
 
   /*                                   Power Up                                  */
@@ -472,66 +460,64 @@ export class MatchesOnGoingService {
 
   // async movePuck(gameId: number, move1: number = 0, move2: number = 0) {
     async movePuck(gameId: number, move1: number, move2: number) {
-    let game: MatchesOnGoing
-    try {
-      game = await getConnection()
+    let game: MatchesOnGoing = await getConnection()
         .getRepository(MatchesOnGoing)
         .createQueryBuilder('matches')
         .where("id = :id", { id: gameId})
         .getOneOrFail();
-    } catch (error) {
-      return null;
-    }
 
+    let a = Date.now();
     if (game.finishedGame)
       return  undefined;
     if (game.playerDisconnected)
       return game;
+      let goal: boolean = false;
     let collisionPallet: boolean = false;
     let coord: Coord = {puckX: Number(game.puckX), puckY: Number(game.puckY), puckVX: Number(game.puckVX), puckVY:  Number(game.puckVY)};
-   
+
     game.palletAY += move1;
     if (game.palletAY + game.palletAHeight > BOARD_HEIGHT)
       game.palletAY = BOARD_HEIGHT - game.palletAHeight;
     else if (game.palletAY < 0)
       game.palletAY = 0;
-    game.palletBY += move2;    
+    game.palletBY += move2;
     if (game.palletBY + game.palletBHeight > BOARD_HEIGHT)
       game.palletBY = BOARD_HEIGHT - game.palletBHeight;
     else if (game.palletBY < 0)
       game.palletBY = 0;
 
-    if (coord.puckX + coord.puckVX <= 0.0 || coord.puckX + coord.puckVX >= game.width)
+    if (game.powerUpState == 0)
+      this.powerUpCollisions(game, coord);
+    if (coord.puckY + coord.puckVY <= 0.0 || coord.puckY + coord.puckVY >= game.height)
+      this.roof(game, coord);
+    else if (coord.puckVX < 0 && coord.puckX + coord.puckVX <= (game.palletAX + game.palletL) && coord.puckY >= game.palletAY - game.puckL && coord.puckY <= game.palletAY + game.palletAHeight && coord.puckX + coord.puckVX - game.puckL >= game.palletAX)
+      collisionPallet = this.collisionLeftPallet(game, coord);
+    else if (coord.puckX + coord.puckVX >= game.palletBX && coord.puckY >= game.palletBY - game.puckL && coord.puckY <= game.palletBY + game.palletBHeight && coord.puckX + coord.puckVX <= game.palletBX + game.palletL)
+      collisionPallet = this.collisionRightPallet(game, coord);
+    else if (coord.puckX + coord.puckVX <= 0.0 || coord.puckX + coord.puckVX >= game.width) {
       await this.goal(game, coord.puckX < game.width / 2 ? "right" : "left");
-    else {
-      if (game.powerUpState == 0)
-        this.powerUpCollisions(game, coord);
-      if (coord.puckY + coord.puckVY <= 0.0 || coord.puckY + coord.puckVY >= game.height)
-        this.roof(game, coord);
-      else if (coord.puckX + coord.puckVX <= (game.palletAX + game.palletL) && coord.puckY >= game.palletAY - game.puckL && coord.puckY <= game.palletAY + game.palletAHeight)
-        collisionPallet = this.collisionLeftPallet(game, coord);
-      else if (coord.puckX + coord.puckVX >= game.palletBX && coord.puckY >= game.palletBY - game.puckL && coord.puckY <= game.palletBY + game.palletBHeight)
-        collisionPallet = this.collisionRightPallet(game, coord);
-      else {
-        coord.puckX += coord.puckVX;
-        coord.puckY += coord.puckVY;
-      }
-      if (game.powerUpState == 1 && game.powerUpInvisible && collisionPallet)
-        this.removePowerUp(game, collisionPallet);
-
+      goal = true;
+    } else {
+      coord.puckX += coord.puckVX;
+      coord.puckY += coord.puckVY;
+    }
+    if (!goal && game.powerUpState == 1 && game.powerUpInvisible && collisionPallet)
+      this.removePowerUp(game, collisionPallet);
+    console.error("Algo: ", Date.now() - a);
+    if (!goal) {
       await getConnection()
-          .createQueryBuilder()
-          .update(MatchesOnGoing)
-          .set({
-            puckX: coord.puckX,
-            puckY: coord.puckY,
-            puckVX: coord.puckVX,
-            puckVY: coord.puckVY,
-            palletAY: game.palletAY,
-            palletBY: game.palletBY,
-          })
-          .where("id = :id", {id: game.id})
-          .execute();
+        .createQueryBuilder()
+        .update(MatchesOnGoing)
+        .set({
+          puckX: coord.puckX,
+          puckY: coord.puckY,
+          puckVX: coord.puckVX,
+          puckVY: coord.puckVY,
+          palletAY: game.palletAY,
+          palletBY: game.palletBY,
+        })
+        .where("id = :id", {id: game.id})
+        .execute();
     }
     return (game);
   }
@@ -695,7 +681,6 @@ export class MatchesOnGoingService {
   }
 
   async updateSocketPlayers(game: MatchesOnGoing, socket: string, playerIndex: number) {
-    console.error("IN_GAME_PASSED: ", playerIndex);
     game.players[playerIndex - 1].socket = socket;
     game.hasMessageToDisplay = false;
     game.playerDisconnected = false;
