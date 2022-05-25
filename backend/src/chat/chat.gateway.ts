@@ -80,7 +80,7 @@ export class ChatGateway {
     } else {
       this.server.to(response.socket).emit("removeChat", {
         oldIdChat: idChat,
-        newMessages: response.transitionChat.usernames,
+        newMessages: response.transitionChat.messages,
         newTimeMessages: response.transitionChat.timeMessages,
         newUsernames: response.transitionChat.usernames,
         newChatId: response.transitionChat.id,
@@ -469,6 +469,10 @@ export class ChatGateway {
           await this.commandMute(arrayCommand, idChat, idUser, socketId);
         else if (arrayCommand.length === 3)
           await this.commandMuteWithTimer(arrayCommand, idChat, idUser, socketId);
+        else
+          this.server.to(socketId).emit("errorMessage", {
+            errorMessage: "Bad arguments"
+          });
         break;
       case "/unmute":
         await this.commandUnmute(arrayCommand, idChat, idUser, socketId);
@@ -555,24 +559,24 @@ export class ChatGateway {
   async sendToAllSocketsIntoChat(chat: Chat) {
     for (let i = 0; i < chat.usersInfos.length; i++) {
       let tmpSocket = chat.usersInfos[i].socket;
-      if (chat.id == 1 && isUserBanned(chat.bannedUsers, chat.usersInfos[i].userId)) {
-        let tmpChat = new Chat();
-        tmpChat.id = chat.id;
-        tmpChat.usernames = [];
-        tmpChat.timeMessages = [];
-        tmpChat.messages = [];
-        tmpChat.usernames = ["System"];
-        tmpChat.timeMessages = ["01:23:45"];
-        tmpChat.messages = ["You're not allowed here"];
-        this.server.to(tmpSocket).emit("receivedMessages", {
-          usernames: tmpChat.usernames,
-          messages: tmpChat.messages,
-          timeMessages: tmpChat.timeMessages,
-          chatRefreshed: tmpChat.id,
-        });
-      }
+      //if (chat.id == 1 && isUserBanned(chat.bannedUsers, chat.usersInfos[i].userId)) {
+      //  let tmpChat = new Chat();
+      //  tmpChat.id = chat.id;
+      //  tmpChat.usernames = [];
+      //  tmpChat.timeMessages = [];
+      //  tmpChat.messages = [];
+      //  tmpChat.usernames = ["System"];
+      //  tmpChat.timeMessages = ["01:23:45"];
+      //  tmpChat.messages = ["You're not allowed here"];
+      //  this.server.to(tmpSocket).emit("receivedMessages", {
+      //    usernames: tmpChat.usernames,
+      //    messages: tmpChat.messages,
+      //    timeMessages: tmpChat.timeMessages,
+      //    chatRefreshed: tmpChat.id,
+      //  });
+      //}
       if (isUserBanned(chat.bannedUsers, chat.usersInfos[i].userId))
-        return;
+        continue;
       else if (!isPasswordEmpty(chat.password) && chat.usersInfos[i].hasProvidedPassword === false) {
         let tmpChat = new Chat();
         tmpChat.id = chat.id;
