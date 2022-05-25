@@ -9,6 +9,7 @@ import { UsersGateway } from './users.gateway';
 import { RelationshipsModule } from 'src/relationships/relationships.module';
 import { MatchesOnGoingModule } from 'src/matchesOngoing/matchesOnGoing.module';
 
+
 @Module({
   imports: [TypeOrmModule.forFeature([User, Relationship]),  JwtAuthModule, forwardRef(() => RelationshipsModule), forwardRef(() => MatchesOnGoingModule)],
   controllers: [UsersController],

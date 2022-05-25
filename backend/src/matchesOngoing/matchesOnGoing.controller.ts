@@ -1,6 +1,8 @@
+
+
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { MatchesOnGoingService } from './matchesOnGoing.service';
-import { CreateMatchOngoingDto  } from './dto/create-matchesOngoing';
+// import { CreateMatchOngoingDto  } from './dto/create-matchesOngoing';
 
 class PlayerLeavingDto {
   username: string;
@@ -11,23 +13,31 @@ class PlayerLeavingDto {
 export class MatchesOnGoingController {
   constructor(private readonly matchesOnGoingService: MatchesOnGoingService) {}
 
-  @Post()
-  async create(@Body() createMatchOnGoingDto: CreateMatchOngoingDto) {
-    //return this.matchesOnGoingService.create(createMatchOnGoingDto);
-  }
+//   @Post()
+//   async create(@Body() createMatchOnGoingDto: CreateMatchOngoingDto) {
+//     //return this.matchesOnGoingService.create(createMatchOnGoingDto);
+//   }
 
-  @Post("/delete")
-  async deleteMatches(@Body() body: { id: number}) {
-    await this.matchesOnGoingService.deleteGame(body.id);
-  }
+//   @Post("/delete")
+//   async deleteMatches(@Body() body: { id: number}) {
+//     await this.matchesOnGoingService.deleteGame(body.id);
+//   }
 
-  @Get()
-  async findAll() {
-    return this.matchesOnGoingService.findAll();
-  }
+//   @Get()
+//   async findAll() {
+//     return this.matchesOnGoingService.findAll();
+//   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.matchesOnGoingService.findOne(+id);
-  }
+//   @Get(':id')
+//   async findOne(@Param('id') id: string) {
+//     return this.matchesOnGoingService.findOne(+id);
+//   }
+
+//   @Post("/playerLeaving")
+//   async playerLeaving(@Body() playerLeavingDto: PlayerLeavingDto) {
+//     // Check validity user.
+//     if (playerLeavingDto.username === undefined || playerLeavingDto.idGame === undefined)
+//       return;
+//     await this.matchesOnGoingService.playerDisconnected(playerLeavingDto.idGame, playerLeavingDto.username);
+//   }
 }

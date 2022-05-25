@@ -9,6 +9,7 @@ import { CreateUserDto, CreateUSer42Dto, CreateUserLocalDto } from './dto/create
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UsersGateway } from './users.gateway';
+import { MatchesOnGoingGateway } from 'src/matchesOngoing/matchesOnGoing.gateway';
 import { RelationshipStatus } from 'src/relationships/entities/relationship.entity';
 import { MatchesOnGoingService } from 'src/matchesOngoing/matchesOnGoing.service';
 import { ChangePasswordDto } from './users.types';
@@ -34,7 +35,7 @@ export class UsersService {
     private usersRepository: Repository<User>,
     @Inject(forwardRef(() => UsersGateway)) private readonly usersGateway: UsersGateway,
     @Inject(forwardRef(() => RelationshipsService)) private readonly relationshipsService: RelationshipsService,
-    @Inject(forwardRef(() => MatchesOnGoingService)) private readonly matchesOnGoingService: MatchesOnGoingService) {}
+    @Inject(forwardRef(() => MatchesOnGoingGateway)) private readonly matchesOnGoingGateway: MatchesOnGoingGateway) {}
 
   async onApplicationBootstrap() {
     // We create sudo user [id: 0]
@@ -301,26 +302,20 @@ export class UsersService {
         //  message: requester.name + " isn't connected! (no socket defined)"
         //});
       }
-      let parsedRules:
-        {powerUp: boolean, scoreMax: number, map: "original" | "desert" | "jungle"}
-        = { powerUp: false, scoreMax: 3, map: "original"};
-      let messageToParse = requestee.userAlert.alert[indexAlert].message;
-      messageToParse.indexOf("(");
-      let rules = messageToParse.substring(messageToParse.indexOf("("));
-      let arrayRules = rules.split("#");
-      parsedRules.scoreMax = parseInt(arrayRules[0].substring(arrayRules[0].indexOf(":") + 1));
-      parsedRules.powerUp
-        = (arrayRules[1].substring(arrayRules[1].indexOf(":") + 1)) === "yes" ? true : false;
-      let mapExtracted = arrayRules[2].substring(arrayRules[2].indexOf(":") + 1, arrayRules[2].length - 1);
-      if (mapExtracted === "original" || mapExtracted === "desert" || mapExtracted === "jungle")
-        parsedRules.map = mapExtracted;
-      try {
-        await this.matchesOnGoingService.createMatchFromInvitation(requester, requestee, parsedRules);
-      } catch (error) {
-        // Send error Message?
-        await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
-        return (undefined);
-      }
+      // let parsedRules:
+      //   {powerUp: boolean, scoreMax: number, map: "original" | "desert" | "jungle"}
+      //   = { powerUp: false, scoreMax: 3, map: "original"};
+      // let messageToParse = requestee.userAlert.alert[indexAlert].message;
+      // messageToParse.indexOf("(");
+      // let rules = messageToParse.substring(messageToParse.indexOf("("));
+      // let arrayRules = rules.split("#");
+      // parsedRules.scoreMax = parseInt(arrayRules[0].substring(arrayRules[0].indexOf(":") + 1));
+      // parsedRules.powerUp
+      //   = (arrayRules[1].substring(arrayRules[1].indexOf(":") + 1)) === "yes" ? true : false;
+      // let mapExtracted = arrayRules[2].substring(arrayRules[2].indexOf(":") + 1, arrayRules[2].length - 1);
+      // if (mapExtracted === "original" || mapExtracted === "desert" || mapExtracted === "jungle")
+      //   parsedRules.map = mapExtracted;
+      this.matchesOnGoingGateway.createMatchFromInvitation(requester.id, requestee.id, requestee.userAlert.alert[indexAlert].message);
       await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
       return ({redirection: true});
     }
@@ -363,6 +358,7 @@ export class UsersService {
       return;
     if (userOne.userAlert.socket === "" || userTwo.userAlert.socket === "")
       return;
+    console.error("REDIRECTION_TO_BOARD");
     this.usersGateway.contactUsers(userOne.userAlert.socket, userTwo.userAlert.socket, "redirectionToBoard");
   }
 
