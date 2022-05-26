@@ -271,11 +271,11 @@ export function ChatConnected(props: PropsChatConnected) {
       </Modal>
 			<div id = "chatButtonTop">
       {state.lstId.length !== 0 &&
-			<div style={{display: 'flex', margin:'auto', justifyContent:'center', alignItems: 'center', flexWrap: 'wrap'}}>
+			<div style={{display: 'flex', justifyContent:'center', alignItems: 'center', flexWrap: 'wrap'}}>
         	<IconButton size="large" onClick={() => {
             if (Date.now() - dateClick > 200) {
               props.socket.emit("createChat", {nameUser: props.name});
-              setDateClick(Date.now());            }
+              setDateClick(Date.now());}
             }
           }
           >

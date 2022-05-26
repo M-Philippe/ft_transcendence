@@ -69,7 +69,7 @@ function RankingUsers(props: any) {
   
 
   return (
-    <div id = "RankingArrayDiv">
+        <div id="RankingDiv">
       <table>
         <caption><img id = "RanktropheeImg" src= {trophee} alt="Trophee"></img><br/><b>Ranking</b></caption>
         <thead>
@@ -83,7 +83,7 @@ function RankingUsers(props: any) {
                 <ArrowDropDownIcon fontSize="large"/>
               </IconButton>
             </th>
-            <th>
+            <th className='thWL'>
               <p>Win</p>
               <IconButton onClick={() => {setSortWinDescend(true);}}>
                 <ArrowDropUpIcon fontSize="large"/>
@@ -92,7 +92,7 @@ function RankingUsers(props: any) {
                 <ArrowDropDownIcon fontSize="large"/>
               </IconButton>
             </th>
-            <th>
+            <th className='thWL'>
               <p>Lost</p>
               <IconButton onClick={() => {setSortLostDescend(true);}}>
                 <ArrowDropUpIcon fontSize="large"/>

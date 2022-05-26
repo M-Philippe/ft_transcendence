@@ -6,6 +6,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { NavLink } from "react-router-dom";
 import { Socket } from 'socket.io-client';
 import { DefaultEventsMap } from '@socket.io/component-emitter/index';
+import { Action, State } from './chatConnected';
 
 interface IChatLineProps {
   socket: Socket<DefaultEventsMap, DefaultEventsMap>,
@@ -16,6 +17,7 @@ interface IChatLineProps {
   username: string,
   timeMessage: string,
   message: string,
+  dispatch: React.Dispatch<Action>
 }
 
 export default function ChatLine(props: IChatLineProps) {
@@ -36,6 +38,10 @@ export default function ChatLine(props: IChatLineProps) {
     props.socket.emit("postMessage", {id: props.id, username: null, message: "/gameOptions " + props.username});
   };
 
+  const handlePrivatMsg = () => {
+    setAnchorElNav(null);
+    props.socket.emit("postMessage", {id: props.id, username: null, message: "/mp " + props.username});
+  };
   // const [avatar, setAvatar] = useState("");
 
   // props.socket.off("receivedAvatar" + props.keyEvent);
@@ -61,6 +67,7 @@ export default function ChatLine(props: IChatLineProps) {
 				<Menu id="menu-appbar" anchorEl={anchorElNav} anchorOrigin={{vertical: 'bottom', horizontal: 'left', }}	
 					keepMounted transformOrigin={{vertical: 'top', horizontal: 'left', }} open={Boolean(anchorElNav)} onClose={handleCloseNavMenu}>
           <MenuItem onClick={handleCloseNavMenu} component={NavLink} to={pathLink}>Profile</MenuItem>
+          {props.username !== props.currentUsername && <MenuItem onClick={handlePrivatMsg}>Private message</MenuItem>}
           {props.username !== props.currentUsername && <MenuItem onClick={handleInviteGame}>Invite to play</MenuItem>}
 				</Menu>
           <button onClick={handleOpenNavMenu} style={{display:"inline", textDecoration:"none"}}>{props.username} </button>
@@ -68,8 +75,8 @@ export default function ChatLine(props: IChatLineProps) {
         - {output}
         </p>
         </Stack>
-        <p>
-        {props.message}
+        <p style={{borderBottom:"1px solid rgba(0, 0, 0, 0.30)"}}>
+        {props.message}<br/><br/>
       </p>
       </div>
   );

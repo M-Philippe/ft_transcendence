@@ -150,7 +150,7 @@ const Header = (props: IProps) => {
 			{linkToDisplay.map(link => (
 			<Typography key={keyCount++} variant="h6" noWrap	sx={{mr: 2, display: { xs: 'none', md: 'flex' }, 
 				fontFamily: 'monospace', color: 'inherit', textDecoration: 'none',}}	>
-				<MenuItem  style={{borderRadius:"5px"}} onClick={handleCloseNavMenu} component={NavLink} to={link.to}>{link.name}</MenuItem>
+				<MenuItem  style={{paddingBottom:"17px", paddingTop:"17px", borderRadius:"15px"}}  component={NavLink} to={link.to}>{link.name}</MenuItem>
 			</Typography>
 			))}
 			</Box>

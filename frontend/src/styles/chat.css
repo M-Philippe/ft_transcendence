@@ -5,7 +5,7 @@
   min-height: 89vh;
   max-width: 24vw;
   min-width: 24vw;
-  border-radius: 15px;
+  /* border-radius: 15px; */
   background: linear-gradient( rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.185));
 }
 
@@ -14,7 +14,7 @@
   background: linear-gradient( rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.185));
   border-radius: 15px;
   max-height: 14vh;
-  min-height: 8vh;
+  min-height: 100px;
   overflow-y: auto;
 }
 
@@ -38,15 +38,38 @@
 #txtWrap {
   padding-right: 3%;
   padding-left: 3%;
-  max-height: 70vh;
+  max-height: 75vh;
   padding-bottom: 10%;
   word-wrap: break-word;
   overflow-y: auto;
 }
 
 
+/* #txtWrap.scrollTo {
+  top: 100;
+  left: 100;
+  behavior: 'smooth';
+} */
 
 /* MEDIA QUERIES */
+
+@media all and (min-width: 550px) {
+
+  .chatForm {
+    position: fixed;
+  }
+}
+
+@media all and (max-width: 800px) {
+
+  #chat {
+    min-width: 200px;
+  }
+  .chatForm {
+    min-width:  185px;
+  }
+
+}
 
 @media all and (max-width: 550px) {
 
@@ -61,6 +84,13 @@
     min-width: 75vw;
   }
 
+  #chatButtonTop
+  {
+    background: linear-gradient( rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.185));
+    border-radius: 15px;
+    overflow-y: auto;
+  }
+
 }
 
 @media all and (max-height: 800px) {
@@ -68,10 +98,6 @@
   .chatForm {
     bottom: 0;
     min-height: 30px;
-  }
-
-  #txtWrap {
-    max-height: 65vh;
   }
   
 }
@@ -84,3 +110,13 @@
   
 }
  
+
+@media all and (max-height: 700px) {
+  #chat {
+    min-height: 700px;
+  }
+
+  #txtWrap {
+    min-height: 550px;
+  }
+}

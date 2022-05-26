@@ -24,6 +24,7 @@ export function ChatDisplay(props: Interx) {
           username={props.state.usernames[i]}
           timeMessage={props.state.timeMessages[i]}
           message={props.state.messages[i]}
+          dispatch={props.dispatch}
       />);
     }
     return (lines);
