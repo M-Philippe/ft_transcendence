@@ -14,6 +14,8 @@ import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
 import { IncomingHttpHeaders } from "http";
 import { isNotEmptyObject } from "class-validator";
 
+let x_i = 0;
+
 @WebSocketGateway({ path: "/chat/chatSocket", transports: ['websocket'] })
 export class ChatGateway {
   constructor(@Inject(forwardRef(() => ChatService)) private readonly chatService: ChatService,
@@ -24,6 +26,8 @@ export class ChatGateway {
   server: Server;
 
   async handleConnection(client: any, ...args: any[]) {
+    console.error("NEW_CONNECTION: ", x_i);
+    x_i++;
   }
 
   /*

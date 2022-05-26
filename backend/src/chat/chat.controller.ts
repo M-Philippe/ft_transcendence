@@ -51,6 +51,14 @@ export class ChatController {
     return (jwtDecrypted.idUser);
   }
 
+  @UseGuards(JwtGuard)
+  @Get("getListChat")
+  async getListChat(@Req() request: Request) {
+    console.error("IS THIS HERE?");
+    let idUser = this.getIdUserFromCookie(request.cookies.authentication);
+    return (this.chatService.getListPublicChat(idUser));
+  }
+
   @Get()
   async findAll() {
     return this.chatService.findAll();

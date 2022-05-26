@@ -17,7 +17,7 @@ export function SocketHandler(props: ISocketHandler) {
       path: "/chat/chatSocket",
       transports: ["websocket"],
       withCredentials: true,
-      reconnection: true,
+      reconnection: false,
     });
     socket.connect();
 
@@ -25,8 +25,11 @@ export function SocketHandler(props: ISocketHandler) {
       props.setSocket(socket);
     });
 
+    socket.on("reconnect", () => {
+      props.setSocket(socket);
+    })
+
     socket.on("disconnect", () => {
-      socket.connect();
     });
 
     socket.on("connect_error", (error) => {

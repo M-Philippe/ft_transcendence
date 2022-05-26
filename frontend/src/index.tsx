@@ -16,10 +16,7 @@ function App () {
         <Header />
       <div id="body">
         <Body />
-        {
-          !store.getState().isInGame &&
-          <Chat />
-        }
+        <Chat />
       </div>
         <Footer />
       </div>

@@ -23,40 +23,50 @@ interface IChatProps {
 function Chat(props: IChatProps) {
   const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>();
 
-  if (!props.isConnected)
+  if (!props.isConnected || props.inGame) {
+    if (socket !== undefined) {
+      if (socket.connected)
+        socket.disconnect();
+      setSocket(undefined);
+    }
     return (null);
-
-  if (socket !== undefined && !props.isConnected) {
-    socket.disconnect();
-    setSocket(undefined);
-  } else if (socket !== undefined && props.inGame) {
-    socket.disconnect();
-    setSocket(undefined);
-  } else if (socket !== undefined && !socket.connected) {
-    socket.connect();
   }
 
-  if (props.isConnected && !props.inGame) {
+  if (socket === undefined)
     return (
-		<div id="chat">
-        {socket === undefined &&
-          <SocketHandler
-            setSocket={setSocket}
-            username={props.username}
-          />
-        }
-        {socket !== undefined &&
-            <ChatConnected
-              name={props.username}
-              socket={socket}
-            />
-        }
-      </div>
+      <SocketHandler
+        setSocket={setSocket}
+        username={props.username}
+      />
+    );
+  else
+      return (
+        <div id="chat">
+        <ChatConnected
+          name={props.username}
+          socket={socket}
+        />
+        </div>
       );
-  }
-  else {
-    return (null);
-  }
+
+  // if (props.isConnected && !props.inGame) {
+  //   return (
+	// 	<div id="chat">
+  //       {socket === undefined &&
+
+  //       }
+  //       {socket !== undefined &&
+  //           <ChatConnected
+  //             name={props.username}
+  //             socket={socket}
+  //           />
+  //       }
+  //     </div>
+  //     );
+  // }
+  // else {
+  //   return (null);
+  // }
 }
 
 function mapStateToProps(state: storeState, ownProps: any) {
