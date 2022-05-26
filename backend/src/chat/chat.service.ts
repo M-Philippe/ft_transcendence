@@ -16,6 +16,7 @@ import { ChatGateway } from "./chat.gateway";
 import { queueScheduler } from "rxjs";
 import { RelationshipsService } from "src/relationships/relationships.service";
 import { RelationshipStatus } from "src/relationships/entities/relationship.entity";
+import { userInfo } from "os";
 
 @Injectable()
 export class ChatService {
@@ -1137,6 +1138,82 @@ export class ChatService {
       description: "No chat corresponding."
     }, HttpStatus.NOT_FOUND);
   }
+
+  async updateAdminInGlobal(user: User, newSocket: string) {
+    let globalChat: Chat;
+    try {
+      globalChat = await this.findOne(1);
+    } catch (error) { return (undefined); }
+    if (isUserPresent(globalChat.usersInfos, user.id))
+      globalChat.usersInfos[getIndexUser(globalChat.usersInfos, user.id)].socket = newSocket;
+    else {
+      globalChat.usersInfos.push({
+        userId: user.id,
+        hasProvidedPassword: false,
+        persoMutedUsers: [],
+        socket: newSocket
+      });
+      globalChat.owners.push(user.id);
+      globalChat.admins.push(user.id);
+    }
+    await this.chatRepository.save(globalChat);
+  }
+
+  async updateUserInGlobal(user: User, newSocket: string) {
+    let globalChat: Chat;
+    try {
+      globalChat = await this.findOne(1);
+    } catch (error) { return (undefined); }
+    if (!isUserPresent(globalChat.usersInfos, user.id)) {
+      globalChat.usersInfos.push({
+        userId: user.id,
+        hasProvidedPassword: false,
+        persoMutedUsers: [],
+        socket: newSocket
+      });
+      globalChat.usersInChat.push(user);
+    } else
+      globalChat.usersInfos[getIndexUser(globalChat.usersInfos, user.id)].socket = newSocket;
+    await this.chatRepository.save(globalChat);
+  }
+
+  async propagateSocketInChat(idUser: number, newSocket: string) {
+    let user: User;
+    let returnIdsChat: number[] = [0];
+    try {
+      user = await this.usersService.findOne(idUser);
+    } catch (error) { return; }
+    console.error("PROPAGATE_CONNECTION");
+    if (user.id === 1) // custom handle for admin
+      await this.updateAdminInGlobal(user, newSocket);
+    else // custom handle for global
+      await this.updateUserInGlobal(user, newSocket)
+    for (let i = 0; i < user.listChat.length; i++) {
+      if (user.listChat[i].id === 0) {
+        if (!isUserPresent(user.listChat[i].usersInfos, user.id)) {
+          user.listChat[i].usersInfos.push({
+            userId: user.id,
+            hasProvidedPassword: false,
+            persoMutedUsers: [],
+            socket: newSocket
+          });
+          user.listChat[i].usersInChat.push(user);
+        } else
+          user.listChat[i].usersInfos[getIndexUser(user.listChat[i].usersInfos, user.id)].socket = newSocket;
+        await this.chatRepository.save(user.listChat[i]);
+      } else {
+          user.listChat[i].usersInfos[getIndexUser(user.listChat[i].usersInfos, idUser)].socket = newSocket;
+          await getConnection()
+                .createQueryBuilder()
+                .update(Chat)
+                .set({ usersInfos: user.listChat[i].usersInfos })
+                .where("id = :id", {id: user.listChat[i].id})
+                .execute();
+          if (!isUserBanned(user.listChat[i].bannedUsers, user.id))
+            returnIdsChat.push(user.listChat[i].id);  
+        }
+      }
+    }
 
   async suscribeToChat(user: User, chat: Chat) {
     let globalChat = await this.chatRepository.findOne(1);

@@ -22,8 +22,6 @@ export class ChatGateway {
   @WebSocketServer()
   server: Server;
 
-  async handleConnection(client: any, ...args: any[]) {}
-
   /*
   **    COMMANDS
   */
@@ -721,6 +719,28 @@ export class ChatGateway {
     return (idUser);
   }
 
+  async handleConnection(client: any, ...args: any[]) {
+    let payload;
+    console.error("CONNECTION");
+    console.error(client.handshake.headers.cookie);
+    if (client.handshake.headers.cookie) {
+			let jwt = extractJwtFromCookie(client.handshake.headers.cookie);
+			if (jwt === "")
+				return;
+			try {
+				payload = this.jwtService.verify(jwt);
+			} catch (error) { return; }
+    } else
+      return;
+    console.error("PAYLOAD OK");
+    /* Propagate socket to all chat with user in it. */
+    let user: User;
+    let idUser: number = payload.idUser;
+    let arrayIds = await this.chatService.propagateSocketInChat(idUser, client.id);
+    this.server.to(client.id).emit("receiveListChat", {lstId: arrayIds});
+  }
+
+
   @UseGuards(JwtGatewayGuard)
   @SubscribeMessage('fetchMessages')
   async fetchMessagesGateway(
@@ -738,51 +758,29 @@ export class ChatGateway {
       throw new Error ("No Chat");
     }
     let user;
-    console.error("ID_USER: ", idUser);
     try {
       user = await this.usersService.findOne(idUser);
     } catch (error) {
       throw new Error("No User");
     }
-    if (chat.id == 1) {
-      try {
-        tmpChat = await this.chatService.suscribeUserToGlobal(user, socket.id);
-        await this.chatService.updateAllSocketsUser(user, socket.id);
-      } catch (error) {
-        console.error(error);
-        throw new Error ("ERROR SAVE SOCKET");
-      }
-      if (tmpChat === undefined) {
-        console.error("\n\nTMP_CHAT UNDEFINED\n\n");
-        return;
-      }
-      if (tmpChat.messages.length != chat.messages.length) // means new User joined chat.
-        await this.sendToAllSocketsIntoChat(tmpChat);
-      if (isUserBanned(tmpChat.bannedUsers, idUser)) {
-        socket.emit("receivedMessages", {
-          chatRefreshed: tmpChat.id,
-          messages: ["You're not allowed here."],
-          usernames: ["Admin"],
-          timeMessages: [this.chatService.getTimestamp()]
-        });
-        return;
-      }
+    if (isUserBanned(chat.bannedUsers, idUser)) {
       socket.emit("receivedMessages", {
-        chatRefreshed: tmpChat.id,
-        messages: tmpChat.messages,
-        usernames: tmpChat.usernames,
-        timeMessages: tmpChat.timeMessages
+        chatRefreshed: chat.id,
+        messages: ["You're not allowed here."],
+        usernames: ["Admin"],
+        timeMessages: [this.chatService.getTimestamp()]
       });
-      socket.emit("newChat", {
-        newChatId: tmpChat.id,
-      });
+      return;
     }
-    if (chat !== undefined) {
-      await this.sendToOneSocketIntoChat(chat, socket, user.id);
-      socket.emit("newChat", {
-        newChatId: chat.id,
-      });
-    }
+    socket.emit("receivedMessages", {
+      chatRefreshed: chat.id,
+      messages: chat.messages,
+      usernames: chat.usernames,
+      timeMessages: chat.timeMessages
+    });
+    socket.emit("newChat", {
+      newChatId: chat.id,
+    });
   }
 
   /*

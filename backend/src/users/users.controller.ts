@@ -135,8 +135,8 @@ export class UsersController {
     return this.usersService.findOne(+id);
   }*/
 
-  @Put("/disconnectUser")
   @UseGuards(JwtGuard)
+  @Put("/disconnectUser")
   async disconnectUser(
     @Req() request: Request,
     @Res() response: Response) {

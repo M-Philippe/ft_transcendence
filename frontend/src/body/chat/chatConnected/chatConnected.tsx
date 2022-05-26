@@ -81,8 +81,8 @@ function reducer (state: State, action: Action): State {
       if (action.lstId === undefined || action.messages === undefined
         || action.timeMessages === undefined || action.usernames === undefined
         || action.chatFocusId === undefined || action.lstButtonsGreen === undefined)
-        return state;
-      return {
+{console.error("SOMETHING IS UNDEFINED: ", action);        return state;
+}      return {
         ...state,
         lstId: action.lstId,
         messages: action.messages,
@@ -141,6 +141,7 @@ export function ChatConnected(props: PropsChatConnected) {
       state.lstButtonsGreen.splice(state.lstButtonsGreen.indexOf(args[0].oldIdChat));
     if (args[0].oldIdChat !== -1)
       state.lstId.splice(state.lstId.indexOf(args[0].oldIdChat), 1);
+    console.error("REMOVE_CHAT: ", args[0]);
     dispatch({
       type: "UPDATE_LST_ID_AND_CHAT_AND_FOCUS",
       lstId: state.lstId,
