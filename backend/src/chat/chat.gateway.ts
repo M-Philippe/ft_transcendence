@@ -760,7 +760,7 @@ export class ChatGateway {
       socket.emit("receivedMessages", {
         chatRefreshed: tmpChat.id,
         messages: tmpChat.messages,
-        usernames: tmpChat.timeMessages,
+        usernames: tmpChat.usernames,
         timeMessages: tmpChat.timeMessages
       });
       socket.emit("newChat", {
