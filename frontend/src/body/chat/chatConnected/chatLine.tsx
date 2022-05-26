@@ -45,8 +45,7 @@ export default function ChatLine(props: IChatLineProps) {
     setAnchorElNav(null);
     props.socket.emit("postMessage", {id: props.id, username: null, message: "/mp " + props.username});
     
-    await sleep(500);
-    console.log("CA FAIS 1sec");
+    await sleep(200);
     let i = props.state.lstId.length - 2;
       props.dispatch({
         type: "UPDATE_FOCUS_AND_REMOVE_GREEN",
