@@ -1,4 +1,4 @@
-import { ListGame, IQueue,  GameMap, Game, Ball, Player, Coord, Mvts, PowerUp, Results, Disconnesction, Const, Message} from "./matchesOnGoing.interfaces";
+import { ListGame, IQueue,  GameMap, Game } from "./matchesOnGoing.interfaces";
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { MatchesOnGoingService } from "./matchesOnGoing.service";
@@ -59,7 +59,7 @@ export class MatchesOnGoingGateway {
     for (let value of queue.values()) {
     	if (value.id === idUser) {
 			this.server.to(socket).emit("alreadyCreatedMatch", { idGame: -1 });
-      // console.error("Already in Queue");
+      console.error("Already in Queue");
 			return true;
 		}
 	}
@@ -171,7 +171,7 @@ export class MatchesOnGoingGateway {
       powerUpState: game.powerUp.State,
       powerUpGenerate: game.powerUp.generate,
     };
-  // console.error("Ball: ", game.ball.x, " - " , game.ball.y, " - ", game.ball.r);
+  console.error("Ball: ", game.ball.x, " - " , game.ball.y, " - ", game.ball.r);
 	this.server.to(game.players.p1.socket).emit("updatePositions", {
         positions: tmp,
 		id: idGame,
@@ -236,7 +236,7 @@ export class MatchesOnGoingGateway {
       idGame: idx
     });
     this.usersService.setInGame(usr.name, true);
-    // console.error(usr.name, " ready to play");
+    console.error(usr.name, " ready to play");
     if (this.games[idx].players.p1.id === usr.id) {
       this.games[idx].players.p1 = this.matches.initPlayer(usr.id, usr.name, socket.id, 1);
       if (this.games[idx].players.p2.socket !== "")
@@ -296,7 +296,7 @@ export class MatchesOnGoingGateway {
 			this.games[id].msg.messageToDisplay = "";
 			this.games[id].disconnect.username = "";
 			this.server.to(socket).emit("alreadyCreatedMatch", { idGame: id});
-      // console.error(usr.name, " already have a match, id: ", id);
+      console.error(usr.name, " already have a match, id: ", id);
 			return true;
 		}
     return false;
@@ -325,7 +325,7 @@ export class MatchesOnGoingGateway {
   	if (!this.alreadyAMatch(user, socket.id) && !this.checkUserAlreadyInQueue(idUser, socket.id)) {
   		let similar: {response: boolean, playerOneId: number, playerTwoId: number, socketUserOne: string, playerOneName: string, rules: string};
   		if ((similar = this.checkSimilarGame(idUser, rulesConcat)).response) {
-        // console.error(user.name,  " find ", similar.playerOneName, " waiting in the queue.");
+        console.error(user.name,  " find ", similar.playerOneName, " waiting in the queue.");
 			  this.createGame(
 				  similar.playerOneId,
 				  similar.playerOneName,
@@ -338,7 +338,7 @@ export class MatchesOnGoingGateway {
 			  )
 		} else {
 			queue.set(Date.now(), { id: idUser, name: user.name, rules: rulesConcat, socket: socket.id })
-      // console.error(user.name, " is waiting in the queue.");
+      console.error(user.name, " is waiting in the queue.");
 		}
 	}
   }
@@ -362,10 +362,10 @@ export class MatchesOnGoingGateway {
           this.usersService.setNotInGame(this.games[idG].players.p1.name);
           this.usersService.setNotInGame(this.games[idG].players.p2.name);
           this.games[idG].inUse = false;
-          // console.error(this.games[idG].players.p1.name, " and ", this.games[idG].players.p2.name,  " are disconnected, end game.");
+          console.error(this.games[idG].players.p1.name, " and ", this.games[idG].players.p2.name,  " are disconnected, end game.");
         }
         else {
-          // console.error(usr.name, " quit the game.");
+          console.error(usr.name, " quit the game.");
           this.games[idG].disconnect.username = usr.name;
           this.games[idG].disconnect.time = Date.now();
         }
@@ -430,7 +430,7 @@ export class MatchesOnGoingGateway {
 			this.games[i].result = this.matches.initResults();
 			this.games[i].players.p1 = this.matches.initPlayer(lId, lName, lSocket, 1);
 			this.games[i].players.p2 = this.matches.initPlayer(rId, rName, rSocket, 2);
-      // console.error("Start game with an existent one, id: ", i, "(", lName, ",", rName, ")");
+      console.error("Start game with an existent one, id: ", i, "(", lName, ",", rName, ")");
       if (!invitation)
         this.gameLoop(this.games[i]);
 			return;
@@ -452,14 +452,14 @@ export class MatchesOnGoingGateway {
     socketToEmit: new Array<string>,
   }
 	++this.count;
-  // console.error("New Game, id: ", this.count - 1, "(", lName, ",", rName, ")");
+  console.error("New Game, id: ", this.count - 1, "(", lName, ",", rName, ")");
 	if (!invitation)
     this.gameLoop(this.games[this.count - 1]);
   }
 
   gameLoop(game: Game) {
 	this.sendToAllSockets(game, game.id);
-  // console.error(game.players.p1.name, ", ", game.players.p2.name, " start playing.");
+  console.error(game.players.p1.name, ", ", game.players.p2.name, " start playing.");
 	let pid: NodeJS.Timer;
   let sendGame: boolean = false;
   /* For fps at the end of the game */ let cons: boolean = false; let total_ms: number = 0; let loop_count: number = 0; let ms: number = Date.now();
