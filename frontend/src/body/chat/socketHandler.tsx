@@ -26,6 +26,7 @@ export function SocketHandler(props: ISocketHandler) {
     });
 
     socket.on("disconnect", () => {
+      socket.connect();
     });
 
     socket.on("connect_error", (error) => {

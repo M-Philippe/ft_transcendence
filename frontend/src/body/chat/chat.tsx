@@ -27,18 +27,14 @@ function Chat(props: IChatProps) {
     return (null);
 
   if (socket !== undefined && !props.isConnected) {
-    console.error("A");
     socket.disconnect();
     setSocket(undefined);
   } else if (socket !== undefined && props.inGame) {
-    console.error("B");
     socket.disconnect();
     setSocket(undefined);
   } else if (socket !== undefined && !socket.connected) {
     socket.connect();
-    console.error("NEEDS TO TRIGGER");
   }
-  console.log("SOCKET: ", socket);
 
   if (props.isConnected && !props.inGame) {
     return (

@@ -23,7 +23,8 @@ export class ChatGateway {
   @WebSocketServer()
   server: Server;
 
-  async handleConnection(client: any, ...args: any[]) {}
+  async handleConnection(client: any, ...args: any[]) {
+  }
 
   /*
   **    COMMANDS
@@ -753,6 +754,7 @@ export class ChatGateway {
         throw new Error ("ERROR SAVE SOCKET");
       }
       if (tmpChat === undefined) {
+        console.error("\n\nTMP_CHAT UNDEFINED\n\n");
         return;
       }
       if (tmpChat.messages.length != chat.messages.length) // means new User joined chat.
