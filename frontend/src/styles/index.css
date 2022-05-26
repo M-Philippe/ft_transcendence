@@ -15,9 +15,11 @@ body {
   min-width: 100vw;
   max-height: 100vh;
   max-width: 100vw;
-  overflow-y: hidden;
+  overflow-y: auto;
   overflow-x: hidden;
   overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
 }
 /* Background animation : */
 @keyframes gradient {
@@ -63,13 +65,14 @@ label {
 
 #body {
   display: flex;
+  flex: 70%;
   height: 89.5vh;
   text-align: center;
   justify-content:space-evenly;
   align-items: center;
   font-family: "ROBOTO", sans-serif;
   overflow-y: hidden;
-
+  overflow-x: hidden;
 }
 
 #body .action-button {
@@ -82,14 +85,16 @@ label {
   flex: 1;
   order: 1;
   width: 88vw;
-  overflow-y: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 footer {
-  bottom: 2px;
+  flex: 100%;
+  /* bottom: 2px;
   padding-top: 2vh;
   min-height: 1vh;
-  max-height: 1vh;
+  max-height: 1vh; */
   text-align: center;
 }
 
@@ -108,28 +113,34 @@ footer {
 } */
 
 table {
-  overflow-y: auto;
   width: auto;
   min-width: 30vw;
   margin: auto;
   text-align: left;
-  overflow-y:auto;
   max-height: 1vh;
   padding-top: 1%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 th p{
   margin: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 th {
   text-align: center;
   padding-top: 1%;
   padding-bottom: 1%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 tbody {
   text-align: center;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 caption {
@@ -180,6 +191,7 @@ caption {
 }
 
 #board {
+  width: 70%;
   border-radius: 15px;
 }
 
