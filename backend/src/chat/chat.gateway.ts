@@ -12,9 +12,6 @@ import { forwardRef, Inject, UseGuards } from "@nestjs/common";
 import { extractJwtFromCookie, JwtGatewayGuard } from "src/guards/jwtGateway.guards";
 import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
 import { IncomingHttpHeaders } from "http";
-import { isNotEmptyObject } from "class-validator";
-
-let x_i = 0;
 
 @WebSocketGateway({ path: "/chat/chatSocket", transports: ['websocket'] })
 export class ChatGateway {
@@ -25,10 +22,7 @@ export class ChatGateway {
   @WebSocketServer()
   server: Server;
 
-  async handleConnection(client: any, ...args: any[]) {
-    console.error("NEW_CONNECTION: ", x_i);
-    x_i++;
-  }
+  async handleConnection(client: any, ...args: any[]) {}
 
   /*
   **    COMMANDS
