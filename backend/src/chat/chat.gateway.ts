@@ -130,11 +130,10 @@ export class ChatGateway {
           });
           await this.sendToAllSocketsIntoChat(response.chat);
         }, timer * 1000);
-      console.error("WE SEND NEW CHAT xxxxxxxxxxxxxxxxx");
       this.server.to(response.socket).emit("removeChat", {
         oldIdChat: idChat === 1 ? -1 : idChat,
         newMessages: response.transitionChat.usernames,
-        NewTimeMessages: response.transitionChat.timeMessages,
+        newTimeMessages: response.transitionChat.timeMessages,
         newUsernames: response.transitionChat.usernames,
         newChatId: response.transitionChat.id,
       });

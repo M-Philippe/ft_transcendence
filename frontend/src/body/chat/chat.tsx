@@ -10,9 +10,6 @@ import { connect } from 'react-redux';
 import { DefaultEventsMap } from '@socket.io/component-emitter/index';
 import { SocketHandler } from './socketHandler';
 import { ChatConnected } from './chatConnected/chatConnected';
-import { StyledEngineProvider } from '@mui/material';
-import SelectInput from '@mui/material/Select/SelectInput';
-import { selectedIdsLookupSelector } from '@mui/x-data-grid';
 
 interface IChatProps {
   isConnected: boolean,
