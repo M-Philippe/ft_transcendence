@@ -17,8 +17,11 @@ interface IChatLineProps {
   username: string,
   timeMessage: string,
   message: string,
-  dispatch: React.Dispatch<Action>
+  dispatch: React.Dispatch<Action>,
+  state: State,
 }
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function ChatLine(props: IChatLineProps) {
   let pathLink = "/userView/:" + props.username;
@@ -38,10 +41,19 @@ export default function ChatLine(props: IChatLineProps) {
     props.socket.emit("postMessage", {id: props.id, username: null, message: "/gameOptions " + props.username});
   };
 
-  const handlePrivatMsg = () => {
+  async function handlePrivateMsg() {
     setAnchorElNav(null);
     props.socket.emit("postMessage", {id: props.id, username: null, message: "/mp " + props.username});
+    
+    await sleep(500);
+    console.log("CA FAIS 1sec");
+    let i = props.state.lstId.length - 2;
+      props.dispatch({
+        type: "UPDATE_FOCUS_AND_REMOVE_GREEN",
+        chatFocusId: props.state.lstId[i],
+        lstButtonsGreen: props.state.lstButtonsGreen,});
   };
+
   // const [avatar, setAvatar] = useState("");
 
   // props.socket.off("receivedAvatar" + props.keyEvent);
@@ -51,15 +63,6 @@ export default function ChatLine(props: IChatLineProps) {
 
   // props.socket.emit("getAvatar", { username: props.username, key: props.keyEvent});
 
-  // Add decimal when seconde < 10 (avoid decalage in chat and prettier)
-  var output = props.timeMessage;
-  if(props.timeMessage.length === 6)
-  {
-    var position = 5;
-    output = [props.timeMessage.slice(0, position), "0", props.timeMessage.slice(position)].join('');
-  }
-  // ---------------------------------------------
-
   return (
         <div>
         <Stack direction="row" sx={{ justifyContent:"center", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }} spacing={1}>
@@ -67,12 +70,12 @@ export default function ChatLine(props: IChatLineProps) {
 				<Menu id="menu-appbar" anchorEl={anchorElNav} anchorOrigin={{vertical: 'bottom', horizontal: 'left', }}	
 					keepMounted transformOrigin={{vertical: 'top', horizontal: 'left', }} open={Boolean(anchorElNav)} onClose={handleCloseNavMenu}>
           <MenuItem onClick={handleCloseNavMenu} component={NavLink} to={pathLink}>Profile</MenuItem>
-          {props.username !== props.currentUsername && <MenuItem onClick={handlePrivatMsg}>Private message</MenuItem>}
+          {props.username !== props.currentUsername && <MenuItem onClick={handlePrivateMsg}>Private message</MenuItem>}
           {props.username !== props.currentUsername && <MenuItem onClick={handleInviteGame}>Invite to play</MenuItem>}
 				</Menu>
           <button onClick={handleOpenNavMenu} style={{display:"inline", textDecoration:"none"}}>{props.username} </button>
         <p>
-        - {output}
+        - {props.timeMessage}
         </p>
         </Stack>
         <p style={{borderBottom:"1px solid rgba(0, 0, 0, 0.30)"}}>

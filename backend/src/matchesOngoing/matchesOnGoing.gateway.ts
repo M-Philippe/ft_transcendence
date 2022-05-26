@@ -1,4 +1,4 @@
-import { ListGame, IQueue,  GameMap, Game } from "./matchesOnGoing.interfaces";
+import { ListGame, IQueue,  GameMap, Game } from "./matchesOngoing.interfaces";
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { MatchesOnGoingService } from "./matchesOnGoing.service";

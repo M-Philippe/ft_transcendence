@@ -9,9 +9,9 @@ import { CreateUserDto, CreateUSer42Dto, CreateUserLocalDto } from './dto/create
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UsersGateway } from './users.gateway';
-import { MatchesOnGoingGateway } from 'src/matchesOnGoing/matchesOnGoing.gateway';
+import { MatchesOnGoingGateway } from 'src/matchesOngoing/matchesOnGoing.gateway';
 import { RelationshipStatus } from 'src/relationships/entities/relationship.entity';
-import { MatchesOnGoingService } from 'src/matchesOnGoing/matchesOnGoing.service';
+import { MatchesOnGoingService } from 'src/matchesOngoing/matchesOnGoing.service';
 import { ChangePasswordDto } from './users.types';
 import { API_USER_AVATAR, FRONT_GENERIC_AVATAR } from 'src/urlConstString';
 import { Not } from 'typeorm'

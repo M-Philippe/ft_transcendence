@@ -1,4 +1,4 @@
-import { Game, Ball, Player, Coord, PowerUp } from "./matchesOnGoing.interfaces";
+import { Game, Ball, Player, Coord, PowerUp } from "./matchesOngoing.interfaces"
 import { Injectable } from "@nestjs/common";
 import {
   BOARD_HEIGHT,

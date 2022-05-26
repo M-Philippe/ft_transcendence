@@ -11,6 +11,7 @@ import ChatCommandHelp from './chatCommandHelp';
 import ChatErrorMessage from './chatErrorMessage';
 import { API_USER_LIST_CHAT, API_USER_VIEW, DISCONNECTING_URL } from "../../../urlConstString";
 import AddBoxIcon from '@mui/icons-material/AddBox';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -280,6 +281,10 @@ export function ChatConnected(props: PropsChatConnected) {
           }
           >
           <AddBoxIcon sx={{ color:'white', fontSize: 28 }}/>
+          </IconButton>
+          <IconButton size="large" onClick={() => {
+              props.socket.emit("postMessage", {id: state.chatFocusId +1, username: null, message: "/quit"});}}>
+          <DeleteForeverIcon sx={{ color:'white', fontSize: 28 }}/>
           </IconButton>
         <ChatCommandHelp />
       </div>}
