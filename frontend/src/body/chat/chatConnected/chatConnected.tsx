@@ -82,8 +82,8 @@ function reducer (state: State, action: Action): State {
       if (action.lstId === undefined || action.messages === undefined
         || action.timeMessages === undefined || action.usernames === undefined
         || action.chatFocusId === undefined || action.lstButtonsGreen === undefined)
-        return state;
-      return {
+{console.error("SOMETHING IS UNDEFINED: ", action);        return state;
+}      return {
         ...state,
         lstId: action.lstId,
         messages: action.messages,
@@ -142,6 +142,7 @@ export function ChatConnected(props: PropsChatConnected) {
       state.lstButtonsGreen.splice(state.lstButtonsGreen.indexOf(args[0].oldIdChat));
     if (args[0].oldIdChat !== -1)
       state.lstId.splice(state.lstId.indexOf(args[0].oldIdChat), 1);
+    console.error("REMOVE_CHAT: ", args[0]);
     dispatch({
       type: "UPDATE_LST_ID_AND_CHAT_AND_FOCUS",
       lstId: state.lstId,
@@ -212,23 +213,19 @@ export function ChatConnected(props: PropsChatConnected) {
       handleOpen();
   });
 
-  props.socket.off("receiveListChat");
-  props.socket.on("receiveListChat", (...args: any) => {
+  props.socket.off("receivedListChat");
+  props.socket.on("receivedListChat", (...args: any) => {
     dispatch({type: "CHANGE_LIST_ID_LOAD", load: true, lstId: args[0].lstId});
   })
 
   useEffect(() => {
-    const controller = new AbortController();
     if (!state.load) {
-      props.socket.emit("getListChat");
+      //props.socket.emit("getListChat");
       props.socket.emit("fetchMessages", {chatId: 1, username: props.name});
-      dispatch({type: "CHANGE_LIST_ID_LOAD", load: true, lstId: [1]});
-    } else if (state.refresh) {
+    }
+    if (state.refresh) {
       props.socket.emit("fetchMessages", {chatId: state.chatFocusId + 1, username: props.name});
       dispatch({type: "FRESH_FALSE"});
-    }
-    return () => {
-      controller.abort();
     }
   }, [state, url, props.socket, props.name]);
 

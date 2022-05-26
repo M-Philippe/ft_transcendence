@@ -16,12 +16,7 @@ import { ChatGateway } from "./chat.gateway";
 import { queueScheduler } from "rxjs";
 import { RelationshipsService } from "src/relationships/relationships.service";
 import { RelationshipStatus } from "src/relationships/entities/relationship.entity";
-
-function getTimestamp() : string {
-
-    let time = new Date().toString().split(' ')[4];
-    return (time);
-}
+import { userInfo } from "os";
 
 @Injectable()
 export class ChatService {
@@ -33,6 +28,12 @@ export class ChatService {
     @Inject(forwardRef(() => RelationshipsService)) private readonly relationshipsService: RelationshipsService
   ) {}
 
+  getTimestamp() : string {
+    let time = new Date();
+    let timeString = time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds();
+    return (timeString);
+  }
+
   async onApplicationBootstrap() {
     // We create global [id: 0]
     // TODO -> Do nothing if chat 0 already exists.
@@ -43,7 +44,7 @@ export class ChatService {
     chat.usernames = [];
     chat.usernames.push("Admin");
     chat.timeMessages = [];
-    chat.timeMessages.push(getTimestamp());
+    chat.timeMessages.push(this.getTimestamp());
     chat.messages = [];
     chat.messages.push("Chat was created");
     chat.usersInChat = [];
@@ -80,7 +81,7 @@ export class ChatService {
   }
 
   async addMessageInArray(chat: Chat, username: string, message: string) {
-    chat.timeMessages.push(getTimestamp());
+    chat.timeMessages.push(this.getTimestamp());
     chat.messages.push(message);
     chat.usernames.push(username);
     return (chat);
@@ -348,7 +349,7 @@ export class ChatService {
     if (count >= banishedUser.listChat.length) {
       transitionChat = await this.findOne(1);
       transitionChat.messages = ["You're not allowed here"];
-      transitionChat.timeMessages = [getTimestamp()]
+      transitionChat.timeMessages = [this.getTimestamp()]
       transitionChat.usernames = ["Admin"];
     }
     socketToEmit = transitionChat.usersInfos[getIndexUser(transitionChat.usersInfos, banishedUser.id)].socket;
@@ -415,7 +416,7 @@ export class ChatService {
       if (transitionChat === undefined)
         return ("Error intern.");
       transitionChat.messages = ["You're not allowed here"];
-      transitionChat.timeMessages = [getTimestamp()]
+      transitionChat.timeMessages = [this.getTimestamp()]
       transitionChat.usernames = ["Admin"];
     }
     socketToEmit = chat.usersInfos[getIndexUser(chat.usersInfos, banishedUser.id)].socket;
@@ -592,7 +593,7 @@ export class ChatService {
     if (globalChat === undefined)
       return undefined;
     if (isUserPresent(globalChat.usersInfos, user.id)) {
-      globalChat.usersInChat.push(user);
+      globalChat.usersInChat.push(user); // push userEntity.
       if (user.id === 1 && user.name === "Admin" && globalChat.owners.indexOf(1) < 0) {
         globalChat.owners.push(1);
         globalChat.admins.push(1);
@@ -894,7 +895,7 @@ export class ChatService {
     } catch (error) {
       throw new Error("Can't find user: " + error.message);
     }
-    let timestamp = getTimestamp();
+    let timestamp = this.getTimestamp();
     const chat = this.chatRepository.create();
     chat.roomName = user.name + timestamp;
     chat.usernames = [user.name];
@@ -1136,6 +1137,82 @@ export class ChatService {
       description: "No chat corresponding."
     }, HttpStatus.NOT_FOUND);
   }
+
+  async updateAdminInGlobal(user: User, newSocket: string) {
+    let globalChat: Chat;
+    try {
+      globalChat = await this.findOne(1);
+    } catch (error) { return (undefined); }
+    if (isUserPresent(globalChat.usersInfos, user.id))
+      globalChat.usersInfos[getIndexUser(globalChat.usersInfos, user.id)].socket = newSocket;
+    else {
+      globalChat.usersInfos.push({
+        userId: user.id,
+        hasProvidedPassword: false,
+        persoMutedUsers: [],
+        socket: newSocket
+      });
+      globalChat.owners.push(user.id);
+      globalChat.admins.push(user.id);
+    }
+    await this.chatRepository.save(globalChat);
+  }
+
+  async updateUserInGlobal(user: User, newSocket: string) {
+    let globalChat: Chat;
+    try {
+      globalChat = await this.findOne(1);
+    } catch (error) { return (undefined); }
+    if (!isUserPresent(globalChat.usersInfos, user.id)) {
+      globalChat.usersInfos.push({
+        userId: user.id,
+        hasProvidedPassword: false,
+        persoMutedUsers: [],
+        socket: newSocket
+      });
+      globalChat.usersInChat.push(user);
+    } else
+      globalChat.usersInfos[getIndexUser(globalChat.usersInfos, user.id)].socket = newSocket;
+    await this.chatRepository.save(globalChat);
+  }
+
+  async propagateSocketInChat(idUser: number, newSocket: string) {
+    let user: User;
+    let returnIdsChat: number[] = [1];
+    try {
+      user = await this.usersService.findOne(idUser);
+    } catch (error) { return; }
+    if (user.id === 1) // custom handle for admin
+      await this.updateAdminInGlobal(user, newSocket);
+    else // custom handle for global
+      await this.updateUserInGlobal(user, newSocket)
+    for (let i = 0; i < user.listChat.length; i++) {
+      if (user.listChat[i].id === 1) {
+        if (!isUserPresent(user.listChat[i].usersInfos, user.id)) {
+          user.listChat[i].usersInfos.push({
+            userId: user.id,
+            hasProvidedPassword: false,
+            persoMutedUsers: [],
+            socket: newSocket
+          });
+          user.listChat[i].usersInChat.push(user);
+        } else
+          user.listChat[i].usersInfos[getIndexUser(user.listChat[i].usersInfos, user.id)].socket = newSocket;
+        await this.chatRepository.save(user.listChat[i]);
+      } else {
+          user.listChat[i].usersInfos[getIndexUser(user.listChat[i].usersInfos, idUser)].socket = newSocket;
+          await getConnection()
+                .createQueryBuilder()
+                .update(Chat)
+                .set({ usersInfos: user.listChat[i].usersInfos })
+                .where("id = :id", {id: user.listChat[i].id})
+                .execute();
+          if (!isUserBanned(user.listChat[i].bannedUsers, user.id))
+            returnIdsChat.push(user.listChat[i].id);  
+        }
+      }
+      return returnIdsChat;
+    }
 
   async suscribeToChat(user: User, chat: Chat) {
     let globalChat = await this.chatRepository.findOne(1);
