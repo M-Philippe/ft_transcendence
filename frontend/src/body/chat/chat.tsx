@@ -10,6 +10,9 @@ import { connect } from 'react-redux';
 import { DefaultEventsMap } from '@socket.io/component-emitter/index';
 import { SocketHandler } from './socketHandler';
 import { ChatConnected } from './chatConnected/chatConnected';
+import { StyledEngineProvider } from '@mui/material';
+import SelectInput from '@mui/material/Select/SelectInput';
+import { selectedIdsLookupSelector } from '@mui/x-data-grid';
 
 interface IChatProps {
   isConnected: boolean,
@@ -24,14 +27,18 @@ function Chat(props: IChatProps) {
     return (null);
 
   if (socket !== undefined && !props.isConnected) {
-    console.log("DISCONNECT A");
+    console.error("A");
     socket.disconnect();
     setSocket(undefined);
   } else if (socket !== undefined && props.inGame) {
-    console.log("DISCONNECT B");
+    console.error("B");
     socket.disconnect();
     setSocket(undefined);
+  } else if (socket !== undefined && !socket.connected) {
+    socket.connect();
+    console.error("NEEDS TO TRIGGER");
   }
+  console.log("SOCKET: ", socket);
 
   if (props.isConnected && !props.inGame) {
     return (

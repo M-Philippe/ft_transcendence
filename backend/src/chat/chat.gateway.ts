@@ -131,6 +131,7 @@ export class ChatGateway {
           });
           await this.sendToAllSocketsIntoChat(response.chat);
         }, timer * 1000);
+      console.error("WE SEND NEW CHAT xxxxxxxxxxxxxxxxx");
       this.server.to(response.socket).emit("removeChat", {
         oldIdChat: idChat === 1 ? -1 : idChat,
         newMessages: response.transitionChat.usernames,
@@ -731,13 +732,13 @@ export class ChatGateway {
     let idUser: number;
     if ((idUser = this.extractIdUserFromCookie(socket.handshake.headers)) < 0)
       return;
-
     try {
       chat = await this.chatService.findOne(data.chatId)
     } catch (error) {
       throw new Error ("No Chat");
     }
     let user;
+    console.error("ID_USER: ", idUser);
     try {
       user = await this.usersService.findOne(idUser);
     } catch (error) {
@@ -806,6 +807,27 @@ export class ChatGateway {
       newChatId: data.chatToSend.id,
     });
   }
+
+  @UseGuards(JwtGatewayGuard)
+  @SubscribeMessage("getListChat")
+  async getListChat(
+    @ConnectedSocket() socket: Socket) {
+      console.error("GET_LIST_CHAT");
+      let idUser: number;  
+      if ((idUser = this.extractIdUserFromCookie(socket.handshake.headers)) < 0)
+        return;
+      let user;
+      try {
+        user = await this.usersService.findOne(idUser);
+      } catch (error) {
+        console.error("NO SUCH USER");
+        return;
+      }
+      let ret: number[] = [];
+      for (let i = 0; i < user.listChat.length; i++)
+        ret.push(user.listChat[i].id);
+      this.server.to(socket.id).emit("receiveListChat", {lstId: ret});
+    }
 
   @UseGuards(JwtGatewayGuard)
   @SubscribeMessage("getAvatar")

@@ -409,6 +409,7 @@ export class ChatService {
     while (count < banishedUser.listChat.length && isUserBanned(transitionChat.bannedUsers, banishedUser.id) && count < banishedUser.listChat.length)
       transitionChat = banishedUser.listChat[++count];
     // get globalChatf if no chat availaible.
+    let socketToEmit = "";
     if (count >= banishedUser.listChat.length) {
       transitionChat = await this.chatRepository.findOne(1);
       if (transitionChat === undefined)
@@ -417,7 +418,7 @@ export class ChatService {
       transitionChat.timeMessages = [getTimestamp()]
       transitionChat.usernames = ["Admin"];
     }
-    let socketToEmit = chat.usersInfos[getIndexUser(chat.usersInfos, banishedUser.id)].socket;
+    socketToEmit = chat.usersInfos[getIndexUser(chat.usersInfos, banishedUser.id)].socket;
     return ({transitionChat: transitionChat, socket: socketToEmit, chat: chat});
   }
 

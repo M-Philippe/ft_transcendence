@@ -4,7 +4,7 @@
 import { DefaultEventsMap } from '@socket.io/component-emitter/index';
 import { io, Socket } from 'socket.io-client';
 import { useEffect } from 'react';
-import { API_URL, SOCKET_CHAT } from '../../urlConstString';
+import { API_URL, BASE_API_URL, SOCKET_CHAT } from '../../urlConstString';
 
 interface ISocketHandler {
   setSocket: (input: Socket<DefaultEventsMap, DefaultEventsMap>) => void,
@@ -13,32 +13,23 @@ interface ISocketHandler {
 
 export function SocketHandler(props: ISocketHandler) {
   useEffect(() => {
-    const socket = io(API_URL, {
+    const socket = io(BASE_API_URL, {
       path: "/chat/chatSocket",
+      transports: ["websocket"],
       withCredentials: true,
       reconnection: true,
-      transports: ["websocket"],
     });
+    socket.connect();
 
     socket.on("connect", () => {
-    });
-
-    socket.on("ERROR", (...args) => {
-      switch (args[0].description) {
-        case "No chat corresponding.":
-          console.log("Error: ", args[0].description);
-          break;
-        case "Can't create: ":
-          console.log("Error: ", args[0].description);
-          console.log(args[0].errorMsg);
-          break;
-      }
+      props.setSocket(socket);
     });
 
     socket.on("disconnect", () => {
     });
 
     socket.on("connect_error", (error) => {
+      console.log("ERROR_SOCKET: ", error);
     });
     props.setSocket(socket);
   });

@@ -211,39 +211,17 @@ export function ChatConnected(props: PropsChatConnected) {
       handleOpen();
   });
 
+  props.socket.off("receiveListChat");
+  props.socket.on("receiveListChat", (...args: any) => {
+    dispatch({type: "CHANGE_LIST_ID_LOAD", load: true, lstId: args[0].lstId});
+  })
+
   useEffect(() => {
     const controller = new AbortController();
     if (!state.load) {
-      fetch(url, {
-        method: "get",
-        credentials: "include",
-        signal: controller.signal,
-      })
-      .then(res => {
-        if (res.status === 404) {
-          return (undefined);
-        }
-        else if (res.status === 403)
-          window.location.assign(DISCONNECTING_URL);
-        else
-          return (res.json());
-      })
-      .then(
-        (res) => {
-          if (res === undefined)
-            return;
-          if (res["code"] === "e2300")
-            return;
-          let tmpArray: number[] = [];
-          for (let i = 0; i < res.length; i++) {
-            tmpArray.push(res[i].id);
-          }
-          tmpArray.sort();
-          dispatch({type: "CHANGE_LIST_ID_LOAD", load: true, lstId: tmpArray});
-          props.socket.emit("fetchMessages", {chatId: state.chatFocusId + 1, username: props.name});
-        },
-        (error) => {}
-      )
+      props.socket.emit("getListChat");
+      props.socket.emit("fetchMessages", {chatId: 1, username: props.name});
+      dispatch({type: "CHANGE_LIST_ID_LOAD", load: true, lstId: [1]});
     } else if (state.refresh) {
       props.socket.emit("fetchMessages", {chatId: state.chatFocusId + 1, username: props.name});
       dispatch({type: "FRESH_FALSE"});
