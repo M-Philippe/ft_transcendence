@@ -347,6 +347,9 @@ export class ChatService {
     let socketToEmit: string = "";
     if (count >= banishedUser.listChat.length) {
       transitionChat = await this.findOne(1);
+      transitionChat.messages = ["You're not allowed here"];
+      transitionChat.timeMessages = [getTimestamp()]
+      transitionChat.usernames = ["Admin"];
     }
     socketToEmit = transitionChat.usersInfos[getIndexUser(transitionChat.usersInfos, banishedUser.id)].socket;
     return ({transitionChat: transitionChat, socket: socketToEmit, chat: chat});
@@ -370,6 +373,7 @@ export class ChatService {
     }
     try {
       banishedUser = await this.usersService.findOneByName(userToBan);
+      //console.error("BANISHED_USER_FRESH: ", banishedUser);
     } catch (error) {
       return ("No user named '" + userToBan + "'");
     }
@@ -382,7 +386,6 @@ export class ChatService {
     }
     if (!isUserPresent(chat.usersInfos, banishedUser.id)) {
       return ("'" + banishedUser.name + "' not in this chat");
-      return undefined;
     }
     const date = new Date();
     chat.bannedUsers.push({
@@ -403,11 +406,17 @@ export class ChatService {
     }
     let count = 0;
     transitionChat = banishedUser.listChat[count];
-    while (isUserBanned(transitionChat.bannedUsers, banishedUser.id) && count < banishedUser.listChat.length)
+    while (count < banishedUser.listChat.length && isUserBanned(transitionChat.bannedUsers, banishedUser.id) && count < banishedUser.listChat.length)
       transitionChat = banishedUser.listChat[++count];
     // get globalChatf if no chat availaible.
-    if (count >= banishedUser.listChat.length)
-      transitionChat = banishedUser.listChat[0];
+    if (count >= banishedUser.listChat.length) {
+      transitionChat = await this.chatRepository.findOne(1);
+      if (transitionChat === undefined)
+        return ("Error intern.");
+      transitionChat.messages = ["You're not allowed here"];
+      transitionChat.timeMessages = [getTimestamp()]
+      transitionChat.usernames = ["Admin"];
+    }
     let socketToEmit = chat.usersInfos[getIndexUser(chat.usersInfos, banishedUser.id)].socket;
     return ({transitionChat: transitionChat, socket: socketToEmit, chat: chat});
   }
@@ -542,6 +551,17 @@ export class ChatService {
   }
 
   async saveSocketInChat(user: User, socket: string, chat: Chat) {
+    if (getIndexUser(chat.usersInfos, user.id) === -1) {
+      chat.usersInfos.push({
+        userId: user.id,
+        hasProvidedPassword: false,
+        persoMutedUsers: [],
+        socket: socket
+      });
+      try {
+        await this.chatRepository.save(chat);
+      } catch (error) { return; }
+    }
     if (chat.usersInfos[getIndexUser(chat.usersInfos, user.id)].socket === undefined) {
       /**/
       try {

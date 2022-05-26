@@ -83,7 +83,6 @@ function Register(props: {user: userState}) {
 		if (event.code === "Enter" || event.code === "NumpadEnter") {
 			handleSubmit();
 		}
-		console.log(event.code);
 	};
 	return (
         <Grid>
