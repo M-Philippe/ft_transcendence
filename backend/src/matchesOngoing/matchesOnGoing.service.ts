@@ -1,17 +1,10 @@
-import { forwardRef, HttpException, HttpStatus, Injectable, Inject } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "src/users/entities/user.entity";
-import { UsersService } from "src/users/users.service";
-import { getConnection, Repository } from "typeorm";
-import { MatchesOnGoing } from './entities/matchesOngoing.entity';
-import { ListGame } from "./matchesOnGoing.types";
+import { Game, Ball, Player, Coord, PowerUp } from "./matchesOnGoing.interfaces";
+import { Injectable } from "@nestjs/common";
 import {
   BOARD_HEIGHT,
   BOARD_WIDTH,
   SPEED_PALLET,
   START_PALLET_HEIGHT,
-  START_PUCK_HEIGHT,
-  START_PUCK_WIDTH,
   START_PUCK_VEL,
   START_PALLETAX,
   START_PALLETAY,
@@ -24,728 +17,341 @@ import {
   START_MAX_VEL_Y,
   POWERUP_HEIGHT,
   POWERUP_WIDTH,
+  START_PUCK_R,
 } from "./matchesOnGoing.constBoard";
 
-function delay(ms: number) {
-  return new Promise( resolve => setTimeout(resolve, ms) );
-}
-
 class Point {
-  x: number;
-  y: number;
+	x: number;
+	y: number;
 
-  constructor(x: number, y: number) {
-    this.x = x;
-    this.y = y;
-  }
-}
-
-interface Coord {
-  puckX: number,
-  puckY: number,
-  puckVX: number,
-  puckVY: number
-};
-
-function initStartingPositions(game: MatchesOnGoing) {
-  game.palletL = START_PALLET_WIDTH;
-  game.width = BOARD_WIDTH;
-  game.height = BOARD_HEIGHT;
-  game.palletAX = START_PALLETAX;
-  game.palletAY = START_PALLETAY;
-  game.palletAHeight = START_PALLET_HEIGHT;
-  game.palletAXFromUser = START_PALLETAX;
-  game.palletayfromuser = 0;
-  game.palletBX = START_PALLETBX;
-  game.palletBY = START_PALLETBY;
-  game.palletBHeight = START_PALLET_HEIGHT;
-  game.palletBXFromUser = START_PALLETBX;
-  game.palletbyfromuser = 0;
-  game.puckX = START_PUCKX;
-  game.puckY = START_PUCKY;
-  game.puckVX = START_PUCK_VEL;
-  game.puckVY =  (Math.round(Math.random() * (100 - 1) + 1) * ((Math.random() * (100 -1) + 1) % 2 == 0 ? -1 : 1) / 100);
-  game.puckL = START_PUCK_HEIGHT;
-  game.p1 = "";
-  game.p2 = "";
-  game.scorePlayerA = 0;
-  game.scorePlayerB = 0;
-  game.finishedGame = false;
-  game.winnerUsername = "";
-  game.lastUpdateTime = Date.now();
-  game.hasMessageToDisplay = false;
-  game.messageToDisplay = "";
-  game.playerDisconnected = false;
-  game.usernameDisconnectedPlayer = "";
-  game.timeOfDisconnection = 0;
-  game.pending = false;
-  game.players = [];
+	constructor(x: number, y: number) {
+	  this.x = x;
+	  this.y = y;
+	}
 }
 
 @Injectable()
 export class MatchesOnGoingService {
-  constructor(
-    @InjectRepository(MatchesOnGoing)
-    private matchesOnGoingRepository: Repository<MatchesOnGoing>,
-    @Inject(forwardRef(() => UsersService)) private readonly usersService: UsersService
-  ) {}
 
-  async findAll() {
-    return this.matchesOnGoingRepository.find();
-  }
+	/*				Initilisation				*/
 
-  async findOne(id: number) {
-    const match = await this.matchesOnGoingRepository.findOne(id);
-    if (match) {
-      return match;
-    }
-    throw new HttpException({
-      description: "No match corresponding."
-    }, HttpStatus.NOT_FOUND);
-  }
+	initPlayer(idPlayer: number, username: string, socket: string, p: number) {
+		return {
+			id: idPlayer,
+			name: username,
+			socket: socket,
+			coord: {
+				x: p === 1 ? START_PALLETAX : START_PALLETBX,
+				y: p === 1 ? START_PALLETAY : START_PALLETBY,
+				h: START_PALLET_HEIGHT,
+			},
+			moves: {
+				up: false,
+				down: false,
+			},
+		};
+	}
 
-  async findOneWithUser(username: string) {
-    let game;
-    try {
-      game = await getConnection()
-        .getRepository(MatchesOnGoing)
-        .createQueryBuilder("game")
-        .where("p1 = :name1", { name1: username })
-        .orWhere("p2 = :name2", { name2: username })
-        .getOneOrFail();
-    } catch (error) {
-      return undefined;
-    }
-    return game;
-  }
+	initPallet(p: number) {
+		return {
+			x: p === 1 ? START_PALLETAX : START_PALLETBX,
+			y: p === 1 ? START_PALLETBY : START_PALLETBY,
+			h: START_PALLET_HEIGHT,
+		}
+	}
 
-  async initStartingPositionsAfterScore(game: MatchesOnGoing, who: string) {
-    let puckVX = who === "left" ? START_PUCK_VEL :  -START_PUCK_VEL;
-    await getConnection()
-    .createQueryBuilder()
-    .update(MatchesOnGoing)
-    .set({
-      palletAY: START_PALLETAY,
-      palletBY: START_PALLETBY,
-      palletayfromuser: 0,
-      palletbyfromuser: 0,
-      palletAHeight: START_PALLET_HEIGHT,
-      palletBHeight: START_PALLET_HEIGHT,
-      puckX: START_PUCKX,
-      puckY: START_PUCKY,
-      scorePlayerA: game.scorePlayerA,
-      scorePlayerB: game.scorePlayerB,
-      puckVX: puckVX,
-      puckVY: Math.round(Math.random() * (100 - 1) + 1) * ((Math.random() * (100 -1) + 1) % 2 == 0 ? -1 : 1) / 100,
-    })
-    .where("id = :id", { id: game.id })
-    .execute();
-  }
+	initBall(side: boolean) {
+		return {
+			x: START_PUCKX,
+			y: START_PUCKY,
+			r: START_PUCK_R,
+			vX: side ? -START_PUCK_VEL : START_PUCK_VEL,
+			vY: ((Math.random() *  (100 - 1) + 1) * START_MAX_VEL_Y / 100) * (Math.random() *  (100 - 1) + 1) % 2 === 0 ? 1 : -1,
+		}
+	}
 
-  async fetchListGame() {
-    let games: MatchesOnGoing[] = [];
-    let ret: ListGame[] = [];
-    try {
-      games = await this.matchesOnGoingRepository.find();
-    } catch (error) {
-      console.error(error);
-      return undefined;
-    }
-    for (let i = 0; i < games.length; i++) {
-      if (!games[i].pending) {
-        ret.push({
-          idGame: games[i].id,
-          playerOne: games[i].players[0].username,
-          playerTwo: games[i].players[1].username,
-        });
-      }
-      console.error("FETCHING HERE");
-    }
-    return (ret);
-  }
+	initPowerUp(use: boolean) {
+		let p = (Math.random() * (100 - 1) + 1) % 2;
+		return {
+			generate: use,
+			Invisible: use && p % 2 === 0 ? true : false,
+			Shrink: use && p % 2 === 0 ? false : true,
+			State: true,
+			x: Math.round(Math.random() * ((BOARD_WIDTH * 0.75) -  (BOARD_WIDTH * 0.25) + 1) + BOARD_WIDTH * 0.25),
+			y: Math.round(Math.random() * ((BOARD_HEIGHT - POWERUP_HEIGHT) - 0 + 1)),
+			l: POWERUP_WIDTH,
+		}
+	}
 
-  async suscribeSpectator(idGame: number, socketToAdd: string) {
-    let game: MatchesOnGoing | undefined;
-    try {
-      game = await this.matchesOnGoingRepository.findOne(idGame);
-    } catch (error) {
-      console.error(error);
-      return;
-    }
-    if (game === undefined)
-      return;
-    game.socketsToEmit.push(socketToAdd);
-    await getConnection()
-          .createQueryBuilder()
-          .update(MatchesOnGoing)
-          .set({
-            socketsToEmit: game.socketsToEmit,
-          })
-          .where("id = :id", { id: idGame })
-          .execute();
-  }
+	initResults() {
+		return { finished: false, username: "", scoreP1: 0, scoreP2: 0,}
+	}
 
-  async checkTimeoutDisconnectedUser(game: MatchesOnGoing) {
-    let timeElapsed = Date.now() - game.timeOfDisconnection;
-    if (timeElapsed > 15000) {
-      if (game.usernameDisconnectedPlayer === game.players[0].username)
-        game.winnerUsername = game.players[1].username;
-      else
-        game.winnerUsername = game.players[0].username;
-      game.finishedGame = true;
-      game.messageToDisplay = "Winner is " + game.winnerUsername + "!";
-      await getConnection()
-            .createQueryBuilder()
-            .update(MatchesOnGoing)
-            .set({
-              hasMessageToDisplay: true,
-              messageToDisplay: "Winner is " + game.winnerUsername + "!",
-              finishedGame: true,
-              winnerUsername: game.winnerUsername,
-            })
-            .execute();
-    } else {
-      await getConnection()
-            .createQueryBuilder()
-            .update(MatchesOnGoing)
-            .set({
-              hasMessageToDisplay: true,
-              messageToDisplay: game.usernameDisconnectedPlayer + " is disconnected, " + (15 - Math.round(timeElapsed / 1000)) + " remaining.",
-            })
-            .where("id = :id", { id: game.id })
-            .execute();
-    }
-    return (game);
-  }
+	initDisconnection() {
+		return { username: "", time: 0,}
+	}
 
-  async cancelMatch(username: string) {
-    let game: MatchesOnGoing[] = [];
-    try {
-      game = await this.matchesOnGoingRepository.find()
-    } catch (error) {
-      console.error(error);
-      return;
-    }
-    for (let i = 0; i < game.length; i++) {
-      if (game[i].players[0].username === username && game[i].pending) {
-        await getConnection()
-              .createQueryBuilder()
-              .delete()
-              .from(MatchesOnGoing)
-              .where("id = :id", { id: game[i].id})
-              .execute();
-      } else if (game[i].players[0].username === username && !game[i].pending)
-        return;
-    }
-  }
+	initMessage() {
+		return { hasMessageToDisplay: false, messageToDisplay: "", }
+	}
 
-  /*                                   Power Up                                  */
+	initConstMap(score: number, background: string, object: string) {
+		return {
+			width: BOARD_WIDTH,
+			height: BOARD_HEIGHT,
+			backgroundColor: background,
+			objectColor: object,
+			scoreMax: score,
+			palletWidth: START_PALLET_WIDTH,
+		}
+	}
 
-  onSegment(p: Point, q: Point, r: Point) {
-    if (q.x <= Math.max(p.x, r.x) && q.x >= Math.min(p.x, r.x) &&
-        q.y <= Math.max(p.y, r.y) && q.y >= Math.min(p.y, r.y))
-      return true;
-    return false;
-  }
+	initConst(score: number, map: string) {
+		if (map === "desert")
+			return this.initConstMap(score, "#f9fb07", "#a51515");
+		else if (map === "jungle")
+			return this.initConstMap(score, "#0d3603", "#633204");
+		else
+			return this.initConstMap(score, "black", "white");
+	}
 
-  orientation(p: Point, q: Point, r: Point) {
-      let val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
-      if (val == 0)                              // collinear
-        return 0;
-      return val > 0 ? 1 : 2;
+	/*			Trajectory Calculation			*/
 
-  }
+	onSegment(p: Point, q: Point, r: Point) {
+		if (q.x <= Math.max(p.x, r.x) && q.x >= Math.min(p.x, r.x) &&
+			q.y <= Math.max(p.y, r.y) && q.y >= Math.min(p.y, r.y))
+		  return true;
+		return false;
+	}
 
-  doIntersect(p1: Point, q1: Point, p2: Point, q2: Point) {
-      let o1 = this.orientation(p1, q1, p2);
-      let o2 = this.orientation(p1, q1, q2);
-      let o3 = this.orientation(p2, q2, p1);
-      let o4 = this.orientation(p2, q2, q1);
+	orientation(p: Point, q: Point, r: Point) {
+		let val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+		if (val == 0)                              // collinear
+			return 0;
+		return val > 0 ? 1 : 2;
+	}
 
-      if (o1 != o2 && o3 != o4)                   // General Case
-        return true;
-      if (o1 == 0 && this.onSegment(p1, p2, q1))  // p2 on p1q1
-        return true;
-      if (o2 == 0 && this.onSegment(p1, q2, q1))  // q2 on p1q1
-        return true;
-      if (o3 == 0 && this.onSegment(p2, p1, q2))  // p1 on p2q2
-        return true;
-      if (o4 == 0 && this.onSegment(p2, q1, q2))  // q1 on p2q2
-        return true;
-      return false;
-  }
+	doIntersect(p1: Point, q1: Point, p2: Point, q2: Point) {
+		let o1 = this.orientation(p1, q1, p2);
+		let o2 = this.orientation(p1, q1, q2);
+		let o3 = this.orientation(p2, q2, p1);
+		let o4 = this.orientation(p2, q2, q1);
+		if (o1 != o2 && o3 != o4)                   // General Case
+			return true;
+		if (o1 == 0 && this.onSegment(p1, p2, q1))  // p2 on p1q1
+			return true;
+		if (o2 == 0 && this.onSegment(p1, q2, q1))  // q2 on p1q1
+			return true;
+		if (o3 == 0 && this.onSegment(p2, p1, q2))  // p1 on p2q2
+			return true;
+		if (o4 == 0 && this.onSegment(p2, q1, q2))  // q1 on p2q2
+			return true;
+		return false;
+	}
 
-  checkCollisionPowerUp(game: MatchesOnGoing, coord: Coord) {
-    let collision: boolean = false;
-    if ((coord.puckVX > 0 && coord.puckVY > 0) || (coord.puckVX <= 0 && coord.puckVY <= 0)) {
-      let actualPuckLowerLeft = new Point(coord.puckX, (coord.puckY + game.puckL));
-      let actualPuckTopRight = new Point((coord.puckX + game.puckL), coord.puckY);
-      let nextPuckLowerLeft = new Point(coord.puckX + coord.puckVX, (coord.puckY + coord.puckVY + game.puckL));
-      let nextPuckTopRight = new Point((coord.puckX + coord.puckVX + game.puckL), coord.puckY + coord.puckVY);
-      let powerUpLowerLeft = new Point(game.powerUpX, (game.powerUpY + game.powerUpL));
-      let powerUpTopRight = new Point((game.powerUpX + game.powerUpL), game.powerUpY);
-      if (coord.puckVX > 0) {  //  ↘
-        collision = this.doIntersect(actualPuckTopRight, nextPuckTopRight, powerUpLowerLeft, powerUpTopRight);
-        if (!collision)
-          collision = this.doIntersect(actualPuckLowerLeft, nextPuckLowerLeft, powerUpLowerLeft, powerUpTopRight);
-      }
-      else {                   // ↖
-        collision = this.doIntersect(nextPuckTopRight, actualPuckTopRight, powerUpLowerLeft, powerUpTopRight);
-        if (!collision)
-          collision = this.doIntersect(nextPuckLowerLeft, actualPuckLowerLeft, powerUpLowerLeft, powerUpTopRight);
-      }
-    }
-    else {
-      let actualPuckTopLeft = new Point(coord.puckX, coord.puckY);
-      let actualPuckLowerRight = new Point((coord.puckX + game.puckL), (coord.puckY + game.puckL));
-      let nextPuckTopLeft = new Point(coord.puckX + coord.puckVX, coord.puckY + coord.puckVY);
-      let nextPuckLowerRight = new Point((coord.puckX + coord.puckVX + game.puckL), (coord.puckY + coord.puckVY + game.puckL));
-      let powerUpTopLeft = new Point(game.powerUpX, game.powerUpY);
-      let powerUpLowerRight = new Point((game.powerUpX + game.powerUpL), (game.powerUpY + game.powerUpL));
-      if (coord.puckVX > 0) {  // ↗
-        collision = this.doIntersect(actualPuckTopLeft, nextPuckTopLeft, powerUpTopLeft, powerUpLowerRight);
-        if (!collision)
-          collision = this.doIntersect(actualPuckLowerRight, nextPuckLowerRight, powerUpTopLeft, powerUpLowerRight);
-      }
-      else {                   // ↙
-        collision = this.doIntersect(nextPuckTopLeft, actualPuckTopLeft, powerUpTopLeft, powerUpLowerRight);
-        if (!collision)
-          collision = this.doIntersect(nextPuckLowerRight, actualPuckLowerRight, powerUpTopLeft, powerUpLowerRight);
-      }
-    }
-    return collision;
-  }
+	/*			Collisions			*/
 
-  async powerUpCollisions(game: MatchesOnGoing, coord: Coord) {
-    if (this.checkCollisionPowerUp(game, coord)) {
-      game.powerUpState = 1;
-      if (game.powerUpShrink)
-        coord.puckVX < 0 ? game.palletAHeight = SHRINKED_PALLET_HEIGHT : game.palletBHeight = SHRINKED_PALLET_HEIGHT;
-      await getConnection()
-            .createQueryBuilder()
-            .update(MatchesOnGoing)
-            .set({
-              palletAHeight: game.palletAHeight,
-              palletBHeight: game.palletBHeight,
-              powerUpState: game.powerUpState
-            })
-            .where("id = :id", {id: game.id})
-            .execute();
-    }
-  }
+	checkCollisionPo(x: number, y: number, l: number, puck: Ball) {
+		let collision: boolean = false;
+		let aN = new Point(puck.x, puck.y - puck.r);
+		let aS = new Point(puck.x, puck.y + puck.r);
+		let nN = new Point(puck.x + puck.vX, puck.y + puck.vY - puck.r);
+		let nS = new Point(puck.x + puck.vX, puck.y + puck.vY + puck.r);
+		if ((puck.vX > 0 && puck.vY > 0) || (puck.vX <= 0 && puck.vY <= 0)) {
+			let pSW = new Point(x, y + l);
+			let pNE = new Point(x + l, y );
+			if (puck.vX > 0) //  ↘
+				collision = this.doIntersect(aN, nN, pSW, pNE);
+			if (!collision)  // ↖
+				collision = this.doIntersect(aS, nS, pSW, pNE);
+		} else {
+			let pNW = new Point(x, y);
+			let pSE = new Point(x + l, y + l)
+			if (puck.vX > 0) // ↗
+				collision = this.doIntersect(aN, nN, pNW, pSE);
+			if (!collision) // ↙
+				collision = this.doIntersect(aS, nS, pNW, pSE);
+		}
+		return collision;
+	}
 
-  async removePowerUp(game: MatchesOnGoing, collision: boolean) {
-    game.powerUpState = 2;
-    await getConnection()
-      .createQueryBuilder()
-      .update(MatchesOnGoing)
-      .set({ powerUpState: game.powerUpState })
-      .where("id = :id", {id: game.id})
-      .execute();
-  }
+	checkCollisionPa(x1: number, y1: number, x2: number, y2: number, puck: Ball) {
+		let collision: boolean = false;
+		let aN = new Point(puck.x, puck.y - puck.r);
+		let aS = new Point(puck.x, puck.y + puck.r);
+		let nN = new Point(puck.x + puck.vX, puck.y + puck.vY - puck.r);
+		let nS = new Point(puck.x + puck.vX, puck.y + puck.vY + puck.r);
+		let p1 = new Point(x1, y1);
+		let p2 = new Point(x2, y2);
+		collision = this.doIntersect(aN, nN, p1, p2);
+		if (!collision)
+			collision = this.doIntersect(aS, nS, p1, p2);
+		return collision;
+	}
 
-  /*                                  Collisions                                 */
+	checkCollisionPowerUp(powerUp: PowerUp, puck: Ball) {
+		return this.checkCollisionPo(powerUp.x, powerUp.y, powerUp.l, puck);
+	}
 
-  roof(game: MatchesOnGoing, coord: Coord) {
-    coord.puckY = coord.puckVY <= 0 ? Math.abs(coord.puckVY) - coord.puckY : (game.height * 2) - coord.puckVY - coord.puckY;
-    coord.puckVY *= -1;
-  }
+	checkCollisionPallet(player: Player, puck: Ball, w: number) {
+		return this.checkCollisionPa(player.coord.x + w, player.coord.y, player.coord.x + w, player.coord.y + player.coord.h, puck);
+	}
 
-  async goal(game: MatchesOnGoing, who: string) {
-    who == "left" ? game.scorePlayerA += 1 : game.scorePlayerB += 1;
-    if (game.scorePlayerA == game.scoreMax || game.scorePlayerB == game.scoreMax) {
-      game.finishedGame = true;
-      game.winnerUsername = who == "left" ? game.players[0].username : game.players[1].username;
-      game.hasMessageToDisplay = true;
-      game.messageToDisplay = who == "left" ? game.players[0].username : game.players[1].username;
-      game.messageToDisplay += " win, good job !";
-      await this.matchesOnGoingRepository.update(game.id, game);
-    }
-    else {
-      await this.initStartingPositionsAfterScore(game, who);
-      if (game.generatePowerUp) {
-        this.setPowerUp(game);
-        await getConnection()
-              .createQueryBuilder()
-              .update(MatchesOnGoing)
-              .set({
-                powerUpX: game.powerUpX,
-                powerUpY: game.powerUpY,
-                powerUpInvisible: game.powerUpInvisible,
-                powerUpShrink: game.powerUpShrink,
-                powerUpState: game.powerUpState
-              })
-              .where("id = :id", {id: game.id})
-              .execute();
-      }
-    }
-  }
+	/*			PowerUp			*/
 
-  // collisionLeftPallet(game: MatchesOnGoing, coord: Coord)
-  // {
-  //   const middlePallet = game.palletAHeight / 2 + game.palletAY;
-  //   const absPuckVX = Math.abs(coord.puckVX);
-  //   const restDistX = coord.puckX - game.palletAX - game.palletL;                  // dist x remaining
-  //   const coefY = restDistX * 100 / absPuckVX;                              // % dist y remaining
-  //   const restDistY = coefY * coord.puckVY / 100;
-  //   const impactAt = coord.puckY + (game.puckL / 2) + coord.puckVY > 0 ? restDistY : -restDistY;                            // contact with pallet At
-  //   const distFromCenter = Math.abs(middlePallet - impactAt);                           // dist contact from center
-  //   const degree = (distFromCenter / (game.palletAHeight / 2)) * START_MAX_VEL_Y;       // % vel max
-  //   coord.puckVY = impactAt < middlePallet ? -degree : degree;                        // new PuckVY
-  //   const restDistXAfterCollision = absPuckVX - restDistX;
-  //   coord.puckY += (restDistXAfterCollision * coord.puckVY) / absPuckVX;
-  //   coord.puckX += restDistXAfterCollision;
-  //   coord.puckVX = coord.puckVX * -1.1;
-  //   return true;
-  // }
+	managementPowerUp(game: Game) {
+		if (game.powerUp.generate && game.powerUp.State && this.checkCollisionPowerUp(game.powerUp, game.ball)) {
+			game.powerUp.State = false;
+			if (game.powerUp.Shrink)
+				game.ball.vX > 0 ? game.players.p2.coord.h = SHRINKED_PALLET_HEIGHT : game.players.p1.coord.h = SHRINKED_PALLET_HEIGHT;
+		}
+	}
 
-  // collisionRightPallet(game: MatchesOnGoing, coord: Coord)
-  // {
-  //   const middlePallet = game.palletBHeight / 2 + game.palletBY;
-  //   const absPuckVX = Math.abs(coord.puckVX);
-  //   const restDistX = game.palletBX - coord.puckX;                                      // dist x remaining
-  //   const coefY = restDistX * 100 / absPuckVX;                              // % dist y remaining
-  //   const restDistY = coefY * coord.puckVY / 100;
-  //   const impactAt = coord.puckY + (game.puckL / 2) + coord.puckVY > 0 ? restDistY : -restDistY;                            // contact with pallet At
-  //   const distFromCenter = Math.abs(middlePallet - impactAt);                           // dist contact from center
-  //   const degree = (distFromCenter / (game.palletBHeight / 2)) * START_MAX_VEL_Y;       // % vel max
-  //   coord.puckVY = impactAt < middlePallet ? -degree : degree;                        // new PuckVY
-  //   const restDistXAfterCollision = absPuckVX - restDistX;
-  //   coord.puckY += (restDistXAfterCollision * coord.puckVY) / absPuckVX;
-  //   coord.puckX -= restDistXAfterCollision;
-  //   coord.puckVX = coord.puckVX * -1.1;
-  //   return true;
-  // }
+	/*			GAME			*/
 
-  collisionLeftPallet(game: MatchesOnGoing, coord: Coord)
-  {
-    let middlePallet = game.palletAHeight;
-    middlePallet = middlePallet / 2 + game.palletAY;
-    let absPuckVX = Math.abs(coord.puckVX);
-    let restDistX = coord.puckX - game.palletAX - game.palletL;                  // dist x remaining
-    let coefY = Math.round(restDistX * 100 / absPuckVX);                              // % dist y remaining
-    let restDistY = coefY * coord.puckVY / 100;
-    let impactAt = coord.puckY + (game.puckL / 2);
-    impactAt += coord.puckVY > 0 ? restDistY : -restDistY;                            // contact with pallet At
-    let distFromCenter = Math.abs(middlePallet - impactAt);                           // dist contact from center
-    let degree = (distFromCenter / (game.palletAHeight / 2)) * START_MAX_VEL_Y;       // % vel max
-    coord.puckVY = impactAt < middlePallet ? -degree : degree;                        // new PuckVY
-    let restDistXAfterCollision = absPuckVX - restDistX;
-    coord.puckY += (restDistXAfterCollision * coord.puckVY) / absPuckVX;
-    coord.puckX += restDistXAfterCollision;
-    coord.puckVX = coord.puckVX * -1.1;
-    return true;
-  }
+	roof(game: Game) {
+		if (game.ball.y + game.ball.vY <= 0 || game.ball.y + game.ball.vY >= game.const.height) {
+			// console.error("ROOF");
+			game.ball.y = game.ball.vY <= 0 ? 0 + game.ball.r  + 1 : game.const.height - game.ball.r - 1;
+			game.ball.vY *= -1;
+			return true;
+		}
+		return false
+	}
 
-  collisionRightPallet(game: MatchesOnGoing, coord: Coord)
-  {
-    let middlePallet = game.palletBHeight;
-    middlePallet = middlePallet / 2 + game.palletBY;
-    let absPuckVX = Math.abs(coord.puckVX);
-    let restDistX = game.palletBX - coord.puckX;                                      // dist x remaining
-    let coefY = Math.round(restDistX * 100 / absPuckVX);                              // % dist y remaining
-    let restDistY = coefY * coord.puckVY / 100;
-    let impactAt = coord.puckY + (game.puckL / 2);
-    impactAt += coord.puckVY > 0 ? restDistY : -restDistY;                            // contact with pallet At
-    let distFromCenter = Math.abs(middlePallet - impactAt);                           // dist contact from center
-    let degree = (distFromCenter / (game.palletBHeight / 2)) * START_MAX_VEL_Y;       // % vel max
-    coord.puckVY = impactAt < middlePallet ? -degree : degree;                        // new PuckVY
-    let restDistXAfterCollision = absPuckVX - restDistX;
-    coord.puckY += (restDistXAfterCollision * coord.puckVY) / absPuckVX;
-    coord.puckX -= restDistXAfterCollision;
-    coord.puckVX = coord.puckVX * -1.1;
-    return true;
-  }
-  /*                                  Move Puck                                 */
+	goal(game: Game) {
+		if (game.ball.x + game.ball.vX <= 0 || game.ball.x + game.ball.vX >= game.const.width) {
+			// console.error("GOAL");
+			game.ball.vX > 0 ? ++game.result.scoreP1 : ++game.result.scoreP2;
+			if (game.result.scoreP1 === game.const.scoreMax || game.result.scoreP2 === game.const.scoreMax) {
+				if (game.result.scoreP1 === game.const.scoreMax) {
+					game.result.username = game.players.p1.name;
+					game.msg.messageToDisplay = game.players.p1.name + " is the Winner!";
+				} else {
+					game.result.username = game.players.p2.name;
+					game.msg.messageToDisplay = game.players.p2.name + " is the Winner!";
+				}
+				game.msg.hasMessageToDisplay = true;
+				game.result.finished = true;
+			} else {
+				game.ball = this.initBall(game.ball.vX > 0 ? false : true);
+				game.powerUp = this.initPowerUp(game.powerUp.generate);
+				game.players.p1.coord = this.initPallet(1);
+				game.players.p2.coord = this.initPallet(2);
+			}
+			return true;
+		}
+		return false;
+	}
 
-  // async movePuck(gameId: number, move1: number = 0, move2: number = 0) {
-    async movePuck(gameId: number, move1: number, move2: number) {
-      let a = Date.now();
-      let game: MatchesOnGoing = await getConnection()
-        .getRepository(MatchesOnGoing)
-        .createQueryBuilder('matches')
-        .where("id = :id", { id: gameId})
-        .getOneOrFail();
-      let b = Date.now();
-    if (game.finishedGame)
-      return  undefined;
-    if (game.playerDisconnected)
-      return game;
-      let goal: boolean = false;
-    let collisionPallet: boolean = false;
-    let coord: Coord = {puckX: Number(game.puckX), puckY: Number(game.puckY), puckVX: Number(game.puckVX), puckVY:  Number(game.puckVY)};
+	/*			Pallet			*/
+	collisionLeftPallet(pallet: Coord, puck: Ball)
+	{
+	//   console.error("LEFT PALLET");
+	  let middlePallet = pallet.h;
+	  middlePallet = middlePallet / 2 + pallet.y;
+	  let absPuckVX = Math.abs(puck.vX);
+	  let restDistX = puck.x - puck.r - pallet.x - START_PALLET_WIDTH;                  // dist x remaining
+	  let coefY = Math.round(restDistX * 100 / absPuckVX);                              // % dist y remaining
+	  let restDistY = coefY * puck.vY / 100;
+	  let impactAt = puck.y + (puck.r / 2);
+	  impactAt += puck.vY > 0 ? restDistY : -restDistY;                            // contact with pallet At
+	  let distFromCenter = Math.abs(middlePallet - impactAt);                           // dist contact from center
+	  let degree = (distFromCenter / (pallet.h / 2)) * START_MAX_VEL_Y;       // % vel max
+	  puck.vY = impactAt < middlePallet ? -degree : degree;                        // new PuckVY
+	  let restDistXAfterCollision = absPuckVX - restDistX;
+	  puck.y += (restDistXAfterCollision * puck.vY) / absPuckVX;
+	  puck.x += restDistXAfterCollision;
+	  puck.vX = puck.vX * -1.1;
+	  return true;
+	}
 
-    game.palletAY += move1;
-    if (game.palletAY + game.palletAHeight > BOARD_HEIGHT)
-      game.palletAY = BOARD_HEIGHT - game.palletAHeight;
-    else if (game.palletAY < 0)
-      game.palletAY = 0;
-    game.palletBY += move2;
-    if (game.palletBY + game.palletBHeight > BOARD_HEIGHT)
-      game.palletBY = BOARD_HEIGHT - game.palletBHeight;
-    else if (game.palletBY < 0)
-      game.palletBY = 0;
+	collisionRightPallet(pallet: Coord, puck: Ball)
+	{
+	//   console.error("RIGHT PALLET");
+	  let middlePallet = pallet.h;
+	  middlePallet = middlePallet / 2 + pallet.y;
+	  let absPuckVX = Math.abs(puck.vX);
+	  let restDistX = pallet.x - puck.x - puck.r;                                      // dist x remaining
+	  let coefY = Math.round(restDistX * 100 / absPuckVX);                              // % dist y remaining
+	  let restDistY = coefY * puck.vY / 100;
+	  let impactAt = puck.y + (puck.r / 2);
+	  impactAt += puck.vY > 0 ? restDistY : -restDistY;                            // contact with pallet At
+	  let distFromCenter = Math.abs(middlePallet - impactAt);                           // dist contact from center
+	  let degree = (distFromCenter / (pallet.h / 2)) * START_MAX_VEL_Y;       // % vel max
+	  puck.vY = impactAt < middlePallet ? -degree : degree;                        // new PuckVY
+	  let restDistXAfterCollision = absPuckVX - restDistX;
+	  puck.y += (restDistXAfterCollision * puck.vY) / absPuckVX;
+	  puck.x -= restDistXAfterCollision;
+	  puck.vX = puck.vX * -1.1;
+	  return true;
+	}
 
-    if (game.powerUpState == 0)
-      this.powerUpCollisions(game, coord);
-    if (coord.puckY + coord.puckVY <= 0.0 || coord.puckY + coord.puckVY >= game.height)
-      this.roof(game, coord);
-    else if (coord.puckVX < 0 && coord.puckX + coord.puckVX <= (game.palletAX + game.palletL) && coord.puckY >= game.palletAY - game.puckL && coord.puckY <= game.palletAY + game.palletAHeight && coord.puckX + coord.puckVX + game.puckL >= game.palletAX)
-      collisionPallet = this.collisionLeftPallet(game, coord);
-    else if (coord.puckX + coord.puckVX >= game.palletBX && coord.puckY >= game.palletBY - game.puckL && coord.puckY <= game.palletBY + game.palletBHeight && coord.puckX + coord.puckVX <= game.palletBX + game.palletL)
-      collisionPallet = this.collisionRightPallet(game, coord);
-    else if (coord.puckX + coord.puckVX <= 0.0 || coord.puckX + coord.puckVX >= game.width) {
-      await this.goal(game, coord.puckX < game.width / 2 ? "right" : "left");
-      goal = true;
-    } else {
-      coord.puckX += coord.puckVX;
-      coord.puckY += coord.puckVY;
-    }
-    if (!goal && game.powerUpState == 1 && game.powerUpInvisible && collisionPallet)
-      this.removePowerUp(game, collisionPallet);
-    console.error("Algo: ", Date.now() - b);
-    if (!goal) {
-      await getConnection()
-        .createQueryBuilder()
-        .update(MatchesOnGoing)
-        .set({
-          puckX: coord.puckX,
-          puckY: coord.puckY,
-          puckVX: coord.puckVX,
-          puckVY: coord.puckVY,
-          palletAY: game.palletAY,
-          palletBY: game.palletBY,
-        })
-        .where("id = :id", {id: game.id})
-        .execute();
-    }
-    console.error("Algo with query: ", Date.now() - a);
-    return (game);
-  }
+	collisionPallet(game: Game) {
+		if (game.ball.vX > 0) {
+			if (this.checkCollisionPallet(game.players.p2, game.ball, game.const.palletWidth))
+				return this.collisionRightPallet(game.players.p2.coord, game.ball)
+		} else if (this.checkCollisionPallet(game.players.p1, game.ball, game.const.palletWidth))
+			return this.collisionLeftPallet(game.players.p1.coord, game.ball)
 
-  setColorMap(match: MatchesOnGoing, map: string) {
-    if (map === "original") {
-      match.bakckgroundColor = "black";
-      match.objectColor = "white";
-    } else if (map === "desert") {
-      match.bakckgroundColor = "#f9fb07";
-      match.objectColor = "#a51515";
-    } else if (map === "jungle") {
-      match.bakckgroundColor = "#0d3603";
-      match.objectColor = "#633204";
-    } else {
-      match.bakckgroundColor = "black";
-      match.objectColor = "white";
-    }
-  }
+		if (game.ball.vY > 0) {
+			if (this.checkCollisionPa(game.players.p2.coord.x, game.players.p2.coord.y, game.players.p2.coord.x + game.const.palletWidth, game.players.p2.coord.y, game.ball))
+				game.ball.vY *= -1;
+		} else if (this.checkCollisionPa(game.players.p1.coord.x, game.players.p1.coord.y + game.players.p1.coord.h, game.players.p1.coord.x + game.const.palletWidth, game.players.p1.coord.y + game.players.p1.coord.h, game.ball)) {
+				game.ball.vY *= -1;
+		}
+		return false;
+	}
 
-  setPowerUp(match: MatchesOnGoing) {
-    match.powerUpState = 0;
-    match.powerUpInvisible = false;
-    match.powerUpShrink = false;
-    if (Math.round((Math.random() * (100 - 1) + 1)) % 2 == 0)
-      match.powerUpShrink = true;
-    else
-      match.powerUpInvisible = true;
-    match.powerUpL = POWERUP_HEIGHT;
-    match.powerUpX = Math.round(Math.random() * ((BOARD_WIDTH * 0.75) -  (BOARD_WIDTH * 0.25) + 1) + BOARD_WIDTH * 0.25);
-    match.powerUpY = Math.round(Math.random() * ((BOARD_HEIGHT - POWERUP_HEIGHT) - 0 + 1));
-  }
+	movePallets(p1: Player, p2: Player) {
+		if (p1.moves.up && !p1.moves.down)
+			p1.coord.y = p1.coord.y - SPEED_PALLET < 0 ? 0 : p1.coord.y - SPEED_PALLET;
+		else if (!p1.moves.up && p1.moves.down)
+			p1.coord.y = p1.coord.y + SPEED_PALLET > BOARD_HEIGHT ? BOARD_HEIGHT - p1.coord.h : p1.coord.y + SPEED_PALLET;
+		if (p2.moves.up && !p2.moves.down)
+			p2.coord.y = p2.coord.y - SPEED_PALLET < 0 ? 0 : p2.coord.y - SPEED_PALLET;
+		else if (!p2.moves.up && p2.moves.down)
+			p2.coord.y = p2.coord.y + SPEED_PALLET > BOARD_HEIGHT ? BOARD_HEIGHT - p2.coord.h : p2.coord.y + SPEED_PALLET;
+	}
 
-  setPowerUpToNull(match: MatchesOnGoing) {
-    match.powerUpState = -1;
-    match.powerUpInvisible = false;
-    match.powerUpShrink = false;
-    match.powerUpL = 0;
-    match.powerUpX = 0;
-    match.powerUpY = 0;
-  }
+	gameAlgo(game: Game) {
+		let stop: Boolean = true;
+		if (game.result.finished || game.disconnect.username !== "")
+			return;
+		this.movePallets(game.players.p1, game.players.p2);
+		this.managementPowerUp(game);
+		stop = this.roof(game);
+		if (!stop) this.collisionPallet(game);
+		if (!stop) this.goal(game);
+		if (!stop) {
+			game.ball.x += game.ball.vX;
+			game.ball.y += game.ball.vY;
+		}
+		// this.pringGameState(game, "-- Algo --");
+		return game;
+	}
 
-  /*
-  **  VROTH_DI
-  */
-  async createMatchFromInvitation(playerOne: User, playerTwo: User, rules: any) {
-    let match;
-    try {
-      match = this.matchesOnGoingRepository.create();
-    } catch (error) {
-      throw new Error(error);
-    }
-    initStartingPositions(match);
-    match.pending = false;
-    match.players = [];
-    match.players.push({
-      username: playerOne.name,
-      palletAssigned: 0,
-      socket: "",
-    });
-    match.players.push({
-      username: playerTwo.name,
-      palletAssigned: 1,
-      socket: "",
-    })
-    match.p1 = playerOne.name;
-    match.p2 = playerTwo.name;
-    match.socketsToEmit = [];
-    match.scoreMax = rules.scoreMax;
-    this.setColorMap(match, rules.map);
-    match.generatePowerUp = rules.powerUp;
-    if (match.generatePowerUp)
-      this.setPowerUp(match);
-    else
-      this.setPowerUpToNull(match);
-    match.lastUpdateTime = Date.now();
-    match.hasMessageToDisplay = false;
-    match.messageToDisplay = "";
-    match.playerDisconnected = false;
-    match.usernameDisconnectedPlayer = "";
-    match.timeOfDisconnection = 0;
-    match.finishedGame = false;
-    try {
-      await this.matchesOnGoingRepository.save(match);
-    } catch (error) {
-      throw new Error(error);
-    }
-  }
+	checkTimeoutDisconnectedUser(game: Game) {
+		let timeElapsed = Date.now() - game.disconnect.time;
+		if (timeElapsed > 15000) {
+			if (game.players.p1.name == game.disconnect.username)
+				game.result.username = game.players.p2.name;
+			else
+				game.result.username = game.players.p1.name;
+			game.result.finished = true;
+			game.msg.hasMessageToDisplay = true;
+			game.msg.messageToDisplay = game.result.username + " win!";
+		}
+		game.msg.hasMessageToDisplay = true;
+		game.msg.messageToDisplay = game.disconnect.username + " is deconnected,  " + (15 - Math.round(timeElapsed / 1000)) + " remaining.";
+	}
 
-  async createMatchFromGateway(idPlayerOne: number, idPlayerTwo: number, rules: any, socketUserOne: string, socketUserTwo: string) {
-    let match;
-    let userOne: User;
-    let userTwo: User;
-    try {
-      userOne = await this.usersService.findOne(idPlayerOne);
-      userTwo = await this.usersService.findOne(idPlayerTwo);
-      match = this.matchesOnGoingRepository.create();
-    } catch (error) { return undefined; }
-
-    initStartingPositions(match);
-    match.players.push({
-      username: userOne.name,
-      palletAssigned: 0,
-      socket: socketUserOne,
-    });
-    match.players.push({
-      username: userTwo.name,
-      palletAssigned: 1,
-      socket: socketUserTwo,
-    });
-    match.p1 = userOne.name;
-    match.p2 = userTwo.name;
-    match.socketsToEmit = [];
-    match.scoreMax = rules.scoreMax;
-    this.setColorMap(match, rules.map);
-    match.generatePowerUp = rules.powerUp;
-    if (match.generatePowerUp)
-      this.setPowerUp(match);
-    else
-      this.setPowerUpToNull(match);
-    try {
-      await this.matchesOnGoingRepository.save(match);
-    } catch (error) {
-      return undefined;
-    }
-    return (match);
-  }
-
-  async addPlayerInPendingGame(match: MatchesOnGoing, username: string, socket: string) {
-    match.players.push({
-      username: username,
-      palletAssigned: 1,
-      socket: socket,
-    });
-    match.p2 = username;
-    match.pending = false;
-    try {
-      await this.matchesOnGoingRepository.save(match);
-    } catch (error) {
-      return undefined;
-    }
-    return (match);
-  }
-
-  async deleteFromGateway(game: MatchesOnGoing) {
-    await getConnection()
-          .createQueryBuilder()
-          .delete()
-          .from(MatchesOnGoing)
-          .where("id = :id", { id: game.id})
-          .execute();
-  }
-
-  async deleteGame(gameId: number) {
-    await getConnection()
-          .createQueryBuilder()
-          .delete()
-          .from(MatchesOnGoing)
-          .where("id = :id", { id: gameId})
-          .execute();
-  }
-
-  async updateSocketPlayers(game: MatchesOnGoing, socket: string, playerIndex: number) {
-    game.players[playerIndex - 1].socket = socket;
-    game.hasMessageToDisplay = false;
-    game.playerDisconnected = false;
-    game.usernameDisconnectedPlayer = "";
-    await getConnection()
-          .createQueryBuilder()
-          .update(MatchesOnGoing)
-          .set({
-            players: game.players,
-            hasMessageToDisplay: false,
-            playerDisconnected: false,
-            usernameDisconnectedPlayer: "",
-            messageToDisplay: "",
-          })
-          .where("id = :id", { id: game.id})
-          .execute();
-      return (game);
-    }
-
-  async checkUserAlreadyInGame(username: string, socket: string) {
-    let allGames: MatchesOnGoing[];
-    try {
-      allGames = await this.findAll();
-    } catch (error) {
-      return (undefined);
-    }
-    for (let i = 0; i < allGames.length; i++) {
-      if (allGames[i].players[0].username === username)
-        return (await this.updateSocketPlayers(allGames[i], socket, 0));
-      else if (allGames[i].players.length != 1 && allGames[i].players[1].username === username)
-        return (await this.updateSocketPlayers(allGames[i], socket, 1));
-    }
-    return (undefined);
-  }
-
-  async updatePlayerInvitationGame(idUser: number, socket: string) {
-    let user;
-    try {
-      user = await this.usersService.findOne(idUser);
-    } catch (error) {
-      console.error("ERROR [UPDATE_PLAYER_INVITATION_GAME]: ", error);
-      return (undefined);
-    }
-    let games = await this.findAll();
-    for (let i = 0; i < games.length; i++) {
-      if (games[i].pending || games[i].finishedGame)
-        continue;
-      if (games[i].players[0].username === user.name) {
-        let tmp = games[i].players;
-        tmp[0].socket = socket;
-        await this.matchesOnGoingRepository.update(games[i].id, {...games[i], players: tmp});
-        if (games[i].players[1].socket === "") {
-          return (games[i].id);
-        } else
-          return (games[i]);
-      } else if (games[i].players[1].username === user.name) {
-        let tmp = games[i].players;
-        tmp[1].socket = socket;
-        await this.matchesOnGoingRepository.update(games[i].id, {...games[i], players: tmp});
-        if (games[i].players[0].socket === "") {
-          return (games[i].id);
-        } else
-          return (games[i]);
-      }
-    }
-  }
+	pringGameState(game: Game, msg: string) {
+		console.error(msg);
+		console.error("Id: ", game.id);
+		console.error("Ball: x: ", game.ball.x, ", y: ",  game.ball.y, ", r: ", game.ball.r, ", vX: ", game.ball.vX, ", vY: ", game.ball.vY);
+		console.error("Points: p1: ", game.result.scoreP1, ",  p2: ", game.result.scoreP2);
+		console.error("Msg: has:", game.msg.hasMessageToDisplay, ", msg: " , game.msg.messageToDisplay);
+		console.error("--------------------------------------------------------------------------")
+	}
 }

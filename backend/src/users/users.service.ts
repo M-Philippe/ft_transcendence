@@ -9,8 +9,9 @@ import { CreateUserDto, CreateUSer42Dto, CreateUserLocalDto } from './dto/create
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UsersGateway } from './users.gateway';
+import { MatchesOnGoingGateway } from 'src/matchesOnGoing/matchesOnGoing.gateway';
 import { RelationshipStatus } from 'src/relationships/entities/relationship.entity';
-import { MatchesOnGoingService } from 'src/matchesOngoing/matchesOnGoing.service';
+import { MatchesOnGoingService } from 'src/matchesOnGoing/matchesOnGoing.service';
 import { ChangePasswordDto } from './users.types';
 import { API_USER_AVATAR, FRONT_GENERIC_AVATAR } from 'src/urlConstString';
 import { Not } from 'typeorm'
@@ -34,7 +35,7 @@ export class UsersService {
     private usersRepository: Repository<User>,
     @Inject(forwardRef(() => UsersGateway)) private readonly usersGateway: UsersGateway,
     @Inject(forwardRef(() => RelationshipsService)) private readonly relationshipsService: RelationshipsService,
-    @Inject(forwardRef(() => MatchesOnGoingService)) private readonly matchesOnGoingService: MatchesOnGoingService) {}
+    @Inject(forwardRef(() => MatchesOnGoingGateway)) private readonly matchesOnGoingGateway: MatchesOnGoingGateway) {}
 
   async onApplicationBootstrap() {
     // We create sudo user [id: 0]
@@ -50,7 +51,7 @@ export class UsersService {
   async create(createUserDto: CreateUserDto) {
     const user = this.usersRepository.create(createUserDto);
     user.online = false;
-    user.inGame = -1;
+    user.inGame = false;
     user.listChat = [];
     user.userAlert = {socket: "", alert: []};
     this.createUserAchievements(user);
@@ -90,7 +91,7 @@ export class UsersService {
       listChat: [],
       userAlert: {socket: "", alert: []},
       online: false,
-      inGame: -1
+      inGame: false,
     });
     this.createUserAchievements(user);
     user.password = await encryptPasswordToStoreInDb(undefined, createUserLocalDto.password);
@@ -182,22 +183,6 @@ export class UsersService {
       .execute();
   }
 
-  // async setUserInGame(usernameOne: string, usernameTwo: string) {
-
-  //   await getConnection()
-  //     .createQueryBuilder()
-  //     .update(User)
-  //     .set({
-  //       inGame: 1,
-  //     })
-  //     .where("name = :firstName", { firstName: usernameOne })
-  //     .set({
-  //       inGame: 2,
-  //     })
-  //     .where("name = :secondName", { secondName: usernameTwo })
-  //     .execute();
-  // }
-
   async setUserOfflineAndSocketToNull(idUser: number) {
     let user = await this.findOne(idUser);
     user.userAlert.socket = "";
@@ -280,13 +265,13 @@ export class UsersService {
     }
     if (requester === undefined)
       return (undefined)
-    else if (!requester.online || requester.inGame != -1) {
+    else if (!requester.online || requester.inGame) {
       await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
       return ({
-        message: requester.name + " isn't connected!"/* (requester) online: " + requester.online + " | ingame: " + requester.inGame*/
+        message: requester.name + requester.inGame ? " is in game/queue." : " isn't connected!"/* (requester) online: " + requester.online + " | ingame: " + requester.inGame*/
       });
     }
-    else if (requestee.inGame != -1) {
+    else if (requestee.inGame) {
       return undefined;
     }
     // createMatch with ids and emit to socket to assign new Location.
@@ -301,26 +286,20 @@ export class UsersService {
         //  message: requester.name + " isn't connected! (no socket defined)"
         //});
       }
-      let parsedRules:
-        {powerUp: boolean, scoreMax: number, map: "original" | "desert" | "jungle"}
-        = { powerUp: false, scoreMax: 3, map: "original"};
-      let messageToParse = requestee.userAlert.alert[indexAlert].message;
-      messageToParse.indexOf("(");
-      let rules = messageToParse.substring(messageToParse.indexOf("("));
-      let arrayRules = rules.split("#");
-      parsedRules.scoreMax = parseInt(arrayRules[0].substring(arrayRules[0].indexOf(":") + 1));
-      parsedRules.powerUp
-        = (arrayRules[1].substring(arrayRules[1].indexOf(":") + 1)) === "yes" ? true : false;
-      let mapExtracted = arrayRules[2].substring(arrayRules[2].indexOf(":") + 1, arrayRules[2].length - 1);
-      if (mapExtracted === "original" || mapExtracted === "desert" || mapExtracted === "jungle")
-        parsedRules.map = mapExtracted;
-      try {
-        await this.matchesOnGoingService.createMatchFromInvitation(requester, requestee, parsedRules);
-      } catch (error) {
-        // Send error Message?
-        await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
-        return (undefined);
-      }
+      // let parsedRules:
+      //   {powerUp: boolean, scoreMax: number, map: "original" | "desert" | "jungle"}
+      //   = { powerUp: false, scoreMax: 3, map: "original"};
+      // let messageToParse = requestee.userAlert.alert[indexAlert].message;
+      // messageToParse.indexOf("(");
+      // let rules = messageToParse.substring(messageToParse.indexOf("("));
+      // let arrayRules = rules.split("#");
+      // parsedRules.scoreMax = parseInt(arrayRules[0].substring(arrayRules[0].indexOf(":") + 1));
+      // parsedRules.powerUp
+      //   = (arrayRules[1].substring(arrayRules[1].indexOf(":") + 1)) === "yes" ? true : false;
+      // let mapExtracted = arrayRules[2].substring(arrayRules[2].indexOf(":") + 1, arrayRules[2].length - 1);
+      // if (mapExtracted === "original" || mapExtracted === "desert" || mapExtracted === "jungle")
+      //   parsedRules.map = mapExtracted;
+      this.matchesOnGoingGateway.createMatchFromInvitation(requester.id, requestee.id, requestee.userAlert.alert[indexAlert].message);
       await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
       return ({redirection: true});
     }
@@ -363,6 +342,7 @@ export class UsersService {
       return;
     if (userOne.userAlert.socket === "" || userTwo.userAlert.socket === "")
       return;
+    console.error("REDIRECTION_TO_BOARD");
     this.usersGateway.contactUsers(userOne.userAlert.socket, userTwo.userAlert.socket, "redirectionToBoard");
   }
 
@@ -508,7 +488,7 @@ export class UsersService {
           .getOne();
     if (user !== null && user !== undefined) {
       user.online = true;
-      user.inGame = -1;
+      user.inGame = false;
       user.userAlert = {socket: "", alert: []};
       try {
         user = await this.usersRepository.save(user);
@@ -526,7 +506,7 @@ export class UsersService {
     try {
       user = this.usersRepository.create(userToCreate);
       user.online = true;
-      user.inGame = -1;
+      user.inGame = false;
       this.createUserAchievements(user);
       user = await this.usersRepository.save(user);
     } catch (error) {
@@ -684,12 +664,12 @@ export class UsersService {
     return this.findOne(id);
   }
 
-  async setInGame(username: string, value: number) {
+  async setInGame(username: string, value: boolean) {
     await getConnection()
     .createQueryBuilder()
     .update(User)
     .set({
-      inGame: value
+      inGame: true,
     })
     .where("name = :name", {name: username})
     .execute();
@@ -700,7 +680,7 @@ export class UsersService {
     .createQueryBuilder()
     .update(User)
     .set({
-      inGame: -1,
+      inGame: false,
     })
     .where("name = :name", {name: username})
     .execute();

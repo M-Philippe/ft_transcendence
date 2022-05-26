@@ -44,31 +44,31 @@ function Board(props: BoardProps) {
 			<Navigate replace to="/ranking" />
 		);
 
-	const moveRacket = (event: React.KeyboardEvent<HTMLCanvasElement>) => {
-    if (event.key === "ArrowDown") {
-			props.socket.emit("movePallet", {
-				username: props.user.username,
-				direction: "down",
-				palletAssigned: palletAssigned,
-			});
-			if (palletAssigned === 0)
-				coordinates.palletAY += coordinates.speedPalet / 2;
-			else if (palletAssigned === 1)
-				coordinates.palletBY += coordinates.speedPalet / 2;
-			setCoordinates(coordinates);
-		} else if (event.key === "ArrowUp") {
-			props.socket.emit("movePallet", {
-				username: props.user.username,
-				direction: "up",
-				palletAssigned: palletAssigned,
-			});
-			if (palletAssigned === 0)
-				coordinates.palletAY -= coordinates.speedPalet / 2;
-			else if (palletAssigned === 1)
-				coordinates.palletBY -= coordinates.speedPalet / 2;
-			setCoordinates(coordinates);
-		}
-	}
+	// const moveRacket = (event: React.KeyboardEvent<HTMLCanvasElement>) => {
+    // if (event.key === "ArrowDown") {
+	// 		props.socket.emit("movePallet", {
+	// 			username: props.user.username,
+	// 			direction: "down",
+	// 			palletAssigned: palletAssigned,
+	// 		});
+	// 		if (palletAssigned === 0)
+	// 			coordinates.palletAY += coordinates.speedPalet / 2;
+	// 		else if (palletAssigned === 1)
+	// 			coordinates.palletBY += coordinates.speedPalet / 2;
+	// 		setCoordinates(coordinates);
+	// 	} else if (event.key === "ArrowUp") {
+	// 		props.socket.emit("movePallet", {
+	// 			username: props.user.username,
+	// 			direction: "up",
+	// 			palletAssigned: palletAssigned,
+	// 		});
+	// 		if (palletAssigned === 0)
+	// 			coordinates.palletAY -= coordinates.speedPalet / 2;
+	// 		else if (palletAssigned === 1)
+	// 			coordinates.palletBY -= coordinates.speedPalet / 2;
+	// 		setCoordinates(coordinates);
+	// 	}
+	// }
 
 	//const keyDown = (event: KeyboardEvent) => {
 	const keyDown = (event: React.KeyboardEvent<HTMLCanvasElement>) => {
