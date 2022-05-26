@@ -1,4 +1,4 @@
-import { ListGame, IQueue,  GameMap, Game, Ball, Player, Coord, Mvts, PowerUp, Results, Disconnesction, Const, Message} from "./matchesOngoing.interfaces";
+import { ListGame, IQueue,  GameMap, Game, Ball, Player, Coord, Mvts, PowerUp, Results, Disconnesction, Const, Message} from "./matchesOnGoing.interfaces";
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { MatchesOnGoingService } from "./matchesOnGoing.service";
@@ -13,7 +13,7 @@ import { User } from "src/users/entities/user.entity";
 import { getConnection} from "typeorm";
 
 
-const FPS = 70;
+const FPS = 60;
 
 const queue = new Map<number /* timestamp */, IQueue>();
 
@@ -47,8 +47,9 @@ export class MatchesOnGoingGateway {
     } catch (error) { return; }
     for (let entries of queue.entries()) {
       if (entries[1].id === idUser) {
-		this.printQueue();
+        this.usersService.setNotInGame(entries[1].name);
         queue.delete(entries[0]);
+		    // this.printQueue();
         return;
       }
     }
@@ -58,6 +59,7 @@ export class MatchesOnGoingGateway {
     for (let value of queue.values()) {
     	if (value.id === idUser) {
 			this.server.to(socket).emit("alreadyCreatedMatch", { idGame: -1 });
+      // console.error("Already in Queue");
 			return true;
 		}
 	}
@@ -114,6 +116,7 @@ export class MatchesOnGoingGateway {
     for (let entries of queue.entries()) {
       console.error(entries[0], " | ", entries[1]);
     }
+    console.error("\t===================");
   }
 
   /*				Sockets				*/
@@ -151,7 +154,7 @@ export class MatchesOnGoingGateway {
       speedPallet: SPEED_PALET_FRONT,
       puckX: game.ball.x,
       puckY: game.ball.y,
-      puckL: game.ball.r,
+      puckR: game.ball.r,
       width: game.const.width,
       height: game.const.height,
       scoreA: game.result.scoreP1,
@@ -168,7 +171,7 @@ export class MatchesOnGoingGateway {
       powerUpState: game.powerUp.State,
       powerUpGenerate: game.powerUp.generate,
     };
-  console.error("Ball: ", game.ball.x, " - " , game.ball.y, " - ", game.ball.r);
+  // console.error("Ball: ", game.ball.x, " - " , game.ball.y, " - ", game.ball.r);
 	this.server.to(game.players.p1.socket).emit("updatePositions", {
         positions: tmp,
 		id: idGame,
@@ -186,7 +189,8 @@ export class MatchesOnGoingGateway {
     });
   }
 
-  async sendEndGameToSockets(id: number) {
+  sendEndGameToSockets(id: number) {
+	this.sendToAllSockets(this.games[id], id);
 	this.server.to(this.games[id].players.p1.socket).emit("endGame");
 	this.server.to(this.games[id].players.p2.socket).emit("endGame");
     for (let i = 0; i < this.games[i].socketToEmit.length; i++)
@@ -206,7 +210,6 @@ export class MatchesOnGoingGateway {
   @UseGuards(JwtGatewayGuard)
   @SubscribeMessage("userReadyToPlay")
   async userReadyToPlay(@ConnectedSocket() socket: Socket) {
-    console.error("userReadyToPlay");
     if (socket.handshake.headers.cookie === undefined)
       return;
     let jwt = extractJwtFromCookie(socket.handshake.headers.cookie);
@@ -229,17 +232,21 @@ export class MatchesOnGoingGateway {
       this.server.to(socket.id).emit("disconnectManual");
       return;
     }
-    if (this.games[idx].players.p1.id === usr.id)
+    this.server.to(socket.id).emit("idGame", {
+      idGame: idx
+    });
+    this.usersService.setInGame(usr.name, true);
+    // console.error(usr.name, " ready to play");
+    if (this.games[idx].players.p1.id === usr.id) {
       this.games[idx].players.p1 = this.matches.initPlayer(usr.id, usr.name, socket.id, 1);
-    if (this.games[idx].players.p2.id === usr.id)
+      if (this.games[idx].players.p2.socket !== "")
+        this.gameLoop(this.games[idx]);
+    } else if (this.games[idx].players.p2.id === usr.id) {
       this.games[idx].players.p2 = this.matches.initPlayer(usr.id, usr.name, socket.id, 2);
-      this.server.to(socket.id).emit("idGame", {
-        idGame: idx
-      });
-      this.usersService.setInGame(this.games[idx].players.p1.name, 1);
-      this.usersService.setInGame(this.games[idx].players.p1.name, 2);
-      this.gameLoop(this.games[idx]);
-      return;
+      if (this.games[idx].players.p1.socket !== "")
+        this.gameLoop(this.games[idx]);
+    }
+    return;
   }
 
   /*    Game Search       */
@@ -275,12 +282,12 @@ export class MatchesOnGoingGateway {
   /*			Matchmaking			*/
 
   createMatchFromInvitation(playerOne: number, playerTwo: number, rules: string) {
-    this.createGame(playerOne, "", "", playerTwo, "", "", rules);
+    this.createGame(playerOne, "", "", playerTwo, "", "", rules, true);
   }
 
   alreadyAMatch(usr: User, socket: string) {
     let id = this.findGameById(usr.id);
-    if (id != -1) {
+    if (id != -1 && this.games[id].inUse) {
 			if (this.games[id].players.p1.id === usr.id)
 				this.games[id].players.p1.socket = socket;
 			else
@@ -289,6 +296,7 @@ export class MatchesOnGoingGateway {
 			this.games[id].msg.messageToDisplay = "";
 			this.games[id].disconnect.username = "";
 			this.server.to(socket).emit("alreadyCreatedMatch", { idGame: id});
+      // console.error(usr.name, " already have a match, id: ", id);
 			return true;
 		}
     return false;
@@ -312,11 +320,12 @@ export class MatchesOnGoingGateway {
       return;
     }
   	const user = await this.usersService.findOne(idUser);
-  	await this.usersService.setInGame(data.username, 0);
+  	await this.usersService.setInGame(data.username, true);
   	let rulesConcat = this.assembleRulesString(data);
   	if (!this.alreadyAMatch(user, socket.id) && !this.checkUserAlreadyInQueue(idUser, socket.id)) {
   		let similar: {response: boolean, playerOneId: number, playerTwoId: number, socketUserOne: string, playerOneName: string, rules: string};
   		if ((similar = this.checkSimilarGame(idUser, rulesConcat)).response) {
+        // console.error(user.name,  " find ", similar.playerOneName, " waiting in the queue.");
 			  this.createGame(
 				  similar.playerOneId,
 				  similar.playerOneName,
@@ -325,9 +334,11 @@ export class MatchesOnGoingGateway {
 				  user.name,
 				  socket.id,
 				  similar.rules,
+          false,
 			  )
 		} else {
 			queue.set(Date.now(), { id: idUser, name: user.name, rules: rulesConcat, socket: socket.id })
+      // console.error(user.name, " is waiting in the queue.");
 		}
 	}
   }
@@ -351,8 +362,10 @@ export class MatchesOnGoingGateway {
           this.usersService.setNotInGame(this.games[idG].players.p1.name);
           this.usersService.setNotInGame(this.games[idG].players.p2.name);
           this.games[idG].inUse = false;
+          // console.error(this.games[idG].players.p1.name, " and ", this.games[idG].players.p2.name,  " are disconnected, end game.");
         }
         else {
+          // console.error(usr.name, " quit the game.");
           this.games[idG].disconnect.username = usr.name;
           this.games[idG].disconnect.time = Date.now();
         }
@@ -367,15 +380,15 @@ export class MatchesOnGoingGateway {
   @MessageBody() data: any,
   @ConnectedSocket() client: Socket) {
     for (let i = 0; i < this.count; ++i) {
-      if (this.games[i].players.p1.name == data.username) {
-        if (data.direction == "up")
+      if (this.games[i].players.p1.name === data.username) {
+        if (data.direction === "up")
           this.games[i].players.p1.moves.up = true;
-        if (data.direction == "down")
+        if (data.direction === "down")
           this.games[i].players.p1.moves.down = true;
-      } else if (this.games[i].players.p2.name == data.username) {
-        if (data.direction == "up")
+      } else if (this.games[i].players.p2.name === data.username) {
+        if (data.direction === "up")
           this.games[i].players.p2.moves.up = true;
-        if (data.direction == "down")
+        if (data.direction === "down")
           this.games[i].players.p2.moves.down = true;
       }
     }
@@ -386,15 +399,15 @@ export class MatchesOnGoingGateway {
   @MessageBody() data: any,
   @ConnectedSocket() client: Socket) {
     for (let i = 0; i < this.count; ++i) {
-      if (this.games[i].players.p1.name == data.username) {
-        if (data.direction == "up")
+      if (this.games[i].players.p1.name === data.username) {
+        if (data.direction === "up")
           this.games[i].players.p1.moves.up = false;
-        if (data.direction == "down")
+        if (data.direction === "down")
           this.games[i].players.p1.moves.down = false;
-      } else if (this.games[i].players.p2.name == data.username) {
-        if (data.direction == "up")
+      } else if (this.games[i].players.p2.name === data.username) {
+        if (data.direction === "up")
           this.games[i].players.p2.moves.up = false;
-          if (data.direction == "down")
+          if (data.direction === "down")
           this.games[i].players.p2.moves.down = false;
       }
     }
@@ -402,13 +415,14 @@ export class MatchesOnGoingGateway {
 
   /*			Game Mangement			*/
 
-  createGame(lId: number, lName: string, lSocket: string, rId: number, rName: string, rSocket: string, rules: string) {
+  createGame(lId: number, lName: string, lSocket: string, rId: number, rName: string, rSocket: string, rules: string, invitation: boolean) {
 	let rule = this.disassembleRulesString(rules);
 	for (let i = 0; i < this.count; ++i) {
 		if (!this.games[i].inUse) {
+      this.games[i].inUse = true;
 			this.games[i].id = i;
 			this.games[i].socketToEmit = new Array<string>;
-			this.games[i].ball = this.matches.initBall();
+			this.games[i].ball = this.matches.initBall(true);
 			this.games[i].const = this.matches.initConst(rule.scoreMax, rule.map);
 			this.games[i].disconnect = this.matches.initDisconnection();
 			this.games[i].msg = this.matches.initMessage();
@@ -416,14 +430,16 @@ export class MatchesOnGoingGateway {
 			this.games[i].result = this.matches.initResults();
 			this.games[i].players.p1 = this.matches.initPlayer(lId, lName, lSocket, 1);
 			this.games[i].players.p2 = this.matches.initPlayer(rId, rName, rSocket, 2);
-			this.gameLoop(this.games[i]);
+      // console.error("Start game with an existent one, id: ", i, "(", lName, ",", rName, ")");
+      if (!invitation)
+        this.gameLoop(this.games[i]);
 			return;
 		}
 	}
   this.games[this.count] = {
     inUse: true,
     id: this.count,
-    ball : this.matches.initBall(),
+    ball : this.matches.initBall(true),
     players: {
       p1: this.matches.initPlayer(lId, lName, lSocket, 1),
       p2: this.matches.initPlayer(rId, rName, rSocket, 2),
@@ -436,23 +452,30 @@ export class MatchesOnGoingGateway {
     socketToEmit: new Array<string>,
   }
 	++this.count;
-  console.error("New Game: ", this.count - 1);
-	this.gameLoop(this.games[this.count - 1]);
+  // console.error("New Game, id: ", this.count - 1, "(", lName, ",", rName, ")");
+	if (!invitation)
+    this.gameLoop(this.games[this.count - 1]);
   }
 
   gameLoop(game: Game) {
 	this.sendToAllSockets(game, game.id);
+  // console.error(game.players.p1.name, ", ", game.players.p2.name, " start playing.");
 	let pid: NodeJS.Timer;
+  let sendGame: boolean = false;
+  /* For fps at the end of the game */ let cons: boolean = false; let total_ms: number = 0; let loop_count: number = 0; let ms: number = Date.now();
 	pid = setInterval(async () => {
-		this.matches.gameAlgo(game);
+		total_ms += Date.now() - ms; ms = Date.now(); ++loop_count;
+    this.matches.gameAlgo(game);
     if (game.inUse === false) {
       clearInterval(pid);
+      console.error("Game close because not in use, id: ", game.id, "(", game.players.p1.name, ",", game.players.p2.name, ")");
       return;
     }
 		if (game.disconnect.username !== "")
 			this.matches.checkTimeoutDisconnectedUser(game);
-		if (game.result.finished) {
+		if (!sendGame && game.result.finished) {
 			clearInterval(pid);
+      sendGame = true;
 			let toSend = new CreateMatchDto;
 			toSend.player1 = game.players.p1.name;
 			toSend.player2 = game.players.p2.name;
@@ -468,6 +491,7 @@ export class MatchesOnGoingGateway {
 			await this.usersService.setNotInGame(game.players.p1.name);
 			await this.usersService.setNotInGame(game.players.p2.name);
 			game.inUse = false;
+      /* For fps at the end of the game */ if (!cons) {console.error("End Game: ", 1000 / (total_ms / loop_count), " fps."); cons = true;}
 			return;
 		}
 		this.sendToAllSockets(game, game.id);

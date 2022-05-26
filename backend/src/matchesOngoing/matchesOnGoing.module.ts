@@ -9,15 +9,16 @@ import { JwtGuardsModule } from "src/guards/guards.module";
 import { JwtAuthModule } from "src/auth/jwt/jwt-auth.module";
 import { UsersModule } from "src/users/users.module";
 import { User } from "src/users/entities/user.entity";
-import { Matches } from "class-validator";
+import { Match } from "src/matches/entities/match.entity";
+// import { Matches } from "class-validator";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Matches, User]),
+  imports: [TypeOrmModule.forFeature([Match, User]),
     forwardRef(() => MatchesModule),
     forwardRef(() => JwtGuardsModule),
     forwardRef(() => JwtAuthModule),
     forwardRef(() => UsersModule)],
   providers: [MatchesOnGoingGateway, MatchesOnGoingService],
-  exports: [MatchesOnGoingService]
+  exports: [MatchesOnGoingService, MatchesModule, MatchesOnGoingGateway]
 })
 export class MatchesOnGoingModule {}

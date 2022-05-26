@@ -1,4 +1,4 @@
-import { Game, Ball, Player, Coord, PowerUp } from "./matchesOngoing.interfaces";
+import { Game, Ball, Player, Coord, PowerUp } from "./matchesOnGoing.interfaces";
 import { Injectable } from "@nestjs/common";
 import {
   BOARD_HEIGHT,
@@ -60,13 +60,13 @@ export class MatchesOnGoingService {
 		}
 	}
 
-	initBall() {
+	initBall(side: boolean) {
 		return {
 			x: START_PUCKX,
 			y: START_PUCKY,
 			r: START_PUCK_R,
-			vX: (Math.random() * (100 - 1) + 1) % 2 === 0 ? START_PUCK_VEL : START_PUCK_VEL,
-			vY: (Math.round(Math.random() * (100 - 1) + 1) * ((Math.random() * (100 -1) + 1) % 2 == 0 ? -1 : 1) / 100),
+			vX: side ? -START_PUCK_VEL : START_PUCK_VEL,
+			vY: ((Math.random() *  (100 - 1) + 1) * START_MAX_VEL_Y / 100) * (Math.random() *  (100 - 1) + 1) % 2 === 0 ? 1 : -1,
 		}
 	}
 
@@ -151,7 +151,7 @@ export class MatchesOnGoingService {
 
 	/*			Collisions			*/
 
-	checkCollision(x: number, y: number, l: number, puck: Ball) {
+	checkCollisionPo(x: number, y: number, l: number, puck: Ball) {
 		let collision: boolean = false;
 		let aN = new Point(puck.x, puck.y - puck.r);
 		let aS = new Point(puck.x, puck.y + puck.r);
@@ -175,12 +175,26 @@ export class MatchesOnGoingService {
 		return collision;
 	}
 
-	checkCollisionPowerUp(powerUp: PowerUp, puck: Ball) {
-		return this.checkCollision(powerUp.x, powerUp.y, powerUp.l, puck);
+	checkCollisionPa(x1: number, y1: number, x2: number, y2: number, puck: Ball) {
+		let collision: boolean = false;
+		let aN = new Point(puck.x, puck.y - puck.r);
+		let aS = new Point(puck.x, puck.y + puck.r);
+		let nN = new Point(puck.x + puck.vX, puck.y + puck.vY - puck.r);
+		let nS = new Point(puck.x + puck.vX, puck.y + puck.vY + puck.r);
+		let p1 = new Point(x1, y1);
+		let p2 = new Point(x2, y2);
+		collision = this.doIntersect(aN, nN, p1, p2);
+		if (!collision)
+			collision = this.doIntersect(aS, nS, p1, p2);
+		return collision;
 	}
 
-	checkCollisionPallet(player: Player, puck: Ball) {
-		return this.checkCollision(player.coord.x, player.coord.y, player.coord.h, puck);
+	checkCollisionPowerUp(powerUp: PowerUp, puck: Ball) {
+		return this.checkCollisionPo(powerUp.x, powerUp.y, powerUp.l, puck);
+	}
+
+	checkCollisionPallet(player: Player, puck: Ball, w: number) {
+		return this.checkCollisionPa(player.coord.x + w, player.coord.y, player.coord.x + w, player.coord.y + player.coord.h, puck);
 	}
 
 	/*			PowerUp			*/
@@ -196,8 +210,9 @@ export class MatchesOnGoingService {
 	/*			GAME			*/
 
 	roof(game: Game) {
-		if (game.ball.y - game.ball.r + game.ball.vY <= 0 || game.ball.y + game.ball.r + game.ball.vY >= game.const.height) {
-			game.ball.y = game.ball.vY <= 0 ? Math.abs(game.ball.vY) - game.ball.y : (game.const.height * 2) - game.ball.vY - game.ball.y;
+		if (game.ball.y + game.ball.vY <= 0 || game.ball.y + game.ball.vY >= game.const.height) {
+			// console.error("ROOF");
+			game.ball.y = game.ball.vY <= 0 ? 0 + game.ball.r  + 1 : game.const.height - game.ball.r - 1;
 			game.ball.vY *= -1;
 			return true;
 		}
@@ -206,10 +221,9 @@ export class MatchesOnGoingService {
 
 	goal(game: Game) {
 		if (game.ball.x + game.ball.vX <= 0 || game.ball.x + game.ball.vX >= game.const.width) {
+			// console.error("GOAL");
 			game.ball.vX > 0 ? ++game.result.scoreP1 : ++game.result.scoreP2;
 			if (game.result.scoreP1 === game.const.scoreMax || game.result.scoreP2 === game.const.scoreMax) {
-				game.result.finished = true;
-				game.msg.hasMessageToDisplay = true;
 				if (game.result.scoreP1 === game.const.scoreMax) {
 					game.result.username = game.players.p1.name;
 					game.msg.messageToDisplay = game.players.p1.name + " is the Winner!";
@@ -217,8 +231,10 @@ export class MatchesOnGoingService {
 					game.result.username = game.players.p2.name;
 					game.msg.messageToDisplay = game.players.p2.name + " is the Winner!";
 				}
+				game.msg.hasMessageToDisplay = true;
+				game.result.finished = true;
 			} else {
-				game.ball = this.initBall();
+				game.ball = this.initBall(game.ball.vX > 0 ? false : true);
 				game.powerUp = this.initPowerUp(game.powerUp.generate);
 				game.players.p1.coord = this.initPallet(1);
 				game.players.p2.coord = this.initPallet(2);
@@ -231,11 +247,11 @@ export class MatchesOnGoingService {
 	/*			Pallet			*/
 	collisionLeftPallet(pallet: Coord, puck: Ball)
 	{
-
+	//   console.error("LEFT PALLET");
 	  let middlePallet = pallet.h;
 	  middlePallet = middlePallet / 2 + pallet.y;
 	  let absPuckVX = Math.abs(puck.vX);
-	  let restDistX = puck.x - pallet.x - pallet.h;                  // dist x remaining
+	  let restDistX = puck.x - puck.r - pallet.x - START_PALLET_WIDTH;                  // dist x remaining
 	  let coefY = Math.round(restDistX * 100 / absPuckVX);                              // % dist y remaining
 	  let restDistY = coefY * puck.vY / 100;
 	  let impactAt = puck.y + (puck.r / 2);
@@ -252,10 +268,11 @@ export class MatchesOnGoingService {
 
 	collisionRightPallet(pallet: Coord, puck: Ball)
 	{
+	//   console.error("RIGHT PALLET");
 	  let middlePallet = pallet.h;
 	  middlePallet = middlePallet / 2 + pallet.y;
 	  let absPuckVX = Math.abs(puck.vX);
-	  let restDistX = pallet.x - puck.x;                                      // dist x remaining
+	  let restDistX = pallet.x - puck.x - puck.r;                                      // dist x remaining
 	  let coefY = Math.round(restDistX * 100 / absPuckVX);                              // % dist y remaining
 	  let restDistY = coefY * puck.vY / 100;
 	  let impactAt = puck.y + (puck.r / 2);
@@ -271,10 +288,18 @@ export class MatchesOnGoingService {
 	}
 
 	collisionPallet(game: Game) {
-		if (game.ball.vX > 0 && this.checkCollisionPallet(game.players.p2, game.ball))
-			return this.collisionRightPallet(game.players.p2.coord, game.ball)
-		else if (this.checkCollisionPallet(game.players.p1, game.ball))
-			return this.collisionRightPallet(game.players.p1.coord, game.ball)
+		if (game.ball.vX > 0) {
+			if (this.checkCollisionPallet(game.players.p2, game.ball, game.const.palletWidth))
+				return this.collisionRightPallet(game.players.p2.coord, game.ball)
+		} else if (this.checkCollisionPallet(game.players.p1, game.ball, game.const.palletWidth))
+			return this.collisionLeftPallet(game.players.p1.coord, game.ball)
+
+		if (game.ball.vY > 0) {
+			if (this.checkCollisionPa(game.players.p2.coord.x, game.players.p2.coord.y, game.players.p2.coord.x + game.const.palletWidth, game.players.p2.coord.y, game.ball))
+				game.ball.vY *= -1;
+		} else if (this.checkCollisionPa(game.players.p1.coord.x, game.players.p1.coord.y + game.players.p1.coord.h, game.players.p1.coord.x + game.const.palletWidth, game.players.p1.coord.y + game.players.p1.coord.h, game.ball)) {
+				game.ball.vY *= -1;
+		}
 		return false;
 	}
 
@@ -302,6 +327,7 @@ export class MatchesOnGoingService {
 			game.ball.x += game.ball.vX;
 			game.ball.y += game.ball.vY;
 		}
+		// this.pringGameState(game, "-- Algo --");
 		return game;
 	}
 
@@ -318,5 +344,14 @@ export class MatchesOnGoingService {
 		}
 		game.msg.hasMessageToDisplay = true;
 		game.msg.messageToDisplay = game.disconnect.username + " is deconnected,  " + (15 - Math.round(timeElapsed / 1000)) + " remaining.";
+	}
+
+	pringGameState(game: Game, msg: string) {
+		console.error(msg);
+		console.error("Id: ", game.id);
+		console.error("Ball: x: ", game.ball.x, ", y: ",  game.ball.y, ", r: ", game.ball.r, ", vX: ", game.ball.vX, ", vY: ", game.ball.vY);
+		console.error("Points: p1: ", game.result.scoreP1, ",  p2: ", game.result.scoreP2);
+		console.error("Msg: has:", game.msg.hasMessageToDisplay, ", msg: " , game.msg.messageToDisplay);
+		console.error("--------------------------------------------------------------------------")
 	}
 }

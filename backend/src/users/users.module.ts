@@ -7,7 +7,7 @@ import { Relationship } from 'src/relationships/entities/relationship.entity';
 import { JwtAuthModule } from 'src/auth/jwt/jwt-auth.module';
 import { UsersGateway } from './users.gateway';
 import { RelationshipsModule } from 'src/relationships/relationships.module';
-import { MatchesOnGoingModule } from 'src/matchesOngoing/matchesOnGoing.module';
+import { MatchesOnGoingModule } from 'src/matchesOnGoing/matchesOnGoing.module';
 
 
 @Module({

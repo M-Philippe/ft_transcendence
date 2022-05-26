@@ -36,6 +36,14 @@ export interface BoardPositions {
   powerUpGenerate: boolean;
 }
 
+function drawCircle(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, color: string) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2, false);
+  ctx.closePath();
+  ctx.fill();
+}
+
 export function draw(ctx: CanvasRenderingContext2D | null, coordinates: BoardPositions) {
   if (ctx == null)
     return;
@@ -45,10 +53,17 @@ export function draw(ctx: CanvasRenderingContext2D | null, coordinates: BoardPos
   ctx.fillRect(coordinates.palletAX, coordinates.palletAY, coordinates.palletL, coordinates.palletAHeight);
   ctx.fillRect(coordinates.palletBX, coordinates.palletBY, coordinates.palletL, coordinates.palletBHeight);
   // puck
-  // if (!(coordinates.powerUpGenerate && coordinates.powerUpState && coordinates.powerUpInvisible))
-    ctx.arc(coordinates.puckX, coordinates.puckY, coordinates.puckR, 0, Math.PI * 2, false);
+  if (!(coordinates.powerUpGenerate && coordinates.powerUpState && coordinates.powerUpInvisible)) {
+    drawCircle(ctx, coordinates.puckX, coordinates.puckY, coordinates.puckR, coordinates.objectColor);
+    console.error("Puck: x: ", coordinates.puckX, " y: ", coordinates.puckY, " r: ", coordinates.puckR, " pi: ", Math.PI);
+  }
   // middle line
   ctx.fillRect(coordinates.width / 2, 0, 1, coordinates.height);
+
+  // Text
+  ctx.font = "30px Arial";
+  ctx.fillText(coordinates.scoreA.toString(), 30, 30);
+  ctx.fillText(coordinates.scoreB.toString(), coordinates.width - 30, 30);
   // PowerUpFilling
   if (coordinates.powerUpGenerate) {
     if (coordinates.powerUpState) {
@@ -64,10 +79,6 @@ export function draw(ctx: CanvasRenderingContext2D | null, coordinates: BoardPos
       }
     }
   }
-  // Text
-  ctx.font = "30px Arial";
-  ctx.fillText(coordinates.scoreA.toString(), 30, 30);
-  ctx.fillText(coordinates.scoreB.toString(), coordinates.width - 30, 30);
   if (coordinates.hasMessageToDisplay) {
     ctx.fillStyle = "green";
     ctx.textAlign = "center";
