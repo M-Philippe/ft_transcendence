@@ -17,12 +17,6 @@ import { queueScheduler } from "rxjs";
 import { RelationshipsService } from "src/relationships/relationships.service";
 import { RelationshipStatus } from "src/relationships/entities/relationship.entity";
 
-function getTimestamp() : string {
-  let time = new Date();
-  let timeString = time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds();
-  return (timeString);
-}
-
 @Injectable()
 export class ChatService {
   constructor(
@@ -32,6 +26,12 @@ export class ChatService {
     @Inject(forwardRef(() => ChatGateway)) private readonly chatGateway: ChatGateway,
     @Inject(forwardRef(() => RelationshipsService)) private readonly relationshipsService: RelationshipsService
   ) {}
+
+  getTimestamp() : string {
+    let time = new Date();
+    let timeString = time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds();
+    return (timeString);
+  }
 
   async onApplicationBootstrap() {
     // We create global [id: 0]
@@ -43,7 +43,7 @@ export class ChatService {
     chat.usernames = [];
     chat.usernames.push("Admin");
     chat.timeMessages = [];
-    chat.timeMessages.push(getTimestamp());
+    chat.timeMessages.push(this.getTimestamp());
     chat.messages = [];
     chat.messages.push("Chat was created");
     chat.usersInChat = [];
@@ -80,7 +80,7 @@ export class ChatService {
   }
 
   async addMessageInArray(chat: Chat, username: string, message: string) {
-    chat.timeMessages.push(getTimestamp());
+    chat.timeMessages.push(this.getTimestamp());
     chat.messages.push(message);
     chat.usernames.push(username);
     return (chat);
@@ -343,12 +343,13 @@ export class ChatService {
     transitionChat = banishedUser.listChat[count];
     while (count < banishedUser.listChat.length && isUserBanned(transitionChat.bannedUsers, banishedUser.id))
       transitionChat = banishedUser.listChat[++count];
+    console.error("How much count: ", count);
     // get globalChatf if no chat availaible.
     let socketToEmit: string = "";
     if (count >= banishedUser.listChat.length) {
       transitionChat = await this.findOne(1);
       transitionChat.messages = ["You're not allowed here"];
-      transitionChat.timeMessages = [getTimestamp()]
+      transitionChat.timeMessages = [this.getTimestamp()]
       transitionChat.usernames = ["Admin"];
     }
     socketToEmit = transitionChat.usersInfos[getIndexUser(transitionChat.usersInfos, banishedUser.id)].socket;
@@ -415,7 +416,7 @@ export class ChatService {
       if (transitionChat === undefined)
         return ("Error intern.");
       transitionChat.messages = ["You're not allowed here"];
-      transitionChat.timeMessages = [getTimestamp()]
+      transitionChat.timeMessages = [this.getTimestamp()]
       transitionChat.usernames = ["Admin"];
     }
     socketToEmit = chat.usersInfos[getIndexUser(chat.usersInfos, banishedUser.id)].socket;
@@ -592,7 +593,7 @@ export class ChatService {
     if (globalChat === undefined)
       return undefined;
     if (isUserPresent(globalChat.usersInfos, user.id)) {
-      globalChat.usersInChat.push(user);
+      globalChat.usersInChat.push(user); // push userEntity.
       if (user.id === 1 && user.name === "Admin" && globalChat.owners.indexOf(1) < 0) {
         globalChat.owners.push(1);
         globalChat.admins.push(1);
@@ -894,7 +895,7 @@ export class ChatService {
     } catch (error) {
       throw new Error("Can't find user: " + error.message);
     }
-    let timestamp = getTimestamp();
+    let timestamp = this.getTimestamp();
     const chat = this.chatRepository.create();
     chat.roomName = user.name + timestamp;
     chat.usernames = [user.name];
