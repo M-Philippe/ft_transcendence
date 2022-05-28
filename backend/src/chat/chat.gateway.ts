@@ -126,8 +126,6 @@ export class ChatGateway {
           });
           await this.sendToAllSocketsIntoChat(response.chat);
         }, timer * 1000);
-      console.error("Old_Id_Chat: ", idChat);
-      console.error("Transition_Id_Chat: ", response.transitionChat);
       this.server.to(response.socket).emit("removeChat", {
         oldIdChat: idChat === 1 ? -1 : idChat,
         newMessages: response.transitionChat.usernames,
@@ -774,9 +772,9 @@ export class ChatGateway {
       usernames: chat.usernames,
       timeMessages: chat.timeMessages
     });
-    socket.emit("newChat", {
-      newChatId: chat.id,
-    });
+    //socket.emit("newChat", {
+    //  newChatId: chat.id,
+    //});
   }
 
   /*

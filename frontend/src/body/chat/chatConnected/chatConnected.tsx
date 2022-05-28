@@ -67,7 +67,7 @@ function reducer (state: State, action: Action): State {
       if (action.chatFocusId !== undefined)
         return {...state, chatFocusId: action.chatFocusId, refresh: true};
       return state;
-    case "FRESH_FALSE":
+    case "REFRESH_FALSE":
       return {...state, refresh: false};
     case "UPDATE_BUTTONS_GREEN":
       if (action.lstButtonsGreen)
@@ -82,8 +82,8 @@ function reducer (state: State, action: Action): State {
       if (action.lstId === undefined || action.messages === undefined
         || action.timeMessages === undefined || action.usernames === undefined
         || action.chatFocusId === undefined || action.lstButtonsGreen === undefined)
-{console.error("SOMETHING IS UNDEFINED: ", action);        return state;
-}      return {
+        return state;
+      return {
         ...state,
         lstId: action.lstId,
         messages: action.messages,
@@ -222,10 +222,11 @@ export function ChatConnected(props: PropsChatConnected) {
     if (!state.load) {
       //props.socket.emit("getListChat");
       props.socket.emit("fetchMessages", {chatId: 1, username: props.name});
+      dispatch({type: "CHANGE_LIST_ID_LOAD", load: true, lstId: [1]});
     }
     if (state.refresh) {
       props.socket.emit("fetchMessages", {chatId: state.chatFocusId + 1, username: props.name});
-      dispatch({type: "FRESH_FALSE"});
+      dispatch({type: "REFRESH_FALSE"});
     }
   }, [state, url, props.socket, props.name]);
 

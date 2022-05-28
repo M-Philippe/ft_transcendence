@@ -19,7 +19,6 @@ export function SocketHandler(props: ISocketHandler) {
       withCredentials: true,
       reconnection: false,
     });
-    socket.connect();
 
     socket.on("connect", () => {
       props.setSocket(socket);
