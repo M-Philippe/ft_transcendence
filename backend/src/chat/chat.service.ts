@@ -344,7 +344,6 @@ export class ChatService {
     transitionChat = banishedUser.listChat[count];
     while (count < banishedUser.listChat.length && isUserBanned(transitionChat.bannedUsers, banishedUser.id))
       transitionChat = banishedUser.listChat[++count];
-    console.error("How much count: ", count);
     // get globalChatf if no chat availaible.
     let socketToEmit: string = "";
     if (count >= banishedUser.listChat.length) {
@@ -1179,17 +1178,16 @@ export class ChatService {
 
   async propagateSocketInChat(idUser: number, newSocket: string) {
     let user: User;
-    let returnIdsChat: number[] = [0];
+    let returnIdsChat: number[] = [1];
     try {
       user = await this.usersService.findOne(idUser);
     } catch (error) { return; }
-    console.error("PROPAGATE_CONNECTION");
     if (user.id === 1) // custom handle for admin
       await this.updateAdminInGlobal(user, newSocket);
     else // custom handle for global
       await this.updateUserInGlobal(user, newSocket)
     for (let i = 0; i < user.listChat.length; i++) {
-      if (user.listChat[i].id === 0) {
+      if (user.listChat[i].id === 1) {
         if (!isUserPresent(user.listChat[i].usersInfos, user.id)) {
           user.listChat[i].usersInfos.push({
             userId: user.id,
@@ -1213,6 +1211,7 @@ export class ChatService {
             returnIdsChat.push(user.listChat[i].id);  
         }
       }
+      return returnIdsChat;
     }
 
   async suscribeToChat(user: User, chat: Chat) {

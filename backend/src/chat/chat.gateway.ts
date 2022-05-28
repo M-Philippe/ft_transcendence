@@ -77,8 +77,6 @@ export class ChatGateway {
         errorMessage: response,
       });
     } else {
-      console.error("ID_CHAT: ", idChat);
-      console.error("TERN: ", idChat === 1 ? -1 : idChat);
       this.server.to(response.socket).emit("removeChat", {
         oldIdChat: idChat === 1 ? -1 : idChat,
         newMessages: response.transitionChat.messages,
@@ -721,8 +719,6 @@ export class ChatGateway {
 
   async handleConnection(client: any, ...args: any[]) {
     let payload;
-    console.error("CONNECTION");
-    console.error(client.handshake.headers.cookie);
     if (client.handshake.headers.cookie) {
 			let jwt = extractJwtFromCookie(client.handshake.headers.cookie);
 			if (jwt === "")
