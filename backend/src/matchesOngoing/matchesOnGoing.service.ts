@@ -307,11 +307,11 @@ export class MatchesOnGoingService {
 		if (p1.moves.up && !p1.moves.down)
 			p1.coord.y = p1.coord.y - SPEED_PALLET < 0 ? 0 : p1.coord.y - SPEED_PALLET;
 		else if (!p1.moves.up && p1.moves.down)
-			p1.coord.y = p1.coord.y + SPEED_PALLET > BOARD_HEIGHT ? BOARD_HEIGHT - p1.coord.h : p1.coord.y + SPEED_PALLET;
+			p1.coord.y = p1.coord.y + p1.coord.h + SPEED_PALLET > BOARD_HEIGHT ? BOARD_HEIGHT - p1.coord.h : p1.coord.y + SPEED_PALLET;
 		if (p2.moves.up && !p2.moves.down)
 			p2.coord.y = p2.coord.y - SPEED_PALLET < 0 ? 0 : p2.coord.y - SPEED_PALLET;
 		else if (!p2.moves.up && p2.moves.down)
-			p2.coord.y = p2.coord.y + SPEED_PALLET > BOARD_HEIGHT ? BOARD_HEIGHT - p2.coord.h : p2.coord.y + SPEED_PALLET;
+			p2.coord.y = p2.coord.y + p2.coord.h + SPEED_PALLET > BOARD_HEIGHT ? BOARD_HEIGHT - p2.coord.h : p2.coord.y + SPEED_PALLET;
 	}
 
 	gameAlgo(game: Game) {

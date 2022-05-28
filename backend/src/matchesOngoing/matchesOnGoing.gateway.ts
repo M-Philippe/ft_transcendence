@@ -171,7 +171,7 @@ export class MatchesOnGoingGateway {
       powerUpState: game.powerUp.State,
       powerUpGenerate: game.powerUp.generate,
     };
-  console.error("Ball: ", game.ball.x, " - " , game.ball.y, " - ", game.ball.r);
+  // console.error("Ball: ", game.ball.x, " - " , game.ball.y, " - ", game.ball.r);
 	this.server.to(game.players.p1.socket).emit("updatePositions", {
         positions: tmp,
 		id: idGame,
@@ -491,7 +491,7 @@ export class MatchesOnGoingGateway {
 			await this.usersService.setNotInGame(game.players.p1.name);
 			await this.usersService.setNotInGame(game.players.p2.name);
 			game.inUse = false;
-      /* For fps at the end of the game */ if (!cons) {console.error("End Game: ", 1000 / (total_ms / loop_count), " fps."); cons = true;}
+      /* For fps at the end of the game */ if (!cons) {console.error("End Game: ", Math.round(1000 / (total_ms / loop_count)), " fps."); cons = true;}
 			return;
 		}
 		this.sendToAllSockets(game, game.id);
