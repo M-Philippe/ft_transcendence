@@ -212,23 +212,19 @@ export function ChatConnected(props: PropsChatConnected) {
       handleOpen();
   });
 
-  props.socket.off("receiveListChat");
-  props.socket.on("receiveListChat", (...args: any) => {
+  props.socket.off("receivedListChat");
+  props.socket.on("receivedListChat", (...args: any) => {
     dispatch({type: "CHANGE_LIST_ID_LOAD", load: true, lstId: args[0].lstId});
   })
 
   useEffect(() => {
-    const controller = new AbortController();
     if (!state.load) {
-      props.socket.emit("getListChat");
+      //props.socket.emit("getListChat");
       props.socket.emit("fetchMessages", {chatId: 1, username: props.name});
-      dispatch({type: "CHANGE_LIST_ID_LOAD", load: true, lstId: [1]});
-    } else if (state.refresh) {
+    }
+    if (state.refresh) {
       props.socket.emit("fetchMessages", {chatId: state.chatFocusId + 1, username: props.name});
       dispatch({type: "FRESH_FALSE"});
-    }
-    return () => {
-      controller.abort();
     }
   }, [state, url, props.socket, props.name]);
 
