@@ -110,6 +110,19 @@ const Header = (props: IProps) => {
 
 	let keyCount = 0;
 
+	const style = {
+	paddingBottom:"17px", 
+	paddingTop:"17px", 
+	borderRadius:"15px",
+
+	"&.active": {
+		background: "rgba(73, 68, 68, 0.10)",
+		// textDecoration: "underline", 
+		// textDecorationColor: "white",
+		fontWeight: "bold",
+	  },
+	};
+	
 //   if (redirectDisconnect) {
 // 	window.location.assign(DISCONNECTING_URL);
 // 	return (<p>LEAVING SITE</p>);
@@ -148,10 +161,7 @@ const Header = (props: IProps) => {
 
 			<Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
 			{linkToDisplay.map(link => (
-			<Typography key={keyCount++} variant="h6" noWrap	sx={{mr: 2, display: { xs: 'none', md: 'flex' }, 
-				fontFamily: 'monospace', color: 'inherit', textDecoration: 'none',}}	>
-				<MenuItem  style={{paddingBottom:"17px", paddingTop:"17px", borderRadius:"15px"}}  component={NavLink} to={link.to}>{link.name}</MenuItem>
-			</Typography>
+				<MenuItem key={keyCount++} sx={style} component={NavLink} to={link.to}>{link.name}</MenuItem>
 			))}
 			</Box>
 
@@ -174,7 +184,7 @@ const Header = (props: IProps) => {
 				</Menu>
 			</Box>
 			{props.user.isConnected && 
-			<IconButton aria-label="delete" color="error"  size="large" component={NavLink} to='/disconnect'>
+			<IconButton aria-label="disconnect" color="error"  size="large" component={NavLink} to='/disconnect'>
 			<ExitToAppIcon sx={{ fontSize: 40 }}/>
 		  	</IconButton>}
 			</Toolbar>

@@ -126,6 +126,10 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
           data.online &&
           <b><p style={{color:"#00FF00"}}>ONLINE</p></b>
         }
+        {
+          !data.online &&
+          <b><p style={{color:"#FF4500"}}>OFFLINE</p></b>
+        }
         <p>Victory: {data.wonCount} &emsp;&emsp; Defeat: {data.lostCount}</p>
         {
           data.online &&
@@ -148,11 +152,6 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
           </Typography>
         </Box>
       </Modal>
-        <br />
-        {
-          !data.online &&
-          <b><p style={{color:"#FF4500"}}>OFFLINE</p></b>
-        }
         {data.achievements.length !== 0 && <Button variant="contained" onClick={() => {handleOpenAchievements()}}>
         <b>{data.achievements.length}</b> &nbsp;&nbsp;Achivements</Button> }
         <Modal

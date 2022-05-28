@@ -51,8 +51,9 @@ export default function DisplayButtonsChat(props: Props) {
 
   return (
   <Grid 
-  justifyContent="flex-start"
-  alignItems="flex-start">
+    justifyContent="flex-start"
+    alignItems="flex-start" 
+  >
   {displayButtons()}
   </Grid>
   );

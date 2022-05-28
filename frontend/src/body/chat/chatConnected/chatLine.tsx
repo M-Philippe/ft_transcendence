@@ -7,6 +7,7 @@ import { NavLink } from "react-router-dom";
 import { Socket } from 'socket.io-client';
 import { DefaultEventsMap } from '@socket.io/component-emitter/index';
 import { Action, State } from './chatConnected';
+// import { buttons } from './displayButtonsChat';
 
 interface IChatLineProps {
   socket: Socket<DefaultEventsMap, DefaultEventsMap>,
@@ -45,27 +46,37 @@ export default function ChatLine(props: IChatLineProps) {
     setAnchorElNav(null);
     props.socket.emit("postMessage", {id: props.id, username: null, message: "/mp " + props.username});
     
-    await sleep(400);
+    await sleep(300);
+
     let i = props.state.lstId.length - 2;
-      props.dispatch({
-        type: "UPDATE_FOCUS_AND_REMOVE_GREEN",
-        chatFocusId: props.state.lstId[i],
-        lstButtonsGreen: props.state.lstButtonsGreen,});
+    props.dispatch({
+      type: "UPDATE_FOCUS_AND_REMOVE_GREEN",
+      chatFocusId: props.state.lstId[i],
+      lstButtonsGreen: props.state.lstButtonsGreen,});
+      
+      // var elem = document.getElementById('NewPMbutton');
+      // if (elem !== null)
+      // {
+      //   elem.style.margin = "3px";
+      //   elem.style.borderRadius = "10px";
+      //   elem.style.border = "1px solid darkblue";
+      //   elem.style.backgroundColor = "rgb(25, 118, 210)";
+      // }
   };
 
-  // const [avatar, setAvatar] = useState("");
+  const [avatar, setAvatar] = useState("");
 
-  // props.socket.off("receivedAvatar" + props.keyEvent);
-  // props.socket.on("receivedAvatar" + props.keyEvent, (...args: any) => {
-  //   setAvatar(args[0].avatar);
-  // })
+  props.socket.off("receivedAvatar" + props.keyEvent);
+  props.socket.on("receivedAvatar" + props.keyEvent, (...args: any) => {
+    setAvatar(args[0].avatar);
+  })
 
-  // props.socket.emit("getAvatar", { username: props.username, key: props.keyEvent});
+  props.socket.emit("getAvatar", { username: props.username, key: props.keyEvent});
 
   return (
         <div>
         <Stack direction="row" sx={{ justifyContent:"center", display: 'flex', alignItems: 'center', flexWrap: 'wrap' }} spacing={1}>
-          {/* <Avatar onClick={handleOpenNavMenu} alt="avatar" src={avatar} /> */}
+          <Avatar onClick={handleOpenNavMenu} alt="avatar" src={avatar} />
 				<Menu id="menu-appbar" anchorEl={anchorElNav} anchorOrigin={{vertical: 'bottom', horizontal: 'left', }}	
 					keepMounted transformOrigin={{vertical: 'top', horizontal: 'left', }} open={Boolean(anchorElNav)} onClose={handleCloseNavMenu}>
           <MenuItem onClick={handleCloseNavMenu} component={NavLink} to={pathLink}>Profile</MenuItem>
