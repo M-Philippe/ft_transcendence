@@ -220,7 +220,7 @@ export function ChatConnected(props: PropsChatConnected) {
 
   useEffect(() => {
     if (!state.load) {
-      //props.socket.emit("getListChat");
+      props.socket.emit("getListChat");
       props.socket.emit("fetchMessages", {chatId: 1, username: props.name});
       dispatch({type: "CHANGE_LIST_ID_LOAD", load: true, lstId: [1]});
     }

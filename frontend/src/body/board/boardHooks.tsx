@@ -1,10 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { NamedTupleMember } from 'typescript';
 
 export const canvasWidth = window.innerWidth * .2;
 export const canvasHeight = window.innerHeight * .6;
-
-let a = Date.now();
 
 export interface BoardPositions {
   idGame: number,
@@ -55,7 +52,6 @@ export function draw(ctx: CanvasRenderingContext2D | null, coordinates: BoardPos
   // puck
   if (!(coordinates.powerUpGenerate && coordinates.powerUpState && coordinates.powerUpInvisible)) {
     drawCircle(ctx, coordinates.puckX, coordinates.puckY, coordinates.puckR, coordinates.objectColor);
-    console.error("Puck: x: ", coordinates.puckX, " y: ", coordinates.puckY, " r: ", coordinates.puckR, " pi: ", Math.PI);
   }
   // middle line
   ctx.fillRect(coordinates.width / 2, 0, 1, coordinates.height);
@@ -125,10 +121,8 @@ export function useCanvas() {
       return;
     }
     const ctx = canvasObj.getContext("2d");
-    if (ctx == null) {
-      console.log("Ctx NULL");
+    if (ctx == null)
       return;
-    }
     ctx.fillStyle = coordinates.backgroundColor;
     ctx.fillRect(0, 0, coordinates.width, coordinates.height);
     draw(ctx, coordinates);

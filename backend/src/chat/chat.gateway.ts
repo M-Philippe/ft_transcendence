@@ -726,7 +726,6 @@ export class ChatGateway {
 			} catch (error) { return; }
     } else
       return;
-    console.error("PAYLOAD OK");
     /* Propagate socket to all chat with user in it. */
     let user: User;
     let idUser: number = payload.idUser;
@@ -740,10 +739,10 @@ export class ChatGateway {
   async fetchMessagesGateway(
   @MessageBody() data: FetchMessages,
   @ConnectedSocket() socket: Socket) {
-    console.error("FETCHED");
     let chat;
     let tmpChat;
     let idUser: number;
+    console.error("FETCHED");
     if ((idUser = this.extractIdUserFromCookie(socket.handshake.headers)) < 0)
       return;
     try {
@@ -828,7 +827,7 @@ export class ChatGateway {
       let ret: number[] = [];
       for (let i = 0; i < user.listChat.length; i++)
         ret.push(user.listChat[i].id);
-      this.server.to(socket.id).emit("receiveListChat", {lstId: ret});
+      this.server.to(socket.id).emit("receivedListChat", {lstId: ret});
     }
 
   @UseGuards(JwtGatewayGuard)

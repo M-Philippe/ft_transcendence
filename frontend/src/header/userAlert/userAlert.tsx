@@ -120,10 +120,6 @@ function UserAlert(props: {user: userState}) {
 			reconnection: false,
 		}));
 	} else if (socket !== undefined) {
-			socket.on("connect", () => {});
-
-			socket.on("disconnect", () => {})
-
 			socket.off("disconnectManual");
 			socket.on("disconnectManual", () => {
 				socket.disconnect();
@@ -131,8 +127,6 @@ function UserAlert(props: {user: userState}) {
 
 			socket.off("getUserAlert");
 			socket.on("getUserAlert", (...args) => {
-				//console.log("RECEIVED ALERT: ", args[0].data);
-				//console.log("LENGTH_RECEIVED: ", args[0].data.length);
 				setAlert(args[0].data);
 				if (args[0].data !== undefined)
 					setIcon(args[0].data.length);

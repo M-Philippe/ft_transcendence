@@ -158,6 +158,8 @@ export class ChatService {
     }
     if (adminUser.name === mutedUser.name)
       return "Can't do command on yourself.";
+    if (chat.admins.indexOf(mutedUser.id) >= 0)
+      return ("Can't ban admin/owner.");
     // Classic Mute
     if (chat.admins.indexOf(adminUser.id) < 0) {
       chat = await this.classicUserMuteCommand(chat, adminUser, mutedUser);
@@ -266,6 +268,8 @@ export class ChatService {
     }
     if (adminUser.name === mutedUser.name)
       return "Can't do command on yourself.";
+    if (chat.admins.indexOf(mutedUser.id) >= 0)
+      return ("Can't ban admin/owner.");
     if (!isUserPresent(chat.usersInfos, mutedUser.id)
     || isUserMuted(chat.mutedUsers, mutedUser.id)
     || isUserBanned(chat.bannedUsers, mutedUser.id))
@@ -320,6 +324,8 @@ export class ChatService {
       return "Can't do command on yourself.";
     if (chat.admins.indexOf(adminUser.id) < 0)
       return (LACK_ADMIN_RIGHT);
+    if (chat.admins.indexOf(banishedUser.id) >= 0)
+      return ("Can't ban admin/owner.");
     if (!isUserPresent(chat.usersInfos, banishedUser.id)
     || isUserBanned(chat.bannedUsers, banishedUser.id)) {
       return ("No user named '" + userToBan + "' or already banned");
@@ -385,6 +391,8 @@ export class ChatService {
     if (chat.admins.indexOf(adminUser.id) < 0) {
       return (LACK_ADMIN_RIGHT);
     }
+    if (chat.admins.indexOf(banishedUser.id) >= 0)
+      return ("Can't ban admin/owner.");
     if (!isUserPresent(chat.usersInfos, banishedUser.id)) {
       return ("'" + banishedUser.name + "' not in this chat");
     }

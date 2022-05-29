@@ -29,14 +29,16 @@ function mapStateToProps(state: storeState, props: InheritedProps) {
 
 function Board(props: BoardProps) {
 	const [coordinates, setCoordinates, canvasRef] = useCanvas();
-	const [idBoard, setIdBoard] = useState(0);
 	const [endGame, setEndGame] = useState(false);
 	const [palletAssigned, setPalletAssigned] = useState(-1);
 	const [cancelGame, setCancelGame] = useState(false);
 	const [searchingMessage, setSearchingMessage] = useState("Searching for a similar game or creating a new one.");
 
 	useEffect(() => {
-		return () => { props.socket.disconnect(); }
+		return () => {
+			props.socket.disconnect();
+			props.dispatch({type: UNSET_USER_INGAME, user: props.user});
+		}
 	}, []);
 
 	if (cancelGame || endGame)
@@ -44,33 +46,6 @@ function Board(props: BoardProps) {
 			<Navigate replace to="/ranking" />
 		);
 
-	// const moveRacket = (event: React.KeyboardEvent<HTMLCanvasElement>) => {
-    // if (event.key === "ArrowDown") {
-	// 		props.socket.emit("movePallet", {
-	// 			username: props.user.username,
-	// 			direction: "down",
-	// 			palletAssigned: palletAssigned,
-	// 		});
-	// 		if (palletAssigned === 0)
-	// 			coordinates.palletAY += coordinates.speedPalet / 2;
-	// 		else if (palletAssigned === 1)
-	// 			coordinates.palletBY += coordinates.speedPalet / 2;
-	// 		setCoordinates(coordinates);
-	// 	} else if (event.key === "ArrowUp") {
-	// 		props.socket.emit("movePallet", {
-	// 			username: props.user.username,
-	// 			direction: "up",
-	// 			palletAssigned: palletAssigned,
-	// 		});
-	// 		if (palletAssigned === 0)
-	// 			coordinates.palletAY -= coordinates.speedPalet / 2;
-	// 		else if (palletAssigned === 1)
-	// 			coordinates.palletBY -= coordinates.speedPalet / 2;
-	// 		setCoordinates(coordinates);
-	// 	}
-	// }
-
-	//const keyDown = (event: KeyboardEvent) => {
 	const keyDown = (event: React.KeyboardEvent<HTMLCanvasElement>) => {
 		if (event.key === "ArrowUp") {
 			props.socket.emit("keyDown", {
@@ -114,7 +89,6 @@ function Board(props: BoardProps) {
 		}
 		// console.error("PALLET_ASSIGNED_UPDATE: ", palletAssigned);
 		setCoordinates(args[0].positions);
-		setIdBoard(args[0].id);
 		// if first positions dispatch inGame
 		if (!props.user.isInGame) {
 			props.dispatch({
@@ -137,7 +111,6 @@ function Board(props: BoardProps) {
 	props.socket.off("alreadyCreatedMatch");
 	props.socket.on("alreadyCreatedMatch", (...args: any) => {
 		setSearchingMessage("You already have a game pending, search will continue");
-		setIdBoard(args[0].idGame);
 	});
 
 	if (coordinates.width === 0) {

@@ -13,7 +13,7 @@ import { User } from "src/users/entities/user.entity";
 import { getConnection} from "typeorm";
 
 
-const FPS = 60;
+const FPS = 40;
 
 const queue = new Map<number /* timestamp */, IQueue>();
 
