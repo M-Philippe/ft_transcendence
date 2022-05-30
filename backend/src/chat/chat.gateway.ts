@@ -279,6 +279,36 @@ export class ChatGateway {
       await this.sendToAllSocketsIntoChat(response);
   }
 
+  async commandSetChatName(command: string[], idChat: number, idUser: number, socketId: string) {
+    if (command.length != 2) {
+      this.server.to(socketId).emit("errorMessage", {
+        errorMessage: "Bad number of arguments."
+      });
+      return;
+    }
+    if (command[1].length > 8 || command[1].length < 3) {
+      this.server.to(socketId).emit("errorMessage", {
+        errorMessage: "Bad name's size. 3 < size < 8"
+      });
+      return;
+    }
+    let response; try {
+      response = await this.chatService.setChatName(idChat, idUser, command[1]);
+    } catch (error) {
+      console.error(error);
+      return;
+    }
+    if (response === undefined)
+      return;
+    else if (typeof(response) === "string") {
+      this.server.to(socketId).emit("errorMessage", {
+        errorMessage: response,
+      });
+    }
+    else
+      await this.sendToAllSocketsIntoChat(response);
+  }
+
   async commandSetPassword(command: string[], idChat: number, idUser: number, socketId: string) {
     if (command.length != 2)
       return;
@@ -481,6 +511,9 @@ export class ChatGateway {
         break;
       case "/setChatPrivate":
         await this.commandSetChatPrivate(arrayCommand, idChat, idUser, socketId);
+        break;
+      case "/setChatName":
+        await this.commandSetChatName(arrayCommand, idChat, idUser, socketId);
         break;
       case "/setPassword":
         await this.commandSetPassword(arrayCommand, idChat, idUser, socketId);
@@ -824,9 +857,9 @@ export class ChatGateway {
         console.error("NO SUCH USER");
         return;
       }
-      let ret: number[] = [];
+      let ret: {id: number, name: string}[] = [];
       for (let i = 0; i < user.listChat.length; i++)
-        ret.push(user.listChat[i].id);
+        ret.push({ id: user.listChat[i].id, name: user.listChat[i].roomName });
       this.server.to(socket.id).emit("receivedListChat", {lstId: ret});
     }
 

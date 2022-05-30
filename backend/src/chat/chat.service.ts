@@ -48,7 +48,7 @@ export class ChatService {
     chat.messages = [];
     chat.messages.push("Chat was created");
     chat.usersInChat = [];
-    chat.roomName = "global";
+    chat.roomName = "general";
     // put superAdmin in owner.
     chat.owners = [];
     chat.admins = [];
@@ -708,6 +708,26 @@ export class ChatService {
     return (chat);
   }
 
+  async setChatName(idChat: number, idUser: number, newName: string) {
+    let user: User;
+    let chat: Chat | undefined;
+    try {
+      user = await this.usersService.findOne(idUser);
+      chat = await this.chatRepository.findOne(idChat);
+    } catch (error) {
+      return "No such user.";
+    }
+    if (chat === undefined)
+      return "No such chat.";
+    if (user.id !== chat.owners[0])
+      return "Only the owner can change chat's name.";
+    try {
+      await this.chatRepository.update(idChat, { roomName: newName });
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
   async setPassword(idChat: number, idUser: number, password: string) {
     let chat;
     let adminUser;
@@ -905,7 +925,7 @@ export class ChatService {
     }
     let timestamp = this.getTimestamp();
     const chat = this.chatRepository.create();
-    chat.roomName = user.name + timestamp;
+    chat.roomName = user.name + " " + timestamp;
     chat.usernames = [user.name];
     chat.timeMessages = [timestamp];
     chat.messages = ["Created this chat"],

@@ -32,7 +32,7 @@ export default function ChatLine(props: IChatLineProps) {
     top: chatWindow.scrollHeight,
     behavior: 'smooth'
     });
-    }, []);
+  }, []);
 
   let pathLink = "/userView/:" + props.username;
 
@@ -60,7 +60,7 @@ export default function ChatLine(props: IChatLineProps) {
     let i = props.state.lstId.length - 2;
     props.dispatch({
       type: "UPDATE_FOCUS_AND_REMOVE_GREEN",
-      chatFocusId: props.state.lstId[i],
+      chatFocusId: props.state.lstId[i].id,
       lstButtonsGreen: props.state.lstButtonsGreen,});
       
       // var elem = document.getElementById('NewPMbutton');

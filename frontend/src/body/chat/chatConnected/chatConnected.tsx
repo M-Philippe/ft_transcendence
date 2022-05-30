@@ -27,7 +27,7 @@ export type State = {
   messages: string[];
   timeMessages: string[];
   usernames: string[];
-  lstId: number[];
+  lstId: {id: number, name: string}[];
   lstButtonsGreen: number[];
   load: boolean;
   chatFocusId: number;
@@ -41,7 +41,7 @@ export type Action = {
   messages?: string[];
   timeMessages?: string[];
   usernames?: string[];
-  lstId?: number[];
+  lstId?: {id: number, name: string}[];
   lstButtonsGreen?: number[];
   load?: boolean;
   chatFocusId?: number;
@@ -159,7 +159,7 @@ export function ChatConnected(props: PropsChatConnected) {
       return;
     let tmp = state.lstId;
     tmp.push(args[0].newChatId);
-    tmp.sort(function(a, b){return a - b});
+    tmp.sort(function(a, b){return a.id - b.id});
     dispatch({type: "CHANGE_LST_ID", lstId: tmp});
     state.lstButtonsGreen.push(args[0].newChatId);
     dispatch({type: "UPDATE_BUTTONS_GREEN", lstButtonsGreen: state.lstButtonsGreen});
@@ -222,7 +222,7 @@ export function ChatConnected(props: PropsChatConnected) {
     if (!state.load) {
       props.socket.emit("getListChat");
       props.socket.emit("fetchMessages", {chatId: 1, username: props.name});
-      dispatch({type: "CHANGE_LIST_ID_LOAD", load: true, lstId: [1]});
+      dispatch({type: "CHANGE_LIST_ID_LOAD", load: true, lstId: [{id: 1, name: "general"}]});
     }
     if (state.refresh) {
       props.socket.emit("fetchMessages", {chatId: state.chatFocusId + 1, username: props.name});
