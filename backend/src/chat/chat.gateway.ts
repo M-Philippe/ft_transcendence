@@ -861,8 +861,10 @@ export class ChatGateway {
     @ConnectedSocket() socket: Socket) {
       console.error("GET_LIST_CHAT");
       let idUser: number;  
-      if ((idUser = this.extractIdUserFromCookie(socket.handshake.headers)) < 0)
+      if ((idUser = this.extractIdUserFromCookie(socket.handshake.headers)) < 0) {
+        console.error("NO COOKIES");
         return;
+      }
       let user;
       try {
         user = await this.usersService.findOne(idUser);
@@ -873,6 +875,8 @@ export class ChatGateway {
       let ret: {id: number, name: string}[] = [];
       for (let i = 0; i < user.listChat.length; i++)
         ret.push({ id: user.listChat[i].id, name: user.listChat[i].roomName });
+      if (ret.length === 0)
+        return;
       this.server.to(socket.id).emit("receivedListChat", {lstId: ret});
     }
 

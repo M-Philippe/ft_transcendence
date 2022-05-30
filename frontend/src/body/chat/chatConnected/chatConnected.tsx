@@ -244,11 +244,11 @@ export function ChatConnected(props: PropsChatConnected) {
   useEffect(() => {
     if (!state.load) {
       props.socket.emit("getListChat");
-      props.socket.emit("fetchMessages", {chatId: 1, username: props.name});
+      props.socket.emit("fetchMessages", {chatId: 1});
       dispatch({type: "CHANGE_LIST_ID_LOAD", load: true, lstId: [{id: 1, name: "general"}]});
     }
     if (state.refresh) {
-      props.socket.emit("fetchMessages", {chatId: state.chatFocusId + 1, username: props.name});
+      props.socket.emit("fetchMessages", {chatId: state.chatFocusId + 1});
       dispatch({type: "REFRESH_FALSE"});
     }
   }, [state, url, props.socket, props.name]);
