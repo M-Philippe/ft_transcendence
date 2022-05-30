@@ -98,9 +98,9 @@ export class UsersController {
         existingRelationship.status === RelationshipStatus.BLOCKED_REQUESTER))
       return;
     let assembledRulesString =
-      "(points:" + body.rules.scoreMax
-      + "#power-up:" + (body.rules.powerUp ? "yes" : "no")
-      + "#map:" + body.rules.map + ")";
+      "(points: " + body.rules.scoreMax
+      + " | power-up: " + (body.rules.powerUp ? "yes" : "no")
+      + " | map: " + body.rules.map + ")";
     // Check that user idUser isn't blocked by userToInvite (&& online && !inGame)
     await this.usersService.addEventToUserAlert(idUser, userToInvite.id, userWhoInvite.name + " invited you to play a game. " + assembledRulesString, true, "invitationGame");
   }
