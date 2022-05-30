@@ -723,9 +723,11 @@ export class ChatService {
       return "Only the owner can change chat's name.";
     try {
       await this.chatRepository.update(idChat, { roomName: newName });
+      chat = await this.chatRepository.findOne(idChat);
     } catch (error) {
       throw new Error(error);
     }
+    return chat;
   }
 
   async setPassword(idChat: number, idUser: number, password: string) {

@@ -23,11 +23,16 @@ interface PropsChatConnected {
   socket: Socket<DefaultEventsMap, DefaultEventsMap>,
 }
 
+interface ILstId {
+  id: number,
+  name: string,
+}
+
 export type State = {
   messages: string[];
   timeMessages: string[];
   usernames: string[];
-  lstId: {id: number, name: string}[];
+  lstId: ILstId[];
   lstButtonsGreen: number[];
   load: boolean;
   chatFocusId: number;
@@ -41,7 +46,7 @@ export type Action = {
   messages?: string[];
   timeMessages?: string[];
   usernames?: string[];
-  lstId?: {id: number, name: string}[];
+  lstId?: ILstId[];
   lstButtonsGreen?: number[];
   load?: boolean;
   chatFocusId?: number;
@@ -103,6 +108,16 @@ function reducer (state: State, action: Action): State {
   }
 }
 
+function findIndexLstId(lstId: ILstId[], idtoFind: number) {
+  let count = 0;
+  while (count < lstId.length) {
+    if (lstId[count].id === idtoFind)
+      return count;
+    count++;
+  }
+  return -1;
+}
+
 export function ChatConnected(props: PropsChatConnected) {
   const url = API_USER_LIST_CHAT + props.name;
 
@@ -136,13 +151,14 @@ export function ChatConnected(props: PropsChatConnected) {
   props.socket.off("receivedMessages");
   props.socket.off("errorMessage");
   props.socket.off("redirectToInviteProfile");
+  props.socket.off("receivedListChat");
+  props.socket.off("updateChatName");
 
   props.socket.on("removeChat", (...args: any) => {
     if (state.lstButtonsGreen.indexOf(args[0].oldIdChat) >= 0)
       state.lstButtonsGreen.splice(state.lstButtonsGreen.indexOf(args[0].oldIdChat));
     if (args[0].oldIdChat !== -1)
-      state.lstId.splice(state.lstId.indexOf(args[0].oldIdChat), 1);
-    console.error("REMOVE_CHAT: ", args[0]);
+      state.lstId.splice(findIndexLstId(state.lstId, args[0].oldIdChat), 1);
     dispatch({
       type: "UPDATE_LST_ID_AND_CHAT_AND_FOCUS",
       lstId: state.lstId,
@@ -152,13 +168,21 @@ export function ChatConnected(props: PropsChatConnected) {
       chatFocusId: args[0].newChatId - 1,
       lstButtonsGreen: state.lstButtonsGreen,
     });
-  })
+  });
+
+  props.socket.on("updateChatName", (...args: any) => {
+    let idx = findIndexLstId(state.lstId, args[0].id);
+    if (idx < 0)
+      return;
+    state.lstId[idx].name = args[0].name;
+    dispatch({ type: "CHANGE_LST_ID", lstId: state.lstId });
+  });
 
   props.socket.on("newChat", (...args: any) => {
-    if (state.lstId.indexOf(args[0].newChatId) >= 0)
+    if (findIndexLstId(state.lstId, args[0].newChatId) >= 0)
       return;
     let tmp = state.lstId;
-    tmp.push(args[0].newChatId);
+    tmp.push({id: args[0].newChatId, name: args[0].name });
     tmp.sort(function(a, b){return a.id - b.id});
     dispatch({type: "CHANGE_LST_ID", lstId: tmp});
     state.lstButtonsGreen.push(args[0].newChatId);
@@ -213,7 +237,6 @@ export function ChatConnected(props: PropsChatConnected) {
       handleOpen();
   });
 
-  props.socket.off("receivedListChat");
   props.socket.on("receivedListChat", (...args: any) => {
     dispatch({type: "CHANGE_LIST_ID_LOAD", load: true, lstId: args[0].lstId});
   })

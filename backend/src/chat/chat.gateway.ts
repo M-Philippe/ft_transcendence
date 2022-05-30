@@ -45,6 +45,7 @@ export class ChatGateway {
     } else {
       this.server.to(response.socket).emit("newChat", {
         newChatId: response.chat.id,
+        name: response.chat.roomName,
       });
       this.server.to(response.socket).emit("receivedMessages", {
         usernames: response.chat.usernames,
@@ -123,6 +124,7 @@ export class ChatGateway {
             return;
           this.server.to(response.socket).emit("newChat", {
             newChatId: response.chat.id,
+            name: response.chat.roomName,
           });
           await this.sendToAllSocketsIntoChat(response.chat);
         }, timer * 1000);
@@ -155,6 +157,7 @@ export class ChatGateway {
     } else {
       this.server.to(response.socket).emit("newChat", {
         newChatId: response.chat.id,
+        name: response.chat.roomName,
       });
       await this.sendToAllSocketsIntoChat(response.chat);
     }
@@ -305,8 +308,14 @@ export class ChatGateway {
         errorMessage: response,
       });
     }
-    else
-      await this.sendToAllSocketsIntoChat(response);
+    else {
+      for (let i = 0; i < response.usersInfos.length; i++) {
+        this.server.to(response.usersInfos[i].socket).emit("updateChatName", {
+          id: response.id,
+          name: response.roomName
+        });
+      }
+    }
   }
 
   async commandSetPassword(command: string[], idChat: number, idUser: number, socketId: string) {
@@ -388,9 +397,11 @@ export class ChatGateway {
     } else {
       this.server.to(response.socketOne).emit("newChat", {
         newChatId: response.chat.id,
+        name: response.chat.roomName
       });
       this.server.to(response.socketTwo).emit("newChat", {
         newChatId: response.chat.id,
+        name: response.chat.roomName
       });
     }
   }
@@ -827,6 +838,7 @@ export class ChatGateway {
       socket.join(response.roomName);
       socket.emit("newChat", {
         newChatId: response.id,
+        name: response.roomName
       });
     } catch (error) {
       socket.emit("ERROR", {
@@ -839,6 +851,7 @@ export class ChatGateway {
   async sendNewChatToSocketFromController(data: any) {
     this.server.to(data.socket).emit("newChat", {
       newChatId: data.chatToSend.id,
+      name: data.chatToSend.roomName,
     });
   }
 
