@@ -1,6 +1,6 @@
 import Avatar from '@mui/material/Avatar'
 import Stack from '@mui/material/Stack';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { NavLink } from "react-router-dom";
@@ -21,14 +21,23 @@ interface IChatLineProps {
   dispatch: React.Dispatch<Action>,
   state: State,
 }
-
+  
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
+  
 export default function ChatLine(props: IChatLineProps) {
+    
+  useEffect(() => {
+    var chatWindow = document.getElementById('txtWrap');
+    chatWindow?.scrollTo({
+    top: chatWindow.scrollHeight,
+    behavior: 'smooth'
+    });
+    }, []);
+
   let pathLink = "/userView/:" + props.username;
 
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
-
+    
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
   };

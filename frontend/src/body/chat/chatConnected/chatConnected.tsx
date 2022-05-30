@@ -230,10 +230,6 @@ export function ChatConnected(props: PropsChatConnected) {
     }
   }, [state, url, props.socket, props.name]);
 
-  // autoscroll down on msg receive :
-  var chatWindow = document.getElementById('txtWrap');
-  chatWindow?.scrollTo(0, chatWindow?.scrollHeight);
-
   const style = {
     position: 'absolute' as 'absolute',
     top: '50%',
