@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 import { Socket } from 'socket.io-client';
 /* Keep this in case of future compatibility problem */
 //import { DefaultEventsMap } from 'socket.io-client/build/typed-events';
@@ -19,6 +19,9 @@ import Modal from '@mui/material/Modal';
 import InvitationGameQueryBox from "../../userView/invitationGameQueryBox";
 import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
+import BorderColorIcon from '@mui/icons-material/BorderColor';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
 
 interface PropsChatConnected {
   name: string,
@@ -122,10 +125,27 @@ function findIndexLstId(lstId: ILstId[], idtoFind: number) {
 
 export function ChatConnected(props: PropsChatConnected) {
   const url = API_USER_LIST_CHAT + props.name;
-
+  
   const [openGameInvit, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  
+  const [changeChanName, setChanName] = useState(false);
+  const handleOpenSetChanName = () => setChanName(true);
+  const handlecloseSetChanName = () => setChanName(false);
+
+  function handleChanNameChange() {
+    let inputVal = (document.getElementById("newChatNameInput") as HTMLInputElement)?.value
+    props.socket.emit("postMessage", {id: state.chatFocusId +1, username: null, message: "/setChatName " + inputVal});
+    handlecloseSetChanName();
+  };
+
+  const keyDownHandler = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.code === "Enter" || event.code === "NumpadEnter") {
+      handleChanNameChange();
+      handlecloseSetChanName();
+		}
+	};
 
   const [data, setData] = useState({
     name: "",
@@ -287,6 +307,17 @@ export function ChatConnected(props: PropsChatConnected) {
     p: 4,
   };
 
+  const styleSetChanName = {
+    position: 'absolute' as 'absolute',
+    top: '20%',
+    left: '78%',
+    width: 'auto',
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 2,
+  };
+
   const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
     <Tooltip {...props} classes={{ popper: className }} />
   ))(({ theme }) => ({
@@ -298,7 +329,6 @@ export function ChatConnected(props: PropsChatConnected) {
       marginTop: "-60px !important",
     },
   }));
-
 
   return (
     <div >
@@ -342,7 +372,26 @@ export function ChatConnected(props: PropsChatConnected) {
           <DeleteForeverIcon sx={{ color:'white', fontSize: 28 }}/>
           </IconButton>
           </LightTooltip>
-        <ChatCommandHelp />
+          <Modal
+          open={changeChanName}
+          onClose={handlecloseSetChanName}>
+          <Box id ="setChatNameBox" sx={styleSetChanName}>
+            { 
+            <div>
+              <TextField autoFocus onKeyDown={keyDownHandler} id="newChatNameInput" label="Choose channel name" variant="outlined" type="text"/>
+              <br/><br/>
+              <Button variant="contained" color="success" onClick={handleChanNameChange}> Confirm </Button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              <Button variant="contained" color="error" onClick={handlecloseSetChanName}>Cancel</Button>
+            </div>
+            }
+          </Box>
+          </Modal>
+        <LightTooltip title="Rename channel" enterNextDelay={500}>
+          <IconButton onClick={handleOpenSetChanName}>
+          <BorderColorIcon sx={{ color:'white', fontSize: 26 }}/>
+          </IconButton>
+          </LightTooltip>
+          <ChatCommandHelp />
       </div>}
       <DisplayButtonsChat
         state={state}
@@ -354,7 +403,6 @@ export function ChatConnected(props: PropsChatConnected) {
         socket={props.socket}
         username={props.name}
         state={state}
-        // dispatch={dispatch}
         />
         {
           state.errorDisplay &&
