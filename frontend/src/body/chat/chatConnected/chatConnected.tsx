@@ -159,9 +159,11 @@ export function ChatConnected(props: PropsChatConnected) {
 
 
   props.socket.on("focusOnpm", (...args: any) => {
-    dispatch({ type: "UPDATE_FOCUS", 
+    dispatch({ type: "UPDATE_FOCUS_AND_REMOVE_GREEN", 
     chatFocusId: args[0].chatFocusId - 1,
+    lstButtonsGreen: state.lstButtonsGreen
     });
+    state.chatFocusId = args[0].chatFocusId - 1;
   });
 
   props.socket.on("removeChat", (...args: any) => {
