@@ -53,9 +53,10 @@ function AvatarUpload(props: { user: userState, dispatch: DispatchType }) {
         <Input accept="image/*" id="contained-button-file" multiple type="file" onChange={handleChange} />
 			<Button variant="contained" color="info" component="span" >
 			Browse...
-			</Button><br /><br />
+			</Button><br />
 		</label>
 			<Button id = "submitAvatarButton" variant="contained" color="success" style={{visibility:"hidden"}} onClick={handleSubmit}>Submit new avatar</Button>
+			<br /><br />
 		</div>
 	);
 }
