@@ -29,9 +29,8 @@ export class ChatService {
   ) {}
 
   getTimestamp() : string {
-    let time = new Date();
-    let timeString = time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds();
-    return (timeString);
+    let time = new Date().toString().split(' ')[4];
+    return (time);
   }
 
   async onApplicationBootstrap() {
