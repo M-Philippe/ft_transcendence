@@ -253,7 +253,15 @@ export function ChatConnected(props: PropsChatConnected) {
       props.socket.emit("fetchMessages", {chatId: state.chatFocusId + 1});
       dispatch({type: "REFRESH_FALSE"});
     }
+
+    var chatWindow = document.getElementById('txtWrap');
+    chatWindow?.scrollTo({
+    top: chatWindow.scrollHeight,
+    behavior: 'smooth'
+    })
+    
   }, [state, url, props.socket, props.name]);
+
 
   const style = {
     position: 'absolute' as 'absolute',
@@ -275,6 +283,7 @@ export function ChatConnected(props: PropsChatConnected) {
       color: 'rgba(0, 0, 0, 0.87)',
       boxShadow: theme.shadows[1],
       fontSize: 15,
+      marginTop: "-60px !important",
     },
   }));
 
@@ -303,8 +312,8 @@ export function ChatConnected(props: PropsChatConnected) {
 			<div id = "chatButtonTop">
       {state.lstId.length !== 0 &&
 			<div style={{display: 'flex', justifyContent:'center', alignItems: 'center', flexWrap: 'wrap'}}>
-        <LightTooltip title="New channel" enterNextDelay={800}>
-        	<IconButton size="large" onClick={() => {
+        <LightTooltip title="New channel" enterNextDelay={500}>
+        	<IconButton onClick={() => {
             if (Date.now() - dateClick > 200) {
               props.socket.emit("createChat", {nameUser: props.name});
               setDateClick(Date.now());}
@@ -314,8 +323,8 @@ export function ChatConnected(props: PropsChatConnected) {
           <AddBoxIcon sx={{ color:'white', fontSize: 27 }}/>
           </IconButton>
           </LightTooltip>
-        <LightTooltip title="Delete channel" enterNextDelay={800}>
-          <IconButton size="large" onClick={() => {
+        <LightTooltip title="Delete channel" enterNextDelay={500}>
+          <IconButton onClick={() => {
               props.socket.emit("postMessage", {id: state.chatFocusId +1, username: null, message: "/quit"});}}>
           <DeleteForeverIcon sx={{ color:'white', fontSize: 28 }}/>
           </IconButton>

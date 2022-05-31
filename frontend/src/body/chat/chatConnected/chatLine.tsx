@@ -25,14 +25,6 @@ interface IChatLineProps {
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   
 export default function ChatLine(props: IChatLineProps) {
-    
-  useEffect(() => {
-    var chatWindow = document.getElementById('txtWrap');
-    chatWindow?.scrollTo({
-    top: chatWindow.scrollHeight,
-    behavior: 'smooth'
-    });
-  }, []);
 
   let pathLink = "/userView/:" + props.username;
 
