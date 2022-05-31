@@ -1027,16 +1027,8 @@ export class ChatService {
     let firstSocket = initialChat.usersInfos[getIndexUser(initialChat.usersInfos, userInit.id)].socket;
     // If bug check here.
     
-    let  userToPm;
-    try {
-      userToPm = await this.usersService.findOneByName(userToInvite);
-    } catch (error) {
-      let ret = "No such user";
-      return("No user named '" + userToInvite +"'");
-    }
-    
     if (initialChat.id !== 1 && initialChat.usersInfos.length === 2 && 
-      isUserPresent(initialChat.usersInfos, userToPm.id))
+      isUserPresent(initialChat.usersInfos, userInvited.id))
     {
       // maybe check here if user banned / blocked
       return undefined;
@@ -1045,7 +1037,7 @@ export class ChatService {
     for (let i = 1; i < userInit.listChat.length; i++)
     {
         if (userInit.listChat[i].usersInfos.length === 2 && 
-          isUserPresent(userInit.listChat[i].usersInfos, userToPm.id))
+          isUserPresent(userInit.listChat[i].usersInfos, userInvited.id))
         {
           // maybe check here if user banned / blocked
           return ({
