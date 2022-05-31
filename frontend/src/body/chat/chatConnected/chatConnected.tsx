@@ -159,6 +159,7 @@ export function ChatConnected(props: PropsChatConnected) {
 
 
   props.socket.on("focusOnpm", (...args: any) => {
+    state.lstButtonsGreen.splice(state.lstButtonsGreen.indexOf(args[0].chatFocusId - 1), 1)
     dispatch({ type: "UPDATE_FOCUS_AND_REMOVE_GREEN", 
     chatFocusId: args[0].chatFocusId - 1,
     lstButtonsGreen: state.lstButtonsGreen
