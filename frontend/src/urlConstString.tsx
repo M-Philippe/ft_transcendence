@@ -41,7 +41,7 @@ export const DISCONNECTING_URL = BASE_URL + "/disconnecting";
 */
 
 const apiPort = "3000";
-export const API_URL = "http://" + domain + ":" + apiPort;
+export const API_URL = "https://" + domain + ":" + apiPort;
 
 /*
 **	USER

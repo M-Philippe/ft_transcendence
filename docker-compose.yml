@@ -68,6 +68,21 @@ services:
       - "3005:3005"
     restart: always
     container_name: frontend_app
+  
+  # server:
+  #   build:
+  #     context: ./server/
+  #     dockerfile: Dockerfile-server
+  #   #volumes:
+  #   #- ./server:/mounted_volumes/app_server
+  #   networks:
+  #     - webapp
+  #   ports:
+  #   - "3005:3005"
+  #   - "443:443"
+  #   restart: always
+  #   container_name: server_app
+
 
 networks:
   webapp:

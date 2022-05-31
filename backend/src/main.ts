@@ -2,9 +2,14 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
+import * as fs from "fs";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const privateKey = fs.readFileSync("./certs/backend.key");
+  const certificate = fs.readFileSync("./certs/backend.crt");
+  const httpsOptions = { key: privateKey, cert: certificate };
+
+  const app = await NestFactory.create(AppModule, { httpsOptions: httpsOptions });
   app.enableShutdownHooks();
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors({ credentials: true, origin: true, exposedHeaders: "*" });
