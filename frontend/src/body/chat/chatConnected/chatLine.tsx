@@ -18,11 +18,8 @@ interface IChatLineProps {
   username: string,
   timeMessage: string,
   message: string,
-  dispatch: React.Dispatch<Action>,
   state: State,
 }
-  
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   
 export default function ChatLine(props: IChatLineProps) {
 
@@ -43,26 +40,9 @@ export default function ChatLine(props: IChatLineProps) {
     props.socket.emit("postMessage", {id: props.id, username: null, message: "/gameOptions " + props.username});
   };
 
-  async function handlePrivateMsg() {
+  const handlePrivateMsg = () => {
     setAnchorElNav(null);
     props.socket.emit("postMessage", {id: props.id, username: null, message: "/mp " + props.username});
-    
-    await sleep(300);
-
-    let i = props.state.lstId.length - 2;
-    props.dispatch({
-      type: "UPDATE_FOCUS_AND_REMOVE_GREEN",
-      chatFocusId: props.state.lstId[i].id,
-      lstButtonsGreen: props.state.lstButtonsGreen,});
-      
-      // var elem = document.getElementById('NewPMbutton');
-      // if (elem !== null)
-      // {
-      //   elem.style.margin = "3px";
-      //   elem.style.borderRadius = "10px";
-      //   elem.style.border = "1px solid darkblue";
-      //   elem.style.backgroundColor = "rgb(25, 118, 210)";
-      // }
   };
 
   const [avatar, setAvatar] = useState("");

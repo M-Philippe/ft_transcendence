@@ -7,7 +7,6 @@ interface Interx {
   socket: Socket<DefaultEventsMap, DefaultEventsMap>,
   username: string,
   state: State,
-  dispatch: React.Dispatch<Action>,
 }
 
 export function ChatDisplay(props: Interx) {
@@ -24,7 +23,6 @@ export function ChatDisplay(props: Interx) {
           username={props.state.usernames[i]}
           timeMessage={props.state.timeMessages[i]}
           message={props.state.messages[i]}
-          dispatch={props.dispatch}
           state={props.state}
       />);
     }

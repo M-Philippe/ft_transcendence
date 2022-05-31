@@ -155,6 +155,14 @@ export function ChatConnected(props: PropsChatConnected) {
   props.socket.off("redirectToInviteProfile");
   props.socket.off("receivedListChat");
   props.socket.off("updateChatName");
+  props.socket.off("focusOnmp");
+
+
+  props.socket.on("focusOnpm", (...args: any) => {
+    dispatch({ type: "UPDATE_FOCUS", 
+    chatFocusId: args[0].chatFocusId - 1,
+    });
+  });
 
   props.socket.on("removeChat", (...args: any) => {
     if (state.lstButtonsGreen.indexOf(args[0].oldIdChat) >= 0)
@@ -243,6 +251,7 @@ export function ChatConnected(props: PropsChatConnected) {
     dispatch({type: "CHANGE_LIST_ID_LOAD", load: true, lstId: args[0].lstId});
   })
 
+
   useEffect(() => {
     if (!state.load) {
       props.socket.emit("getListChat");
@@ -286,6 +295,7 @@ export function ChatConnected(props: PropsChatConnected) {
       marginTop: "-60px !important",
     },
   }));
+
 
   return (
     <div >
@@ -341,7 +351,7 @@ export function ChatConnected(props: PropsChatConnected) {
         socket={props.socket}
         username={props.name}
         state={state}
-        dispatch={dispatch}
+        // dispatch={dispatch}
         />
         {
           state.errorDisplay &&

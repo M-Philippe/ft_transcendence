@@ -8,7 +8,7 @@ import { isUserBanned } from "./utils/chat.userBanned.utils";
 import { Chat } from "./entities/chat.entity";
 import { User } from "src/users/entities/user.entity";
 import { isPasswordEmpty } from "./utils/chat.password.utils";
-import { forwardRef, Inject, UseGuards } from "@nestjs/common";
+import { ConsoleLogger, forwardRef, Inject, UseGuards } from "@nestjs/common";
 import { extractJwtFromCookie, JwtGatewayGuard } from "src/guards/jwtGateway.guards";
 import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
 import { IncomingHttpHeaders } from "http";
@@ -394,14 +394,25 @@ export class ChatGateway {
       this.server.to(socketId).emit("errorMessage", {
         errorMessage: response,
       });
-    } else {
+    }
+    else {
+      if (response.socketOne === response.socketTwo) {
+        this.server.to(response.socketOne).emit("focusOnpm", {
+          chatFocusId: response.chat.id,
+        });
+        return ;
+      }
+
       this.server.to(response.socketOne).emit("newChat", {
         newChatId: response.chat.id,
-        name: response.chat.roomName
+        name: response.userToInvite
       });
       this.server.to(response.socketTwo).emit("newChat", {
         newChatId: response.chat.id,
-        name: response.chat.roomName
+        name: response.senderName
+      });
+      this.server.to(response.socketOne).emit("focusOnpm", {
+        chatFocusId: response.chat.id,
       });
     }
   }
