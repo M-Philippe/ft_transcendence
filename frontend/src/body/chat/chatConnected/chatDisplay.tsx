@@ -1,5 +1,5 @@
 import ChatLine from './chatLine';
-import { Action, State } from './chatConnected';
+import { State } from './chatConnected';
 import { Socket } from 'socket.io-client';
 import { DefaultEventsMap } from '@socket.io/component-emitter/index';
 
@@ -23,7 +23,6 @@ export function ChatDisplay(props: Interx) {
           username={props.state.usernames[i]}
           timeMessage={props.state.timeMessages[i]}
           message={props.state.messages[i]}
-          state={props.state}
       />);
     }
     return (lines);

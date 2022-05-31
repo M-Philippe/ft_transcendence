@@ -1,12 +1,11 @@
 import Avatar from '@mui/material/Avatar'
 import Stack from '@mui/material/Stack';
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { NavLink } from "react-router-dom";
 import { Socket } from 'socket.io-client';
 import { DefaultEventsMap } from '@socket.io/component-emitter/index';
-import { Action, State } from './chatConnected';
 // import { buttons } from './displayButtonsChat';
 
 interface IChatLineProps {
@@ -18,7 +17,6 @@ interface IChatLineProps {
   username: string,
   timeMessage: string,
   message: string,
-  state: State,
 }
   
 export default function ChatLine(props: IChatLineProps) {
