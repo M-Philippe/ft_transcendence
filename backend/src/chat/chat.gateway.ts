@@ -595,7 +595,7 @@ export class ChatGateway {
       return;
     }
     await this.sendToAllSocketsIntoChat(chat);
-    const dateEnd = new Date();
+    //const dateEnd = new Date();
     //console.error("TIME: ", dateEnd.valueOf() - dateStart.valueOf());
   }
 
@@ -609,7 +609,7 @@ export class ChatGateway {
         tmpChat.timeMessages = [];
         tmpChat.messages = [];
         tmpChat.usernames = ["System"];
-        tmpChat.timeMessages = ["01:23:45"];
+        tmpChat.timeMessages = [this.chatService.getTimestamp()];
         tmpChat.messages = ["You're not allowed here"];
         this.server.to(tmpSocket).emit("receivedMessages", {
           usernames: tmpChat.usernames,
@@ -628,7 +628,7 @@ export class ChatGateway {
         tmpChat.timeMessages = [];
         tmpChat.messages = [];
         tmpChat.usernames = ["System"];
-        tmpChat.timeMessages = ["01:23:45"];
+        tmpChat.timeMessages = [this.chatService.getTimestamp()];
         tmpChat.messages = ["You must enter a password to enter this chat"];
         this.server.to(tmpSocket).emit("receivedMessages", {
           usernames: tmpChat.usernames,

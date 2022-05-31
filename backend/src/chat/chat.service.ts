@@ -988,10 +988,8 @@ export class ChatService {
     }
     if (isUserBanned(chat.bannedUsers, user.id))
       return undefined;
-    let time = new Date();
-    let inputTime = time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds();
     chat.usernames.push(data.username);
-    chat.timeMessages.push(inputTime);
+    chat.timeMessages.push(this.getTimestamp());
     chat.messages.push(data.message);
     try {
       await this.chatRepository.save(chat);
