@@ -17,6 +17,8 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import InvitationGameQueryBox from "../../userView/invitationGameQueryBox";
+import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
+import { styled } from '@mui/material/styles';
 
 interface PropsChatConnected {
   name: string,
@@ -265,6 +267,17 @@ export function ChatConnected(props: PropsChatConnected) {
     p: 4,
   };
 
+  const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: theme.palette.common.white,
+      color: 'rgba(0, 0, 0, 0.87)',
+      boxShadow: theme.shadows[1],
+      fontSize: 15,
+    },
+  }));
+
   return (
     <div >
       <Modal
@@ -290,6 +303,7 @@ export function ChatConnected(props: PropsChatConnected) {
 			<div id = "chatButtonTop">
       {state.lstId.length !== 0 &&
 			<div style={{display: 'flex', justifyContent:'center', alignItems: 'center', flexWrap: 'wrap'}}>
+        <LightTooltip title="New channel" enterNextDelay={800}>
         	<IconButton size="large" onClick={() => {
             if (Date.now() - dateClick > 200) {
               props.socket.emit("createChat", {nameUser: props.name});
@@ -297,12 +311,15 @@ export function ChatConnected(props: PropsChatConnected) {
             }
           }
           >
-          <AddBoxIcon sx={{ color:'white', fontSize: 28 }}/>
+          <AddBoxIcon sx={{ color:'white', fontSize: 27 }}/>
           </IconButton>
+          </LightTooltip>
+        <LightTooltip title="Delete channel" enterNextDelay={800}>
           <IconButton size="large" onClick={() => {
               props.socket.emit("postMessage", {id: state.chatFocusId +1, username: null, message: "/quit"});}}>
           <DeleteForeverIcon sx={{ color:'white', fontSize: 28 }}/>
           </IconButton>
+          </LightTooltip>
         <ChatCommandHelp />
       </div>}
       <DisplayButtonsChat
