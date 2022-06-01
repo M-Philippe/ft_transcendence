@@ -53,35 +53,35 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  # frontend:
-  #   build:
-  #     context: ./frontend/
-  #     dockerfile: Dockerfile-frontend
-  #   depends_on:
-  #     - db
-  #     # - backend
-  #   volumes:
-  #   - ./frontend/:/app_frontend
-  #   networks:
-  #     - webapp
-  #   ports:
-  #     - "3005:3005"
-  #   restart: always
-  #   container_name: frontend_app
-  
-  server:
+  frontend:
     build:
-      context: ./server/
-      dockerfile: Dockerfile-server
-    #volumes:
-    #- ./server:/mounted_volumes/app_server
+      context: ./frontend/
+      dockerfile: Dockerfile-frontend
+    depends_on:
+      - db
+      # - backend
+    volumes:
+    - ./frontend/:/app_frontend
     networks:
       - webapp
     ports:
-    - "3005:3005"
-    - "443:443"
+      - "3005:3005"
     restart: always
-    container_name: server_app
+    container_name: frontend_app
+  
+  # server:
+  #   build:
+  #     context: ./server/
+  #     dockerfile: Dockerfile-server
+  #   #volumes:
+  #   #- ./server:/mounted_volumes/app_server
+  #   networks:
+  #     - webapp
+  #   ports:
+  #   - "3005:3005"
+  #   - "443:443"
+  #   restart: always
+  #   container_name: server_app
 
 
 networks:

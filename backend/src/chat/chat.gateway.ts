@@ -396,23 +396,25 @@ export class ChatGateway {
       });
     }
     else {
+      // if already in mp channel.
       if (response.socketOne === response.socketTwo) {
         this.server.to(response.socketOne).emit("focusOnpm", {
           chatFocusId: response.chat.id,
         });
-        return ;
+        return;
       }
-
+      // sender
       this.server.to(response.socketOne).emit("newChat", {
         newChatId: response.chat.id,
-        name: response.userToInvite
-      });
-      this.server.to(response.socketTwo).emit("newChat", {
-        newChatId: response.chat.id,
-        name: response.senderName
+        name: response.chat.roomName,
       });
       this.server.to(response.socketOne).emit("focusOnpm", {
         chatFocusId: response.chat.id,
+      });
+      // target
+      this.server.to(response.socketTwo).emit("newChat", {
+        newChatId: response.chat.id,
+        name: response.chat.roomName,
       });
     }
   }

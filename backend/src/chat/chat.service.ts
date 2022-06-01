@@ -917,7 +917,7 @@ export class ChatService {
     return (arraySocketsToEmit);
   }
 
-  async createChat(idUser: number, socket: string) {
+  async createChat(idUser: number, socket: string, rommNameToAssign: string | void) {
     let user;
     try {
       user = await this.usersService.findOne(idUser);
@@ -926,7 +926,10 @@ export class ChatService {
     }
     let timestamp = this.getTimestamp();
     const chat = this.chatRepository.create();
-    chat.roomName = user.name + " " + timestamp;
+    if (rommNameToAssign)
+      chat.roomName = rommNameToAssign;
+    else
+      chat.roomName = user.name + " " + timestamp;
     chat.usernames = [user.name];
     chat.timeMessages = [timestamp];
     chat.messages = ["Created this chat"],
@@ -1021,7 +1024,7 @@ export class ChatService {
     if (userInit.name === userInvited.name)
       return "Can't do command on yourself.";
 
-    if (getIndexUser(initialChat.usersInfos, userInvited.id)
+    if (getIndexUser(initialChat.usersInfos, userInvited.id) 
     && initialChat.usersInfos[getIndexUser(initialChat.usersInfos, userInvited.id)].persoMutedUsers.indexOf(userInit.id) >= 0)
       return;
     let firstSocket = initialChat.usersInfos[getIndexUser(initialChat.usersInfos, userInit.id)].socket;
@@ -1050,7 +1053,7 @@ export class ChatService {
         }
     }
 
-    let newChat = await this.createChat(idUser, firstSocket);
+    let newChat = await this.createChat(idUser, firstSocket, userInit.name + "," + userToInvite);
     let ret = await this.inviteUserIntoChat(userToInvite, newChat.id, userInit.id);
     if (ret === undefined || typeof(ret) === "string")
       return (ret);
