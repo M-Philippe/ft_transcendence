@@ -3,9 +3,9 @@
 */
 
 const domain = "localhost";
-const port = "3005";
-export const BASE_URL = "http://" + domain + ":" + port;
-export const API_URL = "http://" + domain + ":" + "3000";
+const port = "443";
+export const BASE_URL = "https://" + domain + ":" + port;
+export const API_URL = "https://" + domain + ":" + "3000";
 
 export const FRONT_GENERIC_AVATAR =  API_URL + "/users/avatar/genericAvatar";
 // http://localhost:3000/users/avatar/genericAvatar

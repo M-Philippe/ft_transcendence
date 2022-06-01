@@ -3,9 +3,9 @@
 */
 
 const domain = "localhost";
-const port = "3005";
-export const BASE_URL = "http://" + domain + ":" + port;
-export const BASE_API_URL = "http://" + domain + ":3000";
+const port = "443";
+export const BASE_URL = "https://" + domain + ":" + port;
+export const BASE_API_URL = "https://" + domain + ":3000";
 
 /*
 **	USER
@@ -41,7 +41,7 @@ export const DISCONNECTING_URL = BASE_URL + "/disconnecting";
 */
 
 const apiPort = "3000";
-export const API_URL = "http://" + domain + ":" + apiPort;
+export const API_URL = "https://" + domain + ":" + apiPort;
 
 /*
 **	USER

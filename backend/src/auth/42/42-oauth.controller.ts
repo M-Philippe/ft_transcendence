@@ -34,7 +34,7 @@ export class OAuth42Controller {
         return response;
       }
       let jwt = await this.jwtAuthService.getAccessToken(userReturned.user.id, userReturned.user.twoFactorIsEnabled);
-      response.cookie("authentication", jwt.access_token);
+      response.cookie("authentication", jwt.access_token, { httpOnly: true, sameSite: "strict"});
       if (userReturned.state === "exist" && !userReturned.user.twoFactorIsEnabled) {
         let queryString = "?id=" + userReturned.user.id + "&username=" + userReturned.user.name + "&avatar=" + userReturned.user.avatar;
         response.redirect(FRONT_LOGIN_SUCCESS + queryString);

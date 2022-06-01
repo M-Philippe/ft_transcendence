@@ -127,6 +127,7 @@ export class UsersController {
 
   @Get()
   findAll() {
+    console.error("RANKING_ALL");
     return this.usersService.findAllForRanking();
   }
 
@@ -141,7 +142,7 @@ export class UsersController {
     @Req() request: Request,
     @Res() response: Response) {
       let jwtDecrypt = this.jwtService.verify(request.cookies.authentication);
-      response.cookie("authentication", "");
+      response.cookie("authentication", "", { httpOnly: true, sameSite: "strict"});
       await this.usersService.disconnectUser(jwtDecrypt.idUser);
       response.send();
       return (response);

@@ -37,7 +37,7 @@ export class TwoFactorAuthController {
       await this.usersService.updateTwoFactorEnabled(idUser, true);
       // new JwtToken with secret.
       let newJwtToken = await this.jwtAuthService.getAccessTokenTwoFactor(idUser, true!);
-      response.cookie("authentication", newJwtToken.access_token);
+      response.cookie("authentication", newJwtToken.access_token, { httpOnly: true, sameSite: "strict"});
       let queryString = "?id=" + user.id + "&username=" + user.name + "&avatar=" + user.avatar;
       response.status(302);
       //console.log("NEW_TOKEN: ", newJwtToken.access_token);
@@ -54,13 +54,13 @@ export class TwoFactorAuthController {
       try {
         this.twoFactorAuthService.validateCodeOrThrow(twoFactorCode!, user.twoFactorSecret || "");
       } catch (error) {
-        response.cookie("authentication", "");
+        response.cookie("authentication", "", { httpOnly: true, sameSite: "strict"});
         response.status(302);
         response.send(JSON.stringify({ location: FRONT_DISCONNECTING }));
         return (response);
       }
       response.status(302);
-      response.cookie("authentication", (await this.jwtAuthService.getAccessTokenTwoFactor(idUser, true)).access_token);
+      response.cookie("authentication", (await this.jwtAuthService.getAccessTokenTwoFactor(idUser, true)).access_token, { httpOnly: true, sameSite: "strict"});
       let queryString = "?id=" + user.id + "&username=" + user.name + "&avatar=" + user.avatar;
       response.send(JSON.stringify({ location: FRONT_LOGIN_SUCCESS + queryString }));
       return (response);
