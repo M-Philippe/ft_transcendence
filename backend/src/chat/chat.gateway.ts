@@ -640,7 +640,7 @@ export class ChatGateway {
         tmpChat.usernames = [];
         tmpChat.timeMessages = [];
         tmpChat.messages = [];
-        tmpChat.usernames = ["System"];
+        tmpChat.usernames = ["Admin"];
         tmpChat.timeMessages = [this.chatService.getTimestamp()];
         tmpChat.messages = ["You must enter a password to enter this chat"];
         this.server.to(tmpSocket).emit("receivedMessages", {
@@ -799,7 +799,6 @@ export class ChatGateway {
     let chat;
     let tmpChat;
     let idUser: number;
-    console.error("FETCHED");
     if ((idUser = this.extractIdUserFromCookie(socket.handshake.headers)) < 0)
       return;
     try {
@@ -821,13 +820,25 @@ export class ChatGateway {
         timeMessages: [this.chatService.getTimestamp()]
       });
       return;
+    } else if (!isPasswordEmpty(chat.password) && !chat.usersInfos[getIndexUser(chat.usersInfos, user.id)].hasProvidedPassword) {
+      let ownerChat: User | undefined;
+      try {
+        ownerChat = await this.usersService.findOne(chat.owners[0]);
+      } catch (error) { ownerChat = undefined; }
+      socket.emit("receivedMessages", {
+        chatRefreshed: chat.id,
+        messages: ["You must provide a password to access this chat."],
+        usernames: [ownerChat !== undefined ? ownerChat.name : "Admin"],
+        timeMessages: [this.chatService.getTimestamp()]
+      })
+    } else {
+      socket.emit("receivedMessages", {
+        chatRefreshed: chat.id,
+        messages: chat.messages,
+        usernames: chat.usernames,
+        timeMessages: chat.timeMessages
+      });
     }
-    socket.emit("receivedMessages", {
-      chatRefreshed: chat.id,
-      messages: chat.messages,
-      usernames: chat.usernames,
-      timeMessages: chat.timeMessages
-    });
     //socket.emit("newChat", {
     //  newChatId: chat.id,
     //});
