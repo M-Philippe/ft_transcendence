@@ -248,6 +248,7 @@ export class UsersController {
       avatar: userToFetch.avatar,
       lostCount: userToFetch.lostCount,
       wonCount: userToFetch.wonCount,
+      inGame: userToFetch.inGame,
       online: userToFetch.online,
       relationshipStatus: relationshipStatus,
       achievements: achievements

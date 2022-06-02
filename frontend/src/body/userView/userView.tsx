@@ -48,6 +48,7 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
       avatar: "",
       lostCount: 0,
       wonCount: 0,
+      inGame: false,
       online: false,
       relationshipStatus: "none",
       achievements: [],
@@ -90,6 +91,7 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
             avatar: res["avatar"],
             lostCount: res["lostCount"],
             wonCount: res["wonCount"],
+            inGame: res["inGame"],
             online: res["online"],
             relationshipStatus: res["relationshipStatus"],
             achievements: res["achievements"],
@@ -112,6 +114,7 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
   }
 
   if (load) {
+    console.log("DATA: ", data);
     return (
       <div>
       <Stack direction="row" spacing={2}>
@@ -123,13 +126,27 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
         <img id = "avatarMyProfil" src={data.avatar} alt="Avatar"/>
       <Stack margin="auto" sx={{ width: '35%', }} spacing={2}>
         {
+          (data.inGame &&
+          <b><p style={{color:"#00FF00"}}>PLAYING</p></b>)
+          ||
+          ((
+            data.online &&
+            <b><p style={{color:"#00FF00"}}>ONLINE</p></b>
+          )
+          ||
+          (
+            !data.online &&
+            <b><p style={{color:"#FF4500"}}>OFFLINE</p></b>
+          ))
+        }
+        {/* {
           data.online &&
           <b><p style={{color:"#00FF00"}}>ONLINE</p></b>
         }
         {
           !data.online &&
           <b><p style={{color:"#FF4500"}}>OFFLINE</p></b>
-        }
+        } */}
         <p>Victory: {data.wonCount} &emsp;&emsp; Defeat: {data.lostCount}</p>
         {
           data.online &&
