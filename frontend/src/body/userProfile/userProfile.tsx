@@ -55,7 +55,6 @@ function UserProfile(props: UserProfileProps) {
 				setStatus2fa((await response.json()).is2faEnabled);
 			}
 		});
-		fetch("")
 		// return () => {
 		// 	controller.abort();
 		// }
