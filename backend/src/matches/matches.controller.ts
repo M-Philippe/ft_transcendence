@@ -10,17 +10,6 @@ export class MatchesController {
       private readonly matchesService: MatchesService,
       private readonly jwtService: JwtAuthService  
     ) {}
-
-  @Post()
-  async create(@Body() createMatchDto: CreateMatchDto) {
-    return this.matchesService.create(createMatchDto);
-  }
-
-  @Get()
-  async findAll() {
-    return this.matchesService.findAll();
-  }
-
   @UseGuards(JwtGuard)
   @Get('/getMatchHistory/:usernameToFetch')
   async getMatchHistory(@Param("usernameToFetch") usernameToFetch: string) {
@@ -31,10 +20,5 @@ export class MatchesController {
       }, HttpStatus.NOT_FOUND);
     }
     return JSON.stringify(ret);
-  }
-
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.matchesService.findOne(+id);
   }
 }

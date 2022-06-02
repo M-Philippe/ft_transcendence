@@ -57,14 +57,4 @@ export class ChatController {
     let idUser = this.getIdUserFromCookie(request.cookies.authentication);
     return (this.chatService.getListPublicChat(idUser));
   }
-
-  @Get()
-  async findAll() {
-    return this.chatService.findAll();
-  }
-
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.chatService.findOne(+id);
-  }
 }

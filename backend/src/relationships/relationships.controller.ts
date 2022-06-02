@@ -174,25 +174,4 @@ export class RelationshipsController {
     await this.relationshipsService.getAllFriendships(idUser, relationshipsToReturn);
     return (relationshipsToReturn);
   }
-
-  @Get()
-  findAll() {
-    return this.relationshipsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: string) {
-    return this.relationshipsService.findOne(+id);
-  }
-
-  @UseGuards(JwtGuard)
-  @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: string, @Body() updateRelationshipDto: UpdateRelationshipDto) {
-    //return this.relationshipsService.update(+id, updateRelationshipDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: string) {
-    return this.relationshipsService.remove(+id);
-  }
 }
