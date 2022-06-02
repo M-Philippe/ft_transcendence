@@ -123,11 +123,6 @@ const Header = (props: IProps) => {
 	  },
 	};
 	
-//   if (redirectDisconnect) {
-// 	window.location.assign(DISCONNECTING_URL);
-// 	return (<p>LEAVING SITE</p>);
-// 	} 
-// 	else {
 	return (
 		<AppBar id ="navBar" position="static">
 		<Container maxWidth={false}>

@@ -1175,7 +1175,7 @@ export class ChatService {
     else if (redirect) {
       return 0;
     } else {
-      let assembledRulesString = "(points: 3 | power-up: yes | map: original)";
+      let assembledRulesString = "(points:3,power-up:yes,map:original)";
       await this.usersService.addEventToUserAlert(userInit.id, userToInvite.id, userInit.name + " invited you to play a game. " + assembledRulesString, true, "invitationGame");
       return 0;
     }

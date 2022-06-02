@@ -72,7 +72,7 @@ export class MatchesOnGoingGateway {
     let rules = rulesToDisassemble;
     rules.indexOf("(");
     // let rulesReturn = rules.substring(rules.indexOf("("));
-    let arrayRules = rules.split("#");
+    let arrayRules = rules.split(",");
     parsedRules.scoreMax = parseInt(arrayRules[0].substring(arrayRules[0].indexOf(":") + 1));
     parsedRules.powerUp
       = (arrayRules[1].substring(arrayRules[1].indexOf(":") + 1)) === "yes" ? true : false;
