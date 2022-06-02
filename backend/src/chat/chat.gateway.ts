@@ -818,8 +818,10 @@ export class ChatGateway {
         this.server.to(client.id).emit("disconnectManual");
         return;
       }
-    } else
+    } else {
+      this.server.to(client.id).emit("disconnectManual");
       return;
+    }
     /* Propagate socket to all chat with user in it. */
     let user: User;
     let idUser: number = payload.idUser;

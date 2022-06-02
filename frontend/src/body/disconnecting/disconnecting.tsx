@@ -16,14 +16,13 @@ function Disconnecting(props: { user: userState, dispatch: DispatchType }) {
 			});
 	})
 
-	fetch(API_USER_DISCONNECT, {
-		method: "put",
-		headers: {"Content-Type": "application/json"},
-		body: JSON.stringify({}),
-		credentials: "include",
-	})
-
 	if (!props.user.isConnected) {
+		fetch(API_USER_DISCONNECT, {
+			method: "put",
+			headers: {"Content-Type": "application/json"},
+			body: JSON.stringify({}),
+			credentials: "include",
+		});
 		return(<Navigate to={BASE_URL} />);
 	}
 	return (<p>Leaving.</p>)
