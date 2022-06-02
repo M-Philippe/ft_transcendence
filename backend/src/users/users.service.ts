@@ -587,7 +587,16 @@ export class UsersService {
   }
 
   async findAllForRanking() {
-    return this.usersRepository.find({ id: Not(1), });
+    let ret = await getConnection()
+            .createQueryBuilder(User, "user")
+            .select("user.id")
+            .addSelect("user.avatar")
+            .addSelect("user.wonCount")
+            .addSelect("user.lostCount")
+            .where("id != :id", {id : 1})
+            .getMany();
+    console.error("T: ", ret);
+    return ret;
   }
 
   async findOne(id: number) {
