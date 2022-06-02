@@ -41,8 +41,10 @@ function Register(props: {user: userState}) {
 		.then(async response => {
 			if (response.status === 400) {
 				let payload = await response.json();
-				console.log(payload);
-				setErrorMessage(payload.description);
+				if (typeof(payload.message) === "object")
+					setErrorMessage(payload.message[0]);
+				else
+					setErrorMessage(payload.message);
 			} else if (response.status === 201) {
 				fetch(API_AUTH_LOCAL_LOGIN, {
 					method: "post",

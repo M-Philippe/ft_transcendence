@@ -40,14 +40,14 @@ export class LocalController {
 		if (user)
 			throw new HttpException({
 				type: "Invalid name.",
-				description: body.username + " is already taken, please choose another username",
+				message: body.username + " is already taken, please choose another username",
 			}, HttpStatus.BAD_REQUEST);
 
 		// Check that password are equal.
 		if (body.password !== body.confirmPassword)
 			throw new HttpException({
 				type: "Invalid password.",
-				description: "Your two password aren't equal",
+				message: "Your two password aren't equal",
 			}, HttpStatus.BAD_REQUEST);
 
 		// Create user.
@@ -58,7 +58,7 @@ export class LocalController {
 			});
 		} catch (error) {
 			throw new HttpException({
-				description: "Server error",
+				message: "Server error",
 			}, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
