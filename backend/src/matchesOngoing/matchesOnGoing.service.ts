@@ -243,19 +243,19 @@ export class MatchesOnGoingService {
 		}
 		return false;
 	}
-
 	/*			Pallet			*/
 	collisionLeftPallet(pallet: Coord, puck: Ball)
 	{
 	//   console.error("LEFT PALLET");
-	  let middlePallet = pallet.h;
-	  middlePallet = middlePallet / 2 + pallet.y;
+	//   let middlePallet = pallet.h;
+	//   middlePallet = middlePallet / 2 + pallet.y;
+      let middlePallet = pallet.y + (pallet.h / 2);
 	  let absPuckVX = Math.abs(puck.vX);
 	  let restDistX = puck.x - puck.r - pallet.x - START_PALLET_WIDTH;                  // dist x remaining
 	  let coefY = Math.round(restDistX * 100 / absPuckVX);                              // % dist y remaining
 	  let restDistY = coefY * puck.vY / 100;
-	  let impactAt = puck.y + (puck.r / 2);
-	  impactAt += puck.vY > 0 ? restDistY : -restDistY;                            // contact with pallet At
+	  let impactAt = puck.y + (puck.r / 2) + (puck.vY > 0 ? restDistY : -restDistY);                            // contact with pallet At
+	//   impactAt += puck.vY > 0 ? restDistY : -restDistY;                            // contact with pallet At
 	  let distFromCenter = Math.abs(middlePallet - impactAt);                           // dist contact from center
 	  let degree = (distFromCenter / (pallet.h / 2)) * START_MAX_VEL_Y;       // % vel max
 	  puck.vY = impactAt < middlePallet ? -degree : degree;                        // new PuckVY
@@ -269,8 +269,9 @@ export class MatchesOnGoingService {
 	collisionRightPallet(pallet: Coord, puck: Ball)
 	{
 	//   console.error("RIGHT PALLET");
-	  let middlePallet = pallet.h;
-	  middlePallet = middlePallet / 2 + pallet.y;
+	//   let middlePallet = pallet.h;
+	//   middlePallet = middlePallet / 2 + pallet.y;
+      let middlePallet = pallet.y + (pallet.h / 2);
 	  let absPuckVX = Math.abs(puck.vX);
 	  let restDistX = pallet.x - puck.x - puck.r;                                      // dist x remaining
 	  let coefY = Math.round(restDistX * 100 / absPuckVX);                              // % dist y remaining
@@ -286,6 +287,50 @@ export class MatchesOnGoingService {
 	  puck.vX = puck.vX * -1.1;
 	  return true;
 	}
+	// /*			Pallet			*/
+	// collisionLeftPallet(pallet: Coord, puck: Ball)
+	// {
+	// //   console.error("LEFT PALLET");
+	// //   let middlePallet = pallet.h;
+	// //   middlePallet = middlePallet / 2 + pallet.y;
+    //   let middlePallet = pallet.y + (pallet.h / 2);
+	//   let absPuckVX = Math.abs(puck.vX);
+	//   let restDistX = puck.x - puck.r - pallet.x - START_PALLET_WIDTH;                  // dist x remaining
+	//   let coefY = Math.round(restDistX * 100 / absPuckVX);                              // % dist y remaining
+	//   let restDistY = coefY * puck.vY / 100;
+	//   let impactAt = puck.y + (puck.r / 2) + (puck.vY > 0 ? restDistY : -restDistY);                            // contact with pallet At
+	// //   impactAt += puck.vY > 0 ? restDistY : -restDistY;                            // contact with pallet At
+	//   let distFromCenter = Math.abs(middlePallet - impactAt);                           // dist contact from center
+	//   let degree = (distFromCenter / (pallet.h / 2)) * START_MAX_VEL_Y;       // % vel max
+	//   puck.vY = impactAt < middlePallet ? -degree : degree;                        // new PuckVY
+	//   let restDistXAfterCollision = absPuckVX - restDistX;
+	//   puck.y += (restDistXAfterCollision * puck.vY) / absPuckVX;
+	//   puck.x += restDistXAfterCollision;
+	//   puck.vX = puck.vX * -1.1;
+	//   return true;
+	// }
+
+	// collisionRightPallet(pallet: Coord, puck: Ball)
+	// {
+	// //   console.error("RIGHT PALLET");
+	// //   let middlePallet = pallet.h;
+	// //   middlePallet = middlePallet / 2 + pallet.y;
+    //   let middlePallet = pallet.y + (pallet.h / 2);
+	//   let absPuckVX = Math.abs(puck.vX);
+	//   let restDistX = pallet.x - puck.x - puck.r;                                      // dist x remaining
+	//   let coefY = Math.round(restDistX * 100 / absPuckVX);                              // % dist y remaining
+	//   let restDistY = coefY * puck.vY / 100;
+	//   let impactAt = puck.y + (puck.r / 2);
+	//   impactAt += puck.vY > 0 ? restDistY : -restDistY;                            // contact with pallet At
+	//   let distFromCenter = Math.abs(middlePallet - impactAt);                           // dist contact from center
+	//   let degree = (distFromCenter / (pallet.h / 2)) * START_MAX_VEL_Y;       // % vel max
+	//   puck.vY = impactAt < middlePallet ? -degree : degree;                        // new PuckVY
+	//   let restDistXAfterCollision = absPuckVX - restDistX;
+	//   puck.y += (restDistXAfterCollision * puck.vY) / absPuckVX;
+	//   puck.x -= restDistXAfterCollision;
+	//   puck.vX = puck.vX * -1.1;
+	//   return true;
+	// }
 
 	collisionPallet(game: Game) {
 		if (game.ball.vX > 0) {
