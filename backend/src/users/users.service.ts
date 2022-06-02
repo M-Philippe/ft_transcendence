@@ -587,16 +587,14 @@ export class UsersService {
   }
 
   async findAllForRanking() {
-    let ret = await getConnection()
+    return await getConnection()
             .createQueryBuilder(User, "user")
-            .select("user.id")
+            .select("user.name")
             .addSelect("user.avatar")
             .addSelect("user.wonCount")
             .addSelect("user.lostCount")
             .where("id != :id", {id : 1})
             .getMany();
-    console.error("T: ", ret);
-    return ret;
   }
 
   async findOne(id: number) {

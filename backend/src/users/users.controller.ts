@@ -127,7 +127,6 @@ export class UsersController {
 
   @Get()
   findAll() {
-    console.error("RANKING_ALL");
     return this.usersService.findAllForRanking();
   }
 
