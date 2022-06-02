@@ -776,11 +776,16 @@ export class ChatGateway {
     let payload;
     if (client.handshake.headers.cookie) {
 			let jwt = extractJwtFromCookie(client.handshake.headers.cookie);
-			if (jwt === "")
-				return;
+			if (jwt === "") {
+        this.server.to(client.id).emit("disconnectManual");
+        return;
+      }
 			try {
 				payload = this.jwtService.verify(jwt);
-			} catch (error) { return; }
+			} catch (error) {
+        this.server.to(client.id).emit("disconnectManual");
+        return;
+      }
     } else
       return;
     /* Propagate socket to all chat with user in it. */
