@@ -10,10 +10,6 @@ export default function LoginSuccess(props: any) {
 	const paramsId = url.get("id");
 	const paramsUsername = url.get("username");
 	const paramsAvatar = url.get("avatar");
-	//console.log(paramsId);
-	//console.log(paramsUsername);
-	//console.log("URL: ", url, "\n", window.location.href);
-	//console.log("PARAMS_AVATAR: ", paramsAvatar);
 
 	useEffect(() => {
 		store.dispatch({

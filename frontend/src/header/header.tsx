@@ -117,8 +117,6 @@ const Header = (props: IProps) => {
 
 	"&.active": {
 		background: "rgba(73, 68, 68, 0.10)",
-		// textDecoration: "underline", 
-		// textDecorationColor: "white",
 		fontWeight: "bold",
 	  },
 	};

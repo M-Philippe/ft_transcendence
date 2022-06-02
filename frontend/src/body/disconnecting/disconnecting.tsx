@@ -24,8 +24,7 @@ function Disconnecting(props: { user: userState, dispatch: DispatchType }) {
 	})
 
 	if (!props.user.isConnected) {
-		return(<Navigate to={BASE_URL} />
-		);
+		return(<Navigate to={BASE_URL} />);
 	}
 	return (<p>Leaving.</p>)
 }

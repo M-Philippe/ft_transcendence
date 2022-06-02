@@ -17,8 +17,6 @@ interface UserInput {
 }
 
 function Register(props: {user: userState}) {
-	if (props.user.isConnected)
-		window.location.assign(BASE_URL);
 
 	const [userInput, setUserInput] = useState<UserInput>({
 		username: "",
@@ -28,6 +26,9 @@ function Register(props: {user: userState}) {
 
 	const [errorMessage, setErrorMessage] = useState("");
 	const [redirectUrl, setRedirectUrl] = useState("");
+
+	if (props.user.isConnected)
+		return (<Navigate to={BASE_URL}/>)
 
 	const handleSubmit = () => {
 		let headers = new Headers();
@@ -91,8 +92,6 @@ function Register(props: {user: userState}) {
                 <h2>Register</h2>
 				{ errorMessage !== "" && <p className="errorMessage" >{errorMessage}</p> }
 				<form>
-                	{/* <TextField label='Username' placeholder='Enter username' fullWidth required /><br /><br /> */}
-                	{/* <TextField label='Password' placeholder='Enter password' type='password' fullWidth required /> */}
 				<label>Username</label><br />
 					<input type="text" onKeyDown={keyDownHandler} onChange={(event) => {handleChange(event ,"username")}}/><br /><br />
 				<label>Password</label><br />
