@@ -27,8 +27,12 @@ export class ChatGateway {
   */
 
   async commandInvite(command: string[], idChat: number, idUser: number, socketId: string) {
-    if (command.length != 2)
-          return;
+    if (command.length != 2) {
+      this.server.to(socketId).emit("errorMessage", {
+        errorMessage: "Bad number of arguments"
+      });
+      return;
+    }
     let response;
     try {
       response = await this.chatService.inviteUserIntoChat(command[1], idChat, idUser);
@@ -140,8 +144,12 @@ export class ChatGateway {
   }
 
   async commandUnban(command: string[], idChat: number, idUser: number, socketId: string) {
-    if (command.length !== 2)
+    if (command.length !== 2) {
+      this.server.to(socketId).emit("errorMessage", {
+        errorMessage: "Bad number of arguments"
+      });
       return;
+    }
     let response; try {
       response = await this.chatService.unkickUserFromChat(command[1], idChat, idUser);
     } catch (error) {
@@ -164,8 +172,12 @@ export class ChatGateway {
   }
 
   async commandMute(command: string[], idChat: number, idUser: number, socketId: string) {
-    if (command.length != 2)
+    if (command.length != 2) {
+      this.server.to(socketId).emit("errorMessage", {
+        errorMessage: "Bad number of arguments"
+      });
       return;
+    }
     let response;
     try {
       response = await this.chatService.muteUserFromChat(command[1], idChat, idUser);
@@ -223,8 +235,12 @@ export class ChatGateway {
   }
 
   async commandUnmute(command: string[], idChat: number, idUser: number, socketId: string) {
-    if (command.length != 2)
+    if (command.length != 2) {
+      this.server.to(socketId).emit("errorMessage", {
+        errorMessage: "Bad number of arguments"
+      });
       return;
+    }
     let response;
     try {
       response = await this.chatService.unmuteUserFromChat(command[1], idChat, idUser);
@@ -243,8 +259,12 @@ export class ChatGateway {
   }
 
   async commandSetChatPublic(command: string[], idChat: number, idUser: number, socketId: string) {
-    if (command.length != 1)
+    if (command.length != 1) {
+      this.server.to(socketId).emit("errorMessage", {
+        errorMessage: "Bad number of arguments"
+      });
       return;
+    }
     let response;
     try {
       response = await this.chatService.setChatToPublic(idChat, idUser);
@@ -263,8 +283,12 @@ export class ChatGateway {
   }
 
   async commandSetChatPrivate(command: string[], idChat: number, idUser: number, socketId: string) {
-    if (command.length != 1)
+    if (command.length != 1) {
+      this.server.to(socketId).emit("errorMessage", {
+        errorMessage: "Bad number of arguments"
+      });
       return;
+    }
     let response; try {
       response = await this.chatService.setChatToPrivate(idChat, idUser);
     } catch (error) {
@@ -319,8 +343,12 @@ export class ChatGateway {
   }
 
   async commandSetPassword(command: string[], idChat: number, idUser: number, socketId: string) {
-    if (command.length != 2)
+    if (command.length != 2) {
+      this.server.to(socketId).emit("errorMessage", {
+        errorMessage: "Bad number of arguments"
+      });
       return;
+    }
     let response;
     try {
       response = await this.chatService.setPassword(idChat, idUser, command[1]);
@@ -339,8 +367,12 @@ export class ChatGateway {
   }
 
   async commandUnsetPassword(command: string[], idChat: number, idUser: number, socketId: string) {
-    if (command.length != 1)
+    if (command.length != 1) {
+      this.server.to(socketId).emit("errorMessage", {
+        errorMessage: "Bad number of arguments"
+      });
       return;
+    }
     let response;
     try {
       response = await this.chatService.unsetPassword(idChat, idUser);

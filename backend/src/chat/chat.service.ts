@@ -751,18 +751,18 @@ export class ChatService {
       return;
     if (chat.owners.indexOf(adminUser.id) < 0)
       return (LACK_OWNER_RIGHT);
-    //if (chat.password === undefined)
-    //  chat.password = await encryptPasswordToStoreInDb(chat.password, password);
-    //else {
-      await getConnection()
-        .createQueryBuilder()
-        .update(Chat)
-        .set({
-          password: await encryptPasswordToStoreInDb(chat.password, password)
-        })
-        .where("id = :id", { id: idChat })
-        .execute();
-    //}
+    else if (!isPasswordEmpty(chat.password))
+      return "Chat already protected by password, unset it first.";
+    else if (password.length > 8 || password.length < 3)
+      return "Password must be 3 < password < 8";
+    await getConnection()
+      .createQueryBuilder()
+      .update(Chat)
+      .set({
+        password: await encryptPasswordToStoreInDb(chat.password, password)
+      })
+      .where("id = :id", { id: idChat })
+      .execute();
     chat = await this.chatRepository.findOne(idChat);
     if (chat === undefined)
       return;
