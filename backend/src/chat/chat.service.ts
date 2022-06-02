@@ -173,7 +173,7 @@ export class ChatService {
       dateMute: 0,
       timer: 0,
     });
-    if ((chat = await this.addMessageInArray(chat, "System [" + adminUser.name + "]", MUTED_MESSAGE + " " + mutedUser.name)) === undefined)
+    if ((chat = await this.addMessageInArray(chat, adminUser.name, MUTED_MESSAGE + " " + mutedUser.name)) === undefined)
       return undefined;
     try {
       await this.chatRepository.save(chat);
@@ -216,7 +216,7 @@ export class ChatService {
     || !isUserMuted(chat.mutedUsers, mutedUser.id))
       return ("User not in chat / already banned / not muted");
     chat.mutedUsers.splice(getIndexMutedUser(chat.mutedUsers, mutedUser.id), 1);
-    if ((chat = await this.addMessageInArray(chat, "System [" + adminUser.name + "]", UNMUTED_MESSAGE + " " + mutedUser.name)) === undefined)
+    if ((chat = await this.addMessageInArray(chat, adminUser.name, UNMUTED_MESSAGE + " " + mutedUser.name)) === undefined)
       return undefined;
     try {
       await this.chatRepository.save(chat);
@@ -279,7 +279,7 @@ export class ChatService {
       dateMute: date.valueOf(),
       timer: timer * 1000,
     });
-    if ((chat = await this.addMessageInArray(chat, "System [" + adminUser.name + "]", MUTED_MESSAGE + " " + mutedUser.name + " for " + timer.toString())) === undefined)
+    if ((chat = await this.addMessageInArray(chat, adminUser.name, MUTED_MESSAGE + " " + mutedUser.name + " for " + timer.toString())) === undefined)
       return undefined;
     try {
       await this.chatRepository.save(chat);
@@ -334,7 +334,7 @@ export class ChatService {
       dateBan: 0,
       timer: 0,
     });
-    this.addMessageInArray(chat, "System [" + adminUser.name + "]", BANNED_MESSAGE + " " + banishedUser.name);
+    this.addMessageInArray(chat, adminUser.name, BANNED_MESSAGE + " " + banishedUser.name);
     try {
       await this.chatRepository.save(chat);
     } catch (error) {
@@ -401,7 +401,7 @@ export class ChatService {
       dateBan: date.valueOf(),
       timer: timer,
     });
-    this.addMessageInArray(chat, "System [" + adminUser.name + "]", BANNED_MESSAGE + " " + banishedUser.name + " for " + timer.toString());
+    this.addMessageInArray(chat, adminUser.name, BANNED_MESSAGE + " " + banishedUser.name + " for " + timer.toString());
     try {
       await this.chatRepository.save(chat);
     } catch (error) {
@@ -461,7 +461,7 @@ export class ChatService {
       return ("'" + banishedUser.name + "' is not in chat, or not banned");
     }
     chat.bannedUsers.splice(getIndexBannedUser(chat.bannedUsers, banishedUser.id), 1);
-    this.addMessageInArray(chat, "System [" + adminUser.name + "]", UNBANNED_MESSAGE + " " + banishedUser.name);
+    this.addMessageInArray(chat, adminUser.name, UNBANNED_MESSAGE + " " + banishedUser.name);
     try {
       await this.chatRepository.save(chat);
     } catch (error) {
@@ -668,7 +668,7 @@ export class ChatService {
     if (chat.owners[0] !== adminUser.id)
       return (LACK_OWNER_RIGHT);
     chat.type = "public";
-    chat = await this.addMessageInArray(chat, "System [" + adminUser.name + "]", SET_CHAT_PUBLIC);
+    chat = await this.addMessageInArray(chat, adminUser.name, SET_CHAT_PUBLIC);
     try {
       await this.chatRepository.save(chat);
     } catch (error) {
@@ -698,7 +698,7 @@ export class ChatService {
     if (chat.owners[0] !== adminUser.id)
       return (LACK_OWNER_RIGHT);
     chat.type = "private";
-    chat = await this.addMessageInArray(chat, "System [" + adminUser.name + "]" + " (System)", SET_CHAT_PRIVATE);
+    chat = await this.addMessageInArray(chat, adminUser.name + " (System)", SET_CHAT_PRIVATE);
     try {
       await this.chatRepository.save(chat);
     } catch (error) {
@@ -771,7 +771,7 @@ export class ChatService {
       if (chat.admins.indexOf(chat.usersInfos[i].userId) < 0)
         chat.usersInfos[i].hasProvidedPassword = false;
     }
-    chat = await this.addMessageInArray(chat, "System [" + adminUser.name + "]", SET_PASSWORD);
+    chat = await this.addMessageInArray(chat, adminUser.name, SET_PASSWORD);
     try {
       await this.chatRepository.save(chat);
     } catch (error) {
@@ -803,7 +803,7 @@ export class ChatService {
     if (chat.owners.indexOf(adminUser.id) < 0)
       return (LACK_OWNER_RIGHT);
     chat.password = undefined;
-    chat = await this.addMessageInArray(chat, "System [" + adminUser.name + "]", UNSET_PASSWORD);
+    chat = await this.addMessageInArray(chat, adminUser.name, UNSET_PASSWORD);
     try {
       await this.chatRepository.save(chat);
     } catch (error) {
