@@ -22,6 +22,7 @@ import { styled } from '@mui/material/styles';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import { Navigate } from "react-router-dom";
 
 interface PropsChatConnected {
   name: string,
@@ -177,6 +178,10 @@ export function ChatConnected(props: PropsChatConnected) {
   props.socket.off("updateChatName");
   props.socket.off("focusOnmp");
 
+  props.socket.off("disconnectManual");
+  props.socket.on("disconnectManual", (...args: any) => {
+    window.location.assign(DISCONNECTING_URL);
+  });
 
   props.socket.on("focusOnpm", (...args: any) => {
     state.lstButtonsGreen.splice(state.lstButtonsGreen.indexOf(args[0].chatFocusId - 1), 1)

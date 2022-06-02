@@ -69,10 +69,8 @@ export class MatchesOnGoingGateway {
   disassembleRulesString(rulesToDisassemble: string) {
     let parsedRules: {powerUp: boolean, scoreMax: number, map: "original" | "desert" | "jungle"}
       = { powerUp: false, scoreMax: 3, map: "original"};
-    let rules = rulesToDisassemble;
-    rules.indexOf("(");
-    // let rulesReturn = rules.substring(rules.indexOf("("));
-    let arrayRules = rules.split(",");
+    let arrayRules = rulesToDisassemble.split(",");
+    console.error("ARRAY_RULES: ", arrayRules);
     parsedRules.scoreMax = parseInt(arrayRules[0].substring(arrayRules[0].indexOf(":") + 1));
     parsedRules.powerUp
       = (arrayRules[1].substring(arrayRules[1].indexOf(":") + 1)) === "yes" ? true : false;
@@ -85,8 +83,8 @@ export class MatchesOnGoingGateway {
   assembleRulesString(rules: any) {
     let assembledRulesString =
       "(points:" + rules.scoreMax
-      + "#power-up:" + (rules.powerUp ? "yes" : "no")
-      + "#map:" + rules.map + ")";
+      + ",power-up:" + (rules.powerUp ? "yes" : "no")
+      + ",map:" + rules.map + ")";
     return assembledRulesString;
   }
 
