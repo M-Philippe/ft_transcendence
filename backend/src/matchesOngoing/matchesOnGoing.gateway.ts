@@ -10,8 +10,6 @@ import { extractJwtFromCookie, JwtGatewayGuard } from "src/guards/jwtGateway.gua
 import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
 import { UsersService } from "src/users/users.service";
 import { User } from "src/users/entities/user.entity";
-import { getConnection} from "typeorm";
-
 
 const FPS = 40;
 
@@ -216,11 +214,7 @@ export class MatchesOnGoingGateway {
     try {
       let payload = this.jwtService.verify(jwt);
       idUser = payload.idUser;
-      usr = await getConnection()
-      .getRepository(User)
-      .createQueryBuilder('user')
-      .where("id = :id", { id: payload.idUser})
-      .getOneOrFail();
+      usr = await this.usersService.findOne(payload.idUser);
     } catch (error) {
       this.server.to(socket.id).emit("disconnectManual");
       return;
@@ -346,11 +340,7 @@ export class MatchesOnGoingGateway {
 			let jwt = extractJwtFromCookie(client.handshake.headers.cookie);
       try {
         let payload = this.jwtService.verify(jwt);
-        let usr: User = await getConnection()
-          .getRepository(User)
-          .createQueryBuilder('user')
-          .where("id = :id", { id: payload.idUser})
-          .getOneOrFail();
+        let usr: User = await this.usersService.findOne(payload.idUser);
         if (this.removeUserFromQueue(payload.idUser)) {
           await this.usersService.setNotInGame(usr.name);
           return;

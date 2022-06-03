@@ -325,7 +325,7 @@ export class ChatGateway {
       console.error(error);
       return;
     }
-    if (response === undefined)
+    if (response === null || response === undefined)
       return;
     else if (typeof(response) === "string") {
       this.server.to(socketId).emit("errorMessage", {

@@ -1,11 +1,8 @@
 import { HttpException, HttpStatus, Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Put, Req, Res, UseGuards, UseInterceptors, UploadedFile, StreamableFile } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { Request, Response } from 'express';
 import { JwtGuard } from 'src/guards/jwt.guards';
 import { JwtAuthService } from 'src/auth/jwt/jwt-auth.service';
-import { getConnection } from 'typeorm';
 import { User } from './entities/user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from "multer";
@@ -93,7 +90,7 @@ export class UsersController {
     }
     // check that user isn't blocked
     let existingRelationship = await this.relationshipsService.checkRelationshipExistWithId(userWhoInvite.id, userToInvite.id);
-    if (existingRelationship !== undefined &&
+    if (existingRelationship !== null &&
       (existingRelationship.status === RelationshipStatus.BLOCKED_REQUESTEE ||
         existingRelationship.status === RelationshipStatus.BLOCKED_REQUESTER))
       return;
@@ -132,7 +129,9 @@ export class UsersController {
     @Res() response: Response) {
       let jwtDecrypt = this.jwtService.verify(request.cookies.authentication);
       response.cookie("authentication", "", { httpOnly: true, sameSite: "strict"});
-      await this.usersService.disconnectUser(jwtDecrypt.idUser);
+      try {
+        await this.usersService.disconnectUser(jwtDecrypt.idUser);
+      } catch (error) {}
       response.send();
       return (response);
   }
@@ -167,20 +166,17 @@ export class UsersController {
       return;
     }
     response.status(200);
-    let verifUserWithName = await getConnection()
-          .createQueryBuilder()
-          .select("user")
-          .from(User, "user")
-          .where("user.name = :id", { id: JSON.stringify(request.body.newName) })
-          .getOne();
-    if (verifUserWithName !== undefined) {
-      response.send(JSON.stringify({
-        message: verifUserWithName.name + " is already taken.",
-      }));
-    } else {
+    let verifUserWithName;
+    try {
+      verifUserWithName = await this.usersService.findOneByName(JSON.stringify(request.body.newName));
+    } catch (error) {
       let payloadToReturn = await this.usersService.changeUsername42(idUser, request.body.newName);
       response.send(JSON.stringify(payloadToReturn));
+      return;
     }
+    response.send(JSON.stringify({
+      message: verifUserWithName.name + " is already taken.",
+    }));
   }
 
   @UseGuards(JwtGuard)
@@ -197,10 +193,12 @@ export class UsersController {
     }
     response.status(200);
     let user = await this.usersService.setHasChangedName42ToTrue(idUser);
+    if (user === undefined)
+      return;
     response.send(JSON.stringify({
-      username: user[0].name,
-      avatar: user[0].avatar,
-      idUser: user[0].id
+      username: user.name,
+      avatar: user.avatar,
+      idUser: user.idUser
     }));
   }
 
@@ -232,9 +230,9 @@ export class UsersController {
       }, HttpStatus.NO_CONTENT);
     }
     let relationshipStatus: string = "none";
-    let relationship: Relationship | undefined;
+    let relationship: Relationship | undefined | null;
     if ((relationship = await this.relationshipsService.checkRelationshipExistWithId(userInit.id, userToFetch.id))
-        !== undefined) {
+        !== null && (relationship !== undefined)) {
       if (relationship.status === RelationshipStatus.BLOCKED_REQUESTER && relationship.requester.id === userInit.id)
           relationshipStatus = "blocker";
       else if (relationship.status === RelationshipStatus.BLOCKED_REQUESTEE && relationship.requestee.id === userInit.id)

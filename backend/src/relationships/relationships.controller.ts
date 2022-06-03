@@ -45,10 +45,10 @@ export class RelationshipsController {
     }
     let existingRelationship = await this.relationshipsService.checkRelationshipExistWithId(idRequester, requestee.id);
     let relationshipCreated;
-    if (existingRelationship !== undefined && existingRelationship.status === RelationshipStatus.REFUSED) {
+    if (existingRelationship !== null && existingRelationship.status === RelationshipStatus.REFUSED) {
       relationshipCreated = existingRelationship;
       await this.relationshipsService.update(relationshipCreated, {status: RelationshipStatus.PENDING});
-    } else if (existingRelationship === undefined) {
+    } else if (existingRelationship === null) {
       relationshipCreated = await this.relationshipsService.create({
         requesteeId: requestee.id.toString(),
         requesterId: idRequester,
@@ -80,7 +80,7 @@ export class RelationshipsController {
       }, HttpStatus.NOT_FOUND);
     }
     existingRelationship = await this.relationshipsService.checkRelationshipExistWithId(idUser, userToUnfriend.id);
-    if (existingRelationship === undefined) {
+    if (existingRelationship === undefined || existingRelationship === null) {
       throw new HttpException({
         code: "e2300",
         type: "Invalid name.",
@@ -107,7 +107,7 @@ export class RelationshipsController {
       }, HttpStatus.NOT_FOUND);
     }
     let existingRelationship = await this.relationshipsService.checkRelationshipExistWithId(requestee.id, idRequester);
-    if (existingRelationship !== undefined) { // update Relationship
+    if (existingRelationship !== null) { // update Relationship
       if (existingRelationship.requester.id === idRequester)
         existingRelationship = await this.relationshipsService.updateStatusToBlock(existingRelationship, { status: RelationshipStatus.BLOCKED_REQUESTER});
       else
@@ -142,7 +142,7 @@ export class RelationshipsController {
         description: "No such user and/or relationship."
       }, HttpStatus.NOT_FOUND);
     }
-    if (existingRelationship === undefined)
+    if (existingRelationship === undefined || existingRelationship === null)
       throw new HttpException({
         code: "e2300",
         type: "Invalid search.",
