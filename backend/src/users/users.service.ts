@@ -4,17 +4,15 @@ import { Chat } from 'src/chat/entities/chat.entity';
 import { comparePassword, encryptPasswordToStoreInDb, password } from 'src/passwordEncryption/passwordEncryption';
 import { Relationship } from 'src/relationships/entities/relationship.entity';
 import { RelationshipsService } from 'src/relationships/relationships.service';
-import { getConnection, Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { CreateUserDto, CreateUSer42Dto, CreateUserLocalDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UsersGateway } from './users.gateway';
 import { MatchesOnGoingGateway } from 'src/matchesOngoing/matchesOnGoing.gateway';
 import { RelationshipStatus } from 'src/relationships/entities/relationship.entity';
-import { MatchesOnGoingService } from 'src/matchesOngoing/matchesOnGoing.service';
 import { ChangePasswordDto } from './users.types';
 import { API_USER_AVATAR, FRONT_GENERIC_AVATAR } from 'src/urlConstString';
-import { Not } from 'typeorm'
 
 const WIN10 = 0;
 const WIN100 = 1;
@@ -122,17 +120,9 @@ export class UsersService {
 
   @HttpCode(200)
   async disconnectUser(idUser: number) {
-    let rawData = await getConnection()
-                        .createQueryBuilder()
-                        .update(User)
-                        .set({
-                          online: false,
-                          hasAlreadyChanged42Name: true,
-                        })
-                        .where("id = :id", { id: idUser })
-                        .returning(["id", "name", "avatar"])
-                        .execute();
-    if (rawData.raw.length === 0) {
+    try {
+      await this.usersRepository.update({ id: idUser}, { online: false, hasAlreadyChanged42Name: true });
+    } catch (error) {
       throw new HttpException({
         type: "No such User."
       }, HttpStatus.NO_CONTENT);
@@ -156,14 +146,7 @@ export class UsersService {
       throw new Error("New password isn't the same");
     let newPassword = await encryptPasswordToStoreInDb(undefined, changePasswordDto.newPassword);
     try {
-      await getConnection()
-        .createQueryBuilder()
-        .update(User)
-        .set({
-          password: newPassword
-        })
-        .where("id = :id", { id: idUser })
-        .execute();
+      await this.usersRepository.update({id: idUser}, { password: newPassword});
     } catch (error) {
       throw new Error("Internal Server Error, please try later");
     }
@@ -172,15 +155,9 @@ export class UsersService {
   @HttpCode(200)
   async setUserOnline(idUser: number, status: boolean) {
     // must set socket in userAlert to empty string.
-    await getConnection()
-      .createQueryBuilder()
-      .update(User)
-      .set({
-        online: status,
-        hasAlreadyChanged42Name: true,
-      })
-      .where("id = :id", { id: idUser })
-      .execute();
+    try {
+      await this.usersRepository.update({ id: idUser }, { online: status, hasAlreadyChanged42Name: true });
+    } catch (error) {}
   }
 
   async setUserOfflineAndSocketToNull(idUser: number) {
@@ -191,10 +168,9 @@ export class UsersService {
   }
 
   async updateSocketAndGetUserAlert(userId: number, socket: string) {
-    let user = await this.usersRepository.findOne(userId);
-    if (user === undefined) {
-      return (undefined);
-    }
+    let user = await this.usersRepository.findOne({where: {id: userId}});
+    if (user === undefined || user === null)
+      return undefined;
     user.userAlert.socket = socket;
     await this.usersRepository.save(user);
     return (user.userAlert);
@@ -205,10 +181,9 @@ export class UsersService {
   */
 
   async addEventToUserAlert(idUserInitiator: number, idUserToAlert: number , message: string, needResponse: boolean, type: "friendships" | "achievements" | "invitationGame") {
-    let user = await this.usersRepository.findOne(idUserToAlert);
-    if (user === undefined) {
+    let user = await this.usersRepository.findOne({where: {id: idUserToAlert}});
+    if (user === undefined || user === null)
       return;
-    }
     if (user.userAlert.alert === undefined)
       user.userAlert.alert = [];
     user.userAlert.alert.unshift({
@@ -231,8 +206,8 @@ export class UsersService {
   }
 
   async handleAlertFriendship(requestee: User, requesteeId: number, requesterId: number, response: string, indexAlert: number) {
-    let relationshipToUpdate: Relationship | undefined = await this.relationshipsService.checkRelationshipExistWithId(requesteeId, requesterId);
-    if (relationshipToUpdate === undefined || (relationshipToUpdate.status !== RelationshipStatus.PENDING && relationshipToUpdate.status !== RelationshipStatus.REFUSED)) {
+    let relationshipToUpdate: Relationship | undefined | null = await this.relationshipsService.checkRelationshipExistWithId(requesteeId, requesterId);
+    if (relationshipToUpdate === undefined || relationshipToUpdate === null || (relationshipToUpdate.status !== RelationshipStatus.PENDING && relationshipToUpdate.status !== RelationshipStatus.REFUSED)) {
       await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
       return (undefined);
     }
@@ -259,11 +234,11 @@ export class UsersService {
   async handleAlertInvitationGame(requestee: User, requesterId: number, response: string, indexAlert: number) {
     let requester;
     try {
-      requester = await this.usersRepository.findOne(requesterId);
+      requester = await this.usersRepository.findOne({where: {id: requesterId}});
     } catch (error) {
       return (undefined);
     }
-    if (requester === undefined)
+    if (requester === undefined || requester === null)
       return (undefined)
     else if (!requester.online || requester.inGame) {
       await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
@@ -282,23 +257,7 @@ export class UsersService {
       if (requester.userAlert.socket === "") {
         await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
         return ({ message: "Intern problem, socket"});
-        //return ({
-        //  message: requester.name + " isn't connected! (no socket defined)"
-        //});
       }
-      // let parsedRules:
-      //   {powerUp: boolean, scoreMax: number, map: "original" | "desert" | "jungle"}
-      //   = { powerUp: false, scoreMax: 3, map: "original"};
-      // let messageToParse = requestee.userAlert.alert[indexAlert].message;
-      // messageToParse.indexOf("(");
-      // let rules = messageToParse.substring(messageToParse.indexOf("("));
-      // let arrayRules = rules.split("#");
-      // parsedRules.scoreMax = parseInt(arrayRules[0].substring(arrayRules[0].indexOf(":") + 1));
-      // parsedRules.powerUp
-      //   = (arrayRules[1].substring(arrayRules[1].indexOf(":") + 1)) === "yes" ? true : false;
-      // let mapExtracted = arrayRules[2].substring(arrayRules[2].indexOf(":") + 1, arrayRules[2].length - 1);
-      // if (mapExtracted === "original" || mapExtracted === "desert" || mapExtracted === "jungle")
-      //   parsedRules.map = mapExtracted;
       this.matchesOnGoingGateway.createMatchFromInvitation(requester.id, requestee.id, requestee.userAlert.alert[indexAlert].message);
       await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
       return ({redirection: true});
@@ -306,8 +265,8 @@ export class UsersService {
   }
 
   async findAlertByMessageAndExecute(requesterId: number, requesteeId: number, message: string, response: string) {
-    let requestee = await this.usersRepository.findOne(requesteeId);
-    if (requestee === undefined || requestee.userAlert.alert === undefined || requestee.userAlert.alert.length === 0)
+    let requestee = await this.usersRepository.findOne({where: {id : requesteeId}});
+    if (requestee === undefined || requestee === null || requestee.userAlert.alert === undefined || requestee.userAlert.alert.length === 0)
       return (undefined);
     for (let i = 0; i < requestee.userAlert.alert.length; i++) {
       if (requestee.userAlert.alert[i].message === message) {
@@ -323,8 +282,8 @@ export class UsersService {
   }
 
   async contactSocketUser(idUser: number, message: string) {
-    let user = await this.usersRepository.findOne(idUser);
-    if (user === undefined || user.userAlert.socket === "")
+    let user = await this.usersRepository.findOne({where: {id: idUser}});
+    if (user === undefined || user === null || user.userAlert.socket === "")
       return;
     this.usersGateway.contactUser(user.userAlert.socket, message);
   }
@@ -378,12 +337,12 @@ export class UsersService {
   }
 
   async checkUserAchievements(username: string) {
-    let user = await getConnection()
-                    .createQueryBuilder()
-                    .select("user")
-                    .from(User, "user")
-                    .where("name = :name", { name: username })
-                    .getOneOrFail();
+    let user;
+    try {
+      user = await this.usersRepository.findOne({ where: { name: username }});
+    } catch (error) { return; }
+    if (user === null)
+      return;
     if (user.achievements[WIN10] == 'x' && user.wonCount > 9) {
       user.achievements = this.replaceAt(WIN10, user.achievements);
       this.addEventToUserAlert(-1, user.id, "Felicitation ! This is your tenth victory !", false, "achievements");
@@ -401,12 +360,7 @@ export class UsersService {
       this.addEventToUserAlert(-1, user.id, "Congratulations ! You have won ten game in a row !", false, "achievements");
     }
     if (user.wonCount + user.lostCount > 0 && user.achievements[TOP1] == 'x') {
-      let count = await getConnection()
-                        .createQueryBuilder()
-                        .select("user")
-                        .from(User, "user")
-                        .where('user.wonCount > :playerWon', {playerWon: user.wonCount})
-                        .getCount();
+      let count = await this.usersRepository.count({ where: { wonCount: MoreThan(user.wonCount) }});
       if (user.achievements[TOP10] == 'x' && count < 10) {
         user.achievements = this.replaceAt(TOP10, user.achievements);
         this.addEventToUserAlert(-1, user.id, "Congratulations ! You are in the ten best players !", false, "achievements");
@@ -467,12 +421,7 @@ export class UsersService {
 
   async checkUsernameExist(usernameToFind: string) {
     //const user = await this.usersRepository.findOne(usernameToFind);
-    let user = await getConnection()
-    .createQueryBuilder()
-    .select("user")
-    .from(User, "user")
-    .where("name = :id", { id: usernameToFind })
-    .getCount();
+    let user = await this.usersRepository.count({ where: { name: usernameToFind }});
     if (user != 0)
       return false;
     return true;
@@ -480,12 +429,7 @@ export class UsersService {
 
   async createUser42(userToCreate: CreateUSer42Dto) {
     // TODO: add verif that no identical name exists. If so, add random number to origin-name.
-    let user = await getConnection()
-          .createQueryBuilder()
-          .select("user")
-          .from(User, "user")
-          .where("id42 = :id", { id: userToCreate.id42 })
-          .getOne();
+    let user = await this.usersRepository.findOne({ where: { id42: userToCreate.id42 }});
     if (user !== null && user !== undefined) {
       user.online = true;
       user.inGame = false;
@@ -541,28 +485,25 @@ export class UsersService {
   }
 
   async setHasChangedName42ToTrue(idUser: number) {
-    let user = await getConnection()
-          .createQueryBuilder()
-          .update(User)
-          .set({
-            hasAlreadyChanged42Name: true,
-          })
-          .where("id = :id", {id: idUser})
-          .returning(["id", "name", "avatar"])
-          .execute();
-    return (user.raw);
+    let user;
+    try {
+      await this.usersRepository.update({id: idUser}, { hasAlreadyChanged42Name: true });
+      user = await this.usersRepository.findOne({ where: { id: idUser }});
+    } catch (error) { return; }
+    if (user === null)
+      return;
+    return ({name: user.name, avatar: user.avatar, idUser: user.id});
   }
 
   async updateAvatar(idUser: number, avatar: string) {
     let user = await this.usersRepository.findOne({ where: {id: idUser}});
     if (user === null || user === undefined)
       return (undefined);
-    await getConnection()
-      .createQueryBuilder()
-      .update(User)
-      .set({ avatar: API_USER_AVATAR + avatar })
-      .where("id = :id", {id: idUser})
-      .execute();
+    try {
+      await this.usersRepository.update({ id: idUser }, { avatar: API_USER_AVATAR + avatar });
+    } catch (error) {
+      return undefined;
+    }
     if (user.avatar === FRONT_GENERIC_AVATAR)
       return (undefined);
     else
@@ -587,14 +528,13 @@ export class UsersService {
   }
 
   async findAllForRanking() {
-    return await getConnection()
-            .createQueryBuilder(User, "user")
-            .select("user.name")
-            .addSelect("user.avatar")
-            .addSelect("user.wonCount")
-            .addSelect("user.lostCount")
-            .where("id != :id", {id : 1})
-            .getMany();
+    let ret = await this.usersRepository.findAndCount({select: ["name", "avatar", "wonCount", "lostCount"]});
+    let returnedUsers = ret[0];
+    for (let i = 0; i < returnedUsers.length; i++) {
+      if (returnedUsers[i].name === "Admin")
+        returnedUsers.splice(i, 1);
+    }
+    return returnedUsers;
   }
 
   async findOne(id: number) {
@@ -672,25 +612,13 @@ export class UsersService {
   }
 
   async setInGame(username: string, value: boolean) {
-    await getConnection()
-    .createQueryBuilder()
-    .update(User)
-    .set({
-      inGame: true,
-    })
-    .where("name = :name", {name: username})
-    .execute();
+    try {
+      await this.usersRepository.update({ name: username }, { inGame: true });
+    } catch(error) {}
   }
 
   async setNotInGame(username: string) {
-    await getConnection()
-    .createQueryBuilder()
-    .update(User)
-    .set({
-      inGame: false,
-    })
-    .where("name = :name", {name: username})
-    .execute();
+    await this.usersRepository.update({name: username}, {inGame: false});
   }
 
   async remove(id: number) {

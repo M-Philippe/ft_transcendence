@@ -1,10 +1,9 @@
 import { HttpCode, HttpException, HttpStatus, Injectable, forwardRef, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getConnection, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateRelationshipDto } from './dto/create-relationship.dto';
 import { UpdateRelationshipDto } from './dto/update-relationship.dto';
 import { Relationship, RelationshipStatus } from './entities/relationship.entity';
-import { User } from '../users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
@@ -18,40 +17,27 @@ export class RelationshipsService {
   @HttpCode(201)
   async create(createRelationshipDto: CreateRelationshipDto) {
     // Add protection to check that two similar friendships can't be created.
-    //  Simply search a corresponding relationship.
-    let checkRelationship = await getConnection()
-    .getRepository(Relationship)
-    .createQueryBuilder("relationship")
-    .innerJoinAndSelect("relationship.requester", "requester")
-    .innerJoinAndSelect("relationship.requestee", "requestee")
-    .where("requester.id = :requesterId AND requestee.id = :requesteeId",
-      {requesteeId: createRelationshipDto.requesteeId, requesterId: createRelationshipDto.requesterId})
-    .getOne();
-    if (checkRelationship !== undefined)
+    // Check here if bug.
+    let checkRelationship = await this.checkRelationshipExistWithId(parseInt(createRelationshipDto.requesteeId), parseInt(createRelationshipDto.requesterId));
+    if (checkRelationship !== null)
       return;
 
     const relationship = this.relationshipRepository.create(createRelationshipDto);
-    const users: [User[], number] = await getConnection()
-        .getRepository(User)
-        .createQueryBuilder('user')
-        .where("user.id IN (:...users)", {users: [createRelationshipDto.requesteeId, createRelationshipDto.requesterId]})
-        .getManyAndCount();
-    if (users[1] !== 2) {
+    let requestee;
+    let requester;
+    try {
+      requestee = await this.usersService.findOne(parseInt(createRelationshipDto.requesteeId));
+      requester = await this.usersService.findOne(parseInt(createRelationshipDto.requesterId));
+    } catch (error) {
       throw new HttpException({
         code: "e2300",
         type: "Invalid id.",
         description: "Please choose valid user id's."
-      }, HttpStatus.NOT_FOUND);
+        }, HttpStatus.NOT_FOUND);
     }
-    if (users[0][0].id === +createRelationshipDto.requesteeId) {
-      relationship.requestee = users[0][0];
-      relationship.requester = users[0][1];
-    } else {
-      relationship.requestee = users[0][1];
-      relationship.requester = users[0][0];
-    }
+    relationship.requestee = requestee;
+    relationship.requester = requester;
     await this.relationshipRepository.save(relationship);
-    //
     return relationship;
   }
 
@@ -60,7 +46,7 @@ export class RelationshipsService {
   }
 
   async findOne(id: number) {
-    const relationship = await this.relationshipRepository.findOne(id, {relations: ["requester", "requestee"]});
+    const relationship = await this.relationshipRepository.findOne({where: {id: id}, relations: ["requester", "requestee"]});
     if (relationship) {
       return relationship;
     }
@@ -77,17 +63,15 @@ export class RelationshipsService {
   }*/
 
   async checkRelationshipExistWithId(requesteeId: number, requesterId: number) {
-    let checkRelationship = await getConnection()
-      .getRepository(Relationship)
-      .createQueryBuilder("relationship")
-      .innerJoinAndSelect("relationship.requester", "requester")
-      .innerJoinAndSelect("relationship.requestee", "requestee")
-      .where(
-        "(requester.id = :requesterId AND requestee.id = :requesteeId)\
-        OR (requester.id = :requesteeId AND requestee.id = :requesterId)",
-        {requesteeId: requesteeId, requesterId: requesterId})
-      .getOne();
-    return (checkRelationship);
+    let checkRelationship = await this.findAll();
+    for (let i = 0; i < checkRelationship.length; i++) {
+      if (
+        (checkRelationship[i].requester.id === requesterId && checkRelationship[i].requestee.id === requesteeId) ||
+        (checkRelationship[i].requester.id === requesteeId && checkRelationship[i].requestee.id === requesterId)
+        )
+        return checkRelationship[i];
+    }
+    return (null);
   }
 
   async update(relationshipToSave: Relationship, updateRelationshipDto: UpdateRelationshipDto) {
@@ -110,14 +94,6 @@ export class RelationshipsService {
   }
 
   async getAcceptedRelationshipsWithId(idUser: number) {
-    /*let ret = await getConnection()
-    .getRepository(Relationship)
-    .createQueryBuilder("relationship")
-    .innerJoinAndSelect("relationship.requester", "requester")
-    .innerJoinAndSelect("relationship.requestee", "requestee")
-    .where("(requester.id = :requesterId OR requestee.id = :requesteeId) AND relationship.status = :status",
-    {requesteeId: idUser, requesterId: idUser, status: RelationshipStatus.ACCEPTED})
-    .getMany();*/
     let ret: string[] = [];
     let user;
     try {

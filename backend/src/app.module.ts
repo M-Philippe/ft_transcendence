@@ -14,7 +14,17 @@ import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    TypeOrmModule.forRoot(),
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: 'host.docker.internal',
+      port: 5432,
+      username: 'user',
+      password: 'password',
+      database: 'database',
+      autoLoadEntities: true,
+      synchronize: true,
+      verboseRetryLog: true
+  }),
     UsersModule,
     RelationshipsModule,
     MatchesModule,

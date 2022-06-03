@@ -1,6 +1,6 @@
 import { forwardRef, HttpCode, HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { getConnection, Repository } from "typeorm";
+import { Repository } from "typeorm";
 import { Chat } from "./entities/chat.entity";
 import { CreateChatDto } from "./dto/create-chat";
 import { IMessage, SocketToEmit } from "./chat.interface";
@@ -36,8 +36,8 @@ export class ChatService {
   async onApplicationBootstrap() {
     // We create global [id: 0]
     // TODO -> Do nothing if chat 0 already exists.
-    const checkChatGlobalExist = await this.chatRepository.findOne(1);
-    if (checkChatGlobalExist !== undefined)
+    const checkChatGlobalExist = await this.chatRepository.findOne({where: {id: 1}});
+    if (checkChatGlobalExist !== null)
       return;
     const chat = this.chatRepository.create({});
     chat.usernames = [];
@@ -138,11 +138,11 @@ export class ChatService {
     let chat;
 
     try {
-      chat = await this.chatRepository.findOne(idChat);
+      chat = await this.chatRepository.findOne({where: {id: idChat}});
     } catch (error) {
       throw new Error(error);
     }
-    if (chat === undefined)
+    if (chat === null)
       return undefined;
 
     try {
@@ -189,11 +189,11 @@ export class ChatService {
     let chat;
 
     try {
-      chat = await this.chatRepository.findOne(idChat);
+      chat = await this.chatRepository.findOne({where: {id: idChat}});
     } catch (error) {
       throw new Error(error);
     }
-    if (chat === undefined)
+    if (chat === null)
       return undefined;
     try {
       adminUser = await this.usersService.findOne(idUser);
@@ -247,11 +247,11 @@ export class ChatService {
     let mutedUser;
     let chat;
     try {
-      chat = await this.chatRepository.findOne(idChat);
+      chat = await this.chatRepository.findOne({where: {id: idChat}});
     } catch (error) {
       throw new Error(error);
     }
-    if (chat === undefined)
+    if (chat === null)
       return undefined;
     try {
       adminUser = await this.usersService.findOne(idUser);
@@ -303,7 +303,7 @@ export class ChatService {
     let transitionChat;
 
     try {
-      chat = await this.chatRepository.findOne(idChat);
+      chat = await this.chatRepository.findOne({where: {id: idChat}});
     } catch (error) {
       throw new Error(error);
     }
@@ -317,7 +317,7 @@ export class ChatService {
     } catch (error) {
       return ("No user named '" + userToBan + "'");
     }
-    if (chat === undefined)
+    if (chat === null)
       return undefined;
     if (adminUser.name === banishedUser.name)
       return "Can't do command on yourself.";
@@ -368,7 +368,7 @@ export class ChatService {
     let transitionChat;
 
     try {
-      chat = await this.chatRepository.findOne(idChat);
+      chat = await this.chatRepository.findOne({where: {id: idChat}});
     } catch (error) {
       throw new Error(error);
     }
@@ -383,7 +383,7 @@ export class ChatService {
     } catch (error) {
       return ("No user named '" + userToBan + "'");
     }
-    if (chat === undefined)
+    if (chat === null)
       return undefined;
     if (adminUser.name === banishedUser.name)
       return "Can't do command on yourself.";
@@ -419,8 +419,8 @@ export class ChatService {
     // get globalChatf if no chat availaible.
     let socketToEmit = "";
     if (count >= banishedUser.listChat.length) {
-      transitionChat = await this.chatRepository.findOne(1);
-      if (transitionChat === undefined)
+      transitionChat = await this.chatRepository.findOne({where: {id: 1}});
+      if (transitionChat === null)
         return ("Error intern.");
       transitionChat.messages = ["You're not allowed here"];
       transitionChat.timeMessages = [this.getTimestamp()]
@@ -436,7 +436,7 @@ export class ChatService {
     let chat;
 
     try {
-      chat = await this.chatRepository.findOne(idChat);
+      chat = await this.chatRepository.findOne({where: {id: idChat}});
     } catch (error) {
       throw new Error(error);
     }
@@ -450,7 +450,7 @@ export class ChatService {
     } catch (error) {
       return ("No user '" + userToBan + "'");
     }
-    if (chat === undefined)
+    if (chat === null)
       return undefined;
     if (adminUser.name === banishedUser.name)
       return "Can't do command on yourself.";
@@ -476,12 +476,12 @@ export class ChatService {
     // (in this case we take the one from global because socket could have changed when chat was invisible)
     let globalChat;
     try {
-      globalChat = await this.chatRepository.findOne(1);
+      globalChat = await this.chatRepository.findOne({where: {id: 1}});
     } catch (error) {
       throw new Error(error);
     }
     let userIdToFind = banishedUser.id;
-    if (globalChat === undefined)
+    if (globalChat === null)
       return undefined;
     let socketToEmit = globalChat.usersInfos.find(o => o.userId === userIdToFind)?.socket;
     if (socketToEmit === undefined)
@@ -513,20 +513,20 @@ export class ChatService {
       return("No user named '" + usernameToInvite +"'");
     }
     try {
-      globalChat = await this.chatRepository.findOne(1);
+      globalChat = await this.chatRepository.findOne({where: {id: 1}});
     } catch (error) {
       throw new Error(error);
     }
-    if (globalChat === undefined)
+    if (globalChat === undefined || globalChat === null)
       return undefined;
     if (!isUserPresent(globalChat.usersInfos, userToInvite.id))
       return undefined;
     try {
-      chat = await this.chatRepository.findOne(idChat, { relations: ["usersInChat"]});
+      chat = await this.chatRepository.findOne({where: {id: idChat}, relations: ["usersInChat"]});
     } catch (error) {
       throw new Error(error);
     }
-    if (chat === undefined)
+    if (chat === undefined || chat === null)
       return undefined;
     if (userInit.name === userToInvite.name)
       return "Can't do command on yourself.";
@@ -593,11 +593,11 @@ export class ChatService {
     let globalChat;
 
     try {
-      globalChat = await this.chatRepository.findOne(1, {relations: ["usersInChat"]});
+      globalChat = await this.chatRepository.findOne({where: {id: 1}, relations: ["usersInChat"]});
     } catch (error) {
       throw new Error(error);
     }
-    if (globalChat === undefined)
+    if (globalChat === null)
       return undefined;
     if (isUserPresent(globalChat.usersInfos, user.id)) {
       globalChat.usersInChat.push(user); // push userEntity.
@@ -634,15 +634,8 @@ export class ChatService {
       if (idx === -1)
         continue;
       if (user.listChat[i].usersInfos[idx].socket !== socket) {
-      user.listChat[i].usersInfos[idx].socket = socket;
-        await getConnection()
-              .createQueryBuilder()
-              .update(Chat)
-              .set({
-                usersInfos: user.listChat[i].usersInfos
-              })
-              .where("id = :id", {id: user.listChat[i].id})
-              .execute();
+        user.listChat[i].usersInfos[idx].socket = socket;
+        await this.chatRepository.update({id: user.listChat[i].id}, { usersInfos: user.listChat[i].usersInfos });
       }
     }
   }
@@ -652,11 +645,11 @@ export class ChatService {
     let adminUser;
 
     try {
-      chat = await this.chatRepository.findOne(idChat);
+      chat = await this.chatRepository.findOne({where: {id: idChat}});
     } catch (error) {
       throw new Error(error);
     }
-    if (chat === undefined)
+    if (chat === null)
       return;
     try {
       adminUser = await this.usersService.findOne(idUser);
@@ -682,11 +675,11 @@ export class ChatService {
     let adminUser;
 
     try {
-      chat = await this.chatRepository.findOne(idChat);
+      chat = await this.chatRepository.findOne({where: {id: idChat}});
     } catch (error) {
       throw new Error(error);
     }
-    if (chat === undefined)
+    if (chat === null)
       return;
     try {
       adminUser = await this.usersService.findOne(idUser);
@@ -709,20 +702,20 @@ export class ChatService {
 
   async setChatName(idChat: number, idUser: number, newName: string) {
     let user: User;
-    let chat: Chat | undefined;
+    let chat: Chat | null;
     try {
       user = await this.usersService.findOne(idUser);
-      chat = await this.chatRepository.findOne(idChat);
+      chat = await this.chatRepository.findOne({where: {id: idChat}});
     } catch (error) {
       return "No such user.";
     }
-    if (chat === undefined)
+    if (chat === null)
       return "No such chat.";
     if (user.id !== chat.owners[0])
       return "Only the owner can change chat's name.";
     try {
       await this.chatRepository.update(idChat, { roomName: newName });
-      chat = await this.chatRepository.findOne(idChat);
+      chat = await this.chatRepository.findOne({where: {id: idChat}});
     } catch (error) {
       throw new Error(error);
     }
@@ -736,16 +729,16 @@ export class ChatService {
     if (idChat === 1)
       return;
     try {
-      chat = await this.chatRepository.findOne(idChat);
+      chat = await this.chatRepository.findOne({where: {id: idChat}});
     } catch (error) {
       throw new Error(error);
     }
-    if (chat === undefined)
+    if (chat === undefined || chat === null)
       return;
     try {
       adminUser = await this.usersService.findOne(idUser);
     } catch (error) {
-      throw new Error(error);
+      return;
     }
     if (adminUser === undefined)
       return;
@@ -755,16 +748,9 @@ export class ChatService {
       return "Chat already protected by password, unset it first.";
     else if (password.length > 8 || password.length < 3)
       return "Password must be 3 < password < 8";
-    await getConnection()
-      .createQueryBuilder()
-      .update(Chat)
-      .set({
-        password: await encryptPasswordToStoreInDb(chat.password, password)
-      })
-      .where("id = :id", { id: idChat })
-      .execute();
-    chat = await this.chatRepository.findOne(idChat);
-    if (chat === undefined)
+    await this.chatRepository.update({id: idChat}, {password: await encryptPasswordToStoreInDb(chat.password, password)});
+    chat = await this.chatRepository.findOne({where : {id: idChat}});
+    if (chat === undefined || chat === null)
       return;
     chat.usersInfos[getIndexUser(chat.usersInfos, adminUser.id)].hasProvidedPassword = true;
     for (let i = 0; i < chat.usersInfos.length; i++) {
@@ -787,11 +773,11 @@ export class ChatService {
     if (idChat === 1)
       return;
     try {
-      chat = await this.chatRepository.findOne(idChat);
+      chat = await this.chatRepository.findOne({where: {id: idChat}});
     } catch (error) {
       throw new Error(error);
     }
-    if (chat === undefined)
+    if (chat === undefined || chat === null)
       return;
     try {
       adminUser = await this.usersService.findOne(idUser);
@@ -809,14 +795,7 @@ export class ChatService {
     } catch (error) {
       throw new Error(error);
     }
-    await getConnection()
-      .createQueryBuilder()
-      .update(Chat)
-      .set({
-        password: {}
-      })
-      .where("id = :id", {id: idChat})
-      .execute();
+    await this.chatRepository.update({id: idChat}, {password: {}});
     return (chat);
   }
 
@@ -896,18 +875,18 @@ export class ChatService {
     if (idChat == 1)
       return undefined;
     try {
-      chat = await this.chatRepository.findOne(idChat, {relations: ["usersInChat"]});
+      chat = await this.chatRepository.findOne({where: {id: idChat}, relations: ["usersInChat"]});
     } catch (error) {
       throw new Error(error);
     }
-    if (chat === undefined)
+    if (chat === undefined || chat === null)
       return;
     try {
       user = await this.usersService.findOne(idUser);
     } catch (error) {
       throw new Error(error);
     }
-    if (user === undefined)
+    if (user === undefined || user === null)
       return (undefined);
     if (user.id === chat.owners[0]) {
       arraySocketsToEmit = await this.deleteChat(chat);
@@ -970,7 +949,7 @@ export class ChatService {
   }
 
   async pushMessage(data: IMessage, user: User, socket: string) {
-    let chat = await this.chatRepository.findOne(data.id);
+    let chat: Chat | undefined | null = await this.chatRepository.findOne({where: {id: data.id}});
     if (!chat)
       throw new Error("no chat");
     await this.saveSocketInChat(user, socket, chat);
@@ -1005,12 +984,12 @@ export class ChatService {
     let initialChat;
 
     try {
-      initialChat = await this.chatRepository.findOne(idChat);
+      initialChat = await this.chatRepository.findOne({where: {id: idChat}});
       userInit = await this.usersService.findOne(idUser);
     } catch (error) {
       throw new Error(error);
     }
-    if (initialChat === undefined || userInit === undefined)
+    if (initialChat === undefined || initialChat === null || userInit === null || userInit === undefined)
       return;
     if (userToInvite === userInit.name)
       return ("You can't invite yourself");
@@ -1055,7 +1034,7 @@ export class ChatService {
 
     let newChat = await this.createChat(idUser, firstSocket, userInit.name + "," + userToInvite);
     let ret = await this.inviteUserIntoChat(userToInvite, newChat.id, userInit.id);
-    if (ret === undefined || typeof(ret) === "string")
+    if (ret === null || ret === undefined || typeof(ret) === "string")
       return (ret);
     newChat = ret.chat;
     let secondSocket = ret.socket;
@@ -1138,7 +1117,7 @@ export class ChatService {
 
   async checkUserNotBlocked(user1: User, user2: User) {
     let existingRelationship = await this.relationshipsService.checkRelationshipExistWithId(user1.id, user2.id);
-    if (existingRelationship === undefined)
+    if (existingRelationship === null)
       return false;
     if (existingRelationship.status === RelationshipStatus.BLOCKED_REQUESTEE
     || existingRelationship.status === RelationshipStatus.BLOCKED_REQUESTER)
@@ -1186,7 +1165,7 @@ export class ChatService {
   }
 
   async findOne(id: number) {
-    const chat = await this.chatRepository.findOne(id, { relations: ["usersInChat"]} );
+    const chat = await this.chatRepository.findOne({where: {id: id}, relations: ["usersInChat"]});
     if (chat)
       return chat;
     throw new HttpException({
@@ -1257,12 +1236,7 @@ export class ChatService {
         await this.chatRepository.save(user.listChat[i]);
       } else {
           user.listChat[i].usersInfos[getIndexUser(user.listChat[i].usersInfos, idUser)].socket = newSocket;
-          await getConnection()
-                .createQueryBuilder()
-                .update(Chat)
-                .set({ usersInfos: user.listChat[i].usersInfos })
-                .where("id = :id", {id: user.listChat[i].id})
-                .execute();
+          await this.chatRepository.update({ id: user.listChat[i].id }, { usersInfos: user.listChat[i].usersInfos });
           if (!isUserBanned(user.listChat[i].bannedUsers, user.id))
             returnIdsChat.push(user.listChat[i].id);  
         }
@@ -1271,8 +1245,8 @@ export class ChatService {
     }
 
   async suscribeToChat(user: User, chat: Chat) {
-    let globalChat = await this.chatRepository.findOne(1);
-    if (globalChat === undefined)
+    let globalChat = await this.chatRepository.findOne({where: {id: 1}});
+    if (globalChat === null)
       return;
     if (!isUserPresent(globalChat.usersInfos, user.id))
       return;

@@ -33,6 +33,7 @@ export class LocalController {
 	@Post("register")
 	async registerUser(@Body() body: RegisterUserDto) {
 		// Check that no user exist if this username.
+		console.error("REGISTER");
 		let user;
 		try {
 			user = await this.usersService.findOneByName(body.username);
@@ -50,6 +51,18 @@ export class LocalController {
 				message: "Your two password aren't equal",
 			}, HttpStatus.BAD_REQUEST);
 
+		// Check limit-length
+		if (body.username.length < 3 || body.username.length >= 12)
+			throw new HttpException({
+				type: "Invqlid name.",
+				message: "username too short or too long (3 < username <= 12)"
+			}, HttpStatus.BAD_REQUEST);
+		if (body.password.length < 3 || body.password.length >= 18)
+			throw new HttpException({
+				type: "Invalid password.",
+				message: "password too short or too long (3 < password <= 18)"
+			}, HttpStatus.BAD_REQUEST);
+
 		// Create user.
 		try {
 			await this.usersService.createUserLocal({
@@ -65,7 +78,8 @@ export class LocalController {
 
 	@Post("login")
   async connectUser(@Body() body: LoginUserDto, @Res() response: Response) {
-		let payload;
+	console.error("LOGIN");	
+	let payload;
 		try {
 			payload = await this.usersService.checkInputCredentials(body.username, body.password);
 		} catch (error) {

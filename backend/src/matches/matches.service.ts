@@ -2,7 +2,7 @@ import { forwardRef, HttpCode, HttpException, HttpStatus, Injectable, Inject } f
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
-import { getConnection, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateMatchDto } from './dto/create-match.dto';
 import { Match } from './entities/match.entity';
 
@@ -17,28 +17,23 @@ export class MatchesService {
   @HttpCode(201)
   async create(createMatchDto: CreateMatchDto) {
     const match = this.matchesRepository.create(createMatchDto);
-    const players = await getConnection()
-      .getRepository(User)
-      .createQueryBuilder("user")
-      .where('user.name IN (:...users)', {users: [createMatchDto.player1, createMatchDto.player2]})
-      .getManyAndCount()
-    if (players[1] !== 2) {
-      throw new HttpException({
-        description: "Please choose valid user id's."
-      }, HttpStatus.NOT_FOUND);
-    }
-    if (match.winner === players[0][0].name) {
-      ++players[0][0].wonCount;
-      ++players[0][0].winningStreak;
-      ++players[0][1].lostCount;
-      players[0][1].winningStreak = 0;
+    let player1, player2;
+    try {
+      player1 = await this.usersService.findOneByName(createMatchDto.player1);
+      player2 = await this.usersService.findOneByName(createMatchDto.player2);
+    } catch (error) { return; }
+    if (match.winner === player1.name) {
+      ++player1.wonCount;
+      ++player1.winningStreak;
+      ++player2.lostCount;
+      player2.winningStreak = 0;
     } else {
-      ++players[0][0].lostCount;
-      players[0][0].winningStreak = 0;
-      ++players[0][1].wonCount;
-      ++players[0][1].winningStreak;
+      ++player1.lostCount;
+      player1.winningStreak = 0;
+      ++player2.wonCount;
+      ++player2.winningStreak;
     }
-    match.users = [players[0][0], players[0][1]];
+    match.users = [player1, player2];
     await this.matchesRepository.save(match);
     return match;
   }
@@ -48,7 +43,7 @@ export class MatchesService {
   }
 
   async findOne(id: number) {
-    const match = await this.matchesRepository.findOne(id);
+    const match = await this.matchesRepository.findOne({where: {id: id}});
     if (match) {
       return match;
     }
