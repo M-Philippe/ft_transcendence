@@ -71,11 +71,11 @@ export class MatchesOnGoingService {
 	}
 
 	initPowerUp(use: boolean) {
-		let p = (Math.random() * (100 - 1) + 1) % 2;
+		let p = Math.round((Math.random() * 100)) % 2;
 		return {
 			generate: use,
-			Invisible: use && p % 2 === 0 ? true : false,
-			Shrink: use && p % 2 === 0 ? false : true,
+			Invisible: use && p === 0 ? true : false,
+			Shrink: use && p === 0 ? false : true,
 			State: true,
 			x: Math.round(Math.random() * ((BOARD_WIDTH * 0.75) -  (BOARD_WIDTH * 0.25) + 1) + BOARD_WIDTH * 0.25),
 			y: Math.round(Math.random() * ((BOARD_HEIGHT - POWERUP_HEIGHT) - 0 + 1)),
@@ -207,6 +207,9 @@ export class MatchesOnGoingService {
 			game.powerUp.State = false;
 			if (game.powerUp.Shrink)
 				game.ball.vX > 0 ? game.players.p2.coord.h = SHRINKED_PALLET_HEIGHT : game.players.p1.coord.h = SHRINKED_PALLET_HEIGHT;
+			else {
+				game.ball.r = 0;
+			}
 		}
 	}
 
@@ -257,12 +260,14 @@ export class MatchesOnGoingService {
 	  let restDistY = coefY * puck.vY / 100;
 	  let impactAt = puck.y + (puck.r / 2) + (puck.vY > 0 ? restDistY : -restDistY);    // contact with pallet At
 	  let distFromCenter = Math.abs(middlePallet - impactAt);                           // dist contact from center
-	  let degree = (distFromCenter / (pallet.h / 2)) * START_MAX_VEL_Y;      					  // % vel max
-	  puck.vY = impactAt < middlePallet ? -degree : degree;                        			// new PuckVY
+	  let degree = (distFromCenter / (pallet.h / 2)) * START_MAX_VEL_Y;      			// % vel max
+	  puck.vY = impactAt < middlePallet ? -degree : degree;                        		// new PuckVY
 	  let restDistXAfterCollision = absPuckVX - restDistX;
 	  puck.y += (restDistXAfterCollision * puck.vY) / absPuckVX;
 	  puck.x += restDistXAfterCollision;
 	  puck.vX = puck.vX * -1.1;
+	  if (puck.r === 0)
+	  	puck.r = START_PUCK_R;
 	  return true;
 	}
 
@@ -276,28 +281,23 @@ export class MatchesOnGoingService {
 	  let restDistY = coefY * puck.vY / 100;
 	  let impactAt = puck.y + (puck.r / 2) + (puck.vY > 0 ? restDistY : -restDistY);   // contact with pallet At
 	  let distFromCenter = Math.abs(middlePallet - impactAt);                          // dist contact from center
-	  let degree = (distFromCenter / (pallet.h / 2)) * START_MAX_VEL_Y;       				 // % vel max
-	  puck.vY = impactAt < middlePallet ? -degree : degree;                  				   // new PuckVY
+	  let degree = (distFromCenter / (pallet.h / 2)) * START_MAX_VEL_Y;       		   // % vel max
+	  puck.vY = impactAt < middlePallet ? -degree : degree;                  		   // new PuckVY
 	  let restDistXAfterCollision = absPuckVX - restDistX;
 	  puck.y += (restDistXAfterCollision * puck.vY) / absPuckVX;
 		puck.x -= restDistXAfterCollision;
 	  puck.vX = puck.vX * -1.1;
+	  if (puck.r === 0)
+		puck.r = START_PUCK_R;
 	  return true;
 	}
-	
-	collisionPallet(game: Game) {
-		if (game.ball.vX > 0) {
-			if (this.checkCollisionPallet(game.players.p2, game.ball, game.const.palletWidth))
-				return this.collisionRightPallet(game.players.p2.coord, game.ball)
-		} else if (this.checkCollisionPallet(game.players.p1, game.ball, game.const.palletWidth))
-			return this.collisionLeftPallet(game.players.p1.coord, game.ball)
 
-		if (game.ball.vY > 0) {
-			if (this.checkCollisionPa(game.players.p2.coord.x, game.players.p2.coord.y, game.players.p2.coord.x + game.const.palletWidth, game.players.p2.coord.y, game.ball))
-				game.ball.vY *= -1;
-		} else if (this.checkCollisionPa(game.players.p1.coord.x, game.players.p1.coord.y + game.players.p1.coord.h, game.players.p1.coord.x + game.const.palletWidth, game.players.p1.coord.y + game.players.p1.coord.h, game.ball)) {
-				game.ball.vY *= -1;
-		}
+	collisionPallet(player: Player, ball: Ball) {
+		if (this.checkCollisionPallet(player, ball, START_PALLET_WIDTH))
+			return ball.vX > 0 ? this.collisionRightPallet(player.coord, ball) : this.collisionLeftPallet(player.coord, ball);
+		if ((ball.vY > 0 && this.checkCollisionPa(player.coord.x, player.coord.y, player.coord.x + START_PALLET_WIDTH, player.coord.y, ball))
+						 || this.checkCollisionPa(player.coord.x, player.coord.y + player.coord.h, player.coord.x + START_PALLET_WIDTH, player.coord.y + player.coord.h, ball))
+			ball.vY *= -1;
 		return false;
 	}
 
@@ -319,8 +319,8 @@ export class MatchesOnGoingService {
 		this.movePallets(game.players.p1, game.players.p2);
 		this.managementPowerUp(game);
 		stop = this.roof(game);
-		if (!stop) this.collisionPallet(game);
-		if (!stop) this.goal(game);
+		if (!stop) stop = this.collisionPallet(game.ball.vX > 0 ? game.players.p2 : game.players.p1, game.ball);
+		if (!stop) stop = this.goal(game);
 		if (!stop) {
 			game.ball.x += game.ball.vX;
 			game.ball.y += game.ball.vY;

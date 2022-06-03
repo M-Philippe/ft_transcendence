@@ -198,10 +198,9 @@ footer {
 
 
 
-/* ------------------------------------- */
+/* ----------------------------------- */
 /* MEDIA QUERIES TO BE MORE RESPONSIVE */
-
-/* ---------- WIDTH ---------- */
+/* ------------ WIDTH ---------------- */
 
 @media all and (max-width: 550px) {
   
@@ -243,7 +242,6 @@ footer {
   #RankingDiv{
     max-height: 500px;
     overflow-y: auto;
-
   }
 
 }
@@ -256,7 +254,6 @@ footer {
   }
 
   #board{
-    border: 15px solid red;
     max-width: 60vw;
     height: 80vh;
   }

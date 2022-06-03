@@ -11,7 +11,7 @@ import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
 import { UsersService } from "src/users/users.service";
 import { User } from "src/users/entities/user.entity";
 
-const FPS = 40;
+const FPS = 50;
 
 const queue = new Map<number /* timestamp */, IQueue>();
 
@@ -57,7 +57,7 @@ export class MatchesOnGoingGateway {
     for (let value of queue.values()) {
     	if (value.id === idUser) {
 			this.server.to(socket).emit("alreadyCreatedMatch", { idGame: -1 });
-      console.error("Already in Queue");
+      // console.error("Already in Queue");
 			return true;
 		}
 	}
@@ -68,7 +68,7 @@ export class MatchesOnGoingGateway {
     let parsedRules: {powerUp: boolean, scoreMax: number, map: "original" | "desert" | "jungle"}
       = { powerUp: false, scoreMax: 3, map: "original"};
     let arrayRules = rulesToDisassemble.split(",");
-    console.error("ARRAY_RULES: ", arrayRules);
+    // console.error("ARRAY_RULES: ", arrayRules);
     parsedRules.scoreMax = parseInt(arrayRules[0].substring(arrayRules[0].indexOf(":") + 1));
     parsedRules.powerUp
       = (arrayRules[1].substring(arrayRules[1].indexOf(":") + 1)) === "yes" ? true : false;
@@ -228,7 +228,7 @@ export class MatchesOnGoingGateway {
       idGame: idx
     });
     this.usersService.setInGame(usr.name, true);
-    console.error(usr.name, " ready to play");
+    // console.error(usr.name, " ready to play");
     if (this.games[idx].players.p1.id === usr.id) {
       this.games[idx].players.p1 = this.matches.initPlayer(usr.id, usr.name, socket.id, 1);
       if (this.games[idx].players.p2.socket !== "")
@@ -288,7 +288,7 @@ export class MatchesOnGoingGateway {
 			this.games[id].msg.messageToDisplay = "";
 			this.games[id].disconnect.username = "";
 			this.server.to(socket).emit("alreadyCreatedMatch", { idGame: id});
-      console.error(usr.name, " already have a match, id: ", id);
+      // console.error(usr.name, " already have a match, id: ", id);
 			return true;
 		}
     return false;
@@ -317,7 +317,7 @@ export class MatchesOnGoingGateway {
   	if (!this.alreadyAMatch(user, socket.id) && !this.checkUserAlreadyInQueue(idUser, socket.id)) {
   		let similar: {response: boolean, playerOneId: number, playerTwoId: number, socketUserOne: string, playerOneName: string, rules: string};
   		if ((similar = this.checkSimilarGame(idUser, rulesConcat)).response) {
-        console.error(user.name,  " find ", similar.playerOneName, " waiting in the queue.");
+        // console.error(user.name,  " find ", similar.playerOneName, " waiting in the queue.");
 			  this.createGame(
 				  similar.playerOneId,
 				  similar.playerOneName,
@@ -330,7 +330,7 @@ export class MatchesOnGoingGateway {
 			  )
 		} else {
 			queue.set(Date.now(), { id: idUser, name: user.name, rules: rulesConcat, socket: socket.id })
-      console.error(user.name, " is waiting in the queue.");
+      // console.error(user.name, " is waiting in the queue.");
 		}
 	}
   }
@@ -350,10 +350,10 @@ export class MatchesOnGoingGateway {
           this.usersService.setNotInGame(this.games[idG].players.p1.name);
           this.usersService.setNotInGame(this.games[idG].players.p2.name);
           this.games[idG].inUse = false;
-          console.error(this.games[idG].players.p1.name, " and ", this.games[idG].players.p2.name,  " are disconnected, end game.");
+          // console.error(this.games[idG].players.p1.name, " and ", this.games[idG].players.p2.name,  " are disconnected, end game.");
         }
         else {
-          console.error(usr.name, " quit the game.");
+          // console.error(usr.name, " quit the game.");
           this.games[idG].disconnect.username = usr.name;
           this.games[idG].disconnect.time = Date.now();
         }
@@ -409,7 +409,7 @@ export class MatchesOnGoingGateway {
 		if (!this.games[i].inUse) {
       this.games[i].inUse = true;
 			this.games[i].id = i;
-			this.games[i].socketToEmit = new Array<string>;
+			this.games[i].socketToEmit = new Array<string>();
 			this.games[i].ball = this.matches.initBall(true);
 			this.games[i].const = this.matches.initConst(rule.scoreMax, rule.map);
 			this.games[i].disconnect = this.matches.initDisconnection();
@@ -418,7 +418,7 @@ export class MatchesOnGoingGateway {
 			this.games[i].result = this.matches.initResults();
 			this.games[i].players.p1 = this.matches.initPlayer(lId, lName, lSocket, 1);
 			this.games[i].players.p2 = this.matches.initPlayer(rId, rName, rSocket, 2);
-      console.error("Start game with an existent one, id: ", i, "(", lName, ",", rName, ")");
+      // console.error("Start game with an existent one, id: ", i, "(", lName, ",", rName, ")");
       if (!invitation)
         this.gameLoop(this.games[i]);
 			return;
@@ -437,22 +437,22 @@ export class MatchesOnGoingGateway {
     const: this.matches.initConst(rule.scoreMax, rule.map),
     msg: this.matches.initMessage(),
     disconnect: this.matches.initDisconnection(),
-    socketToEmit: new Array<string>,
+    socketToEmit: new Array<string>(),
   }
 	++this.count;
-  console.error("New Game, id: ", this.count - 1, "(", lName, ",", rName, ")");
+  // console.error("New Game, id: ", this.count - 1, "(", lName, ",", rName, ")");
 	if (!invitation)
     this.gameLoop(this.games[this.count - 1]);
   }
 
   gameLoop(game: Game) {
 	this.sendToAllSockets(game, game.id);
-  console.error(game.players.p1.name, ", ", game.players.p2.name, " start playing.");
+  // console.error(game.players.p1.name, ", ", game.players.p2.name, " start playing.");
 	let pid: NodeJS.Timer;
   let sendGame: boolean = false;
   /* For fps at the end of the game */ let cons: boolean = false; let total_ms: number = 0; let loop_count: number = 0; let ms: number = Date.now();
 	pid = setInterval(async () => {
-		total_ms += Date.now() - ms; ms = Date.now(); ++loop_count;
+		/* For fps at the end of the game */ total_ms += Date.now() - ms; ms = Date.now(); ++loop_count;
     this.matches.gameAlgo(game);
     if (game.inUse === false) {
       clearInterval(pid);

@@ -50,9 +50,8 @@ export function draw(ctx: CanvasRenderingContext2D | null, coordinates: BoardPos
   ctx.fillRect(coordinates.palletAX, coordinates.palletAY, coordinates.palletL, coordinates.palletAHeight);
   ctx.fillRect(coordinates.palletBX, coordinates.palletBY, coordinates.palletL, coordinates.palletBHeight);
   // puck
-  if (!(coordinates.powerUpGenerate && coordinates.powerUpState && coordinates.powerUpInvisible)) {
+  if (coordinates.puckR !== 0)
     drawCircle(ctx, coordinates.puckX, coordinates.puckY, coordinates.puckR, coordinates.objectColor);
-  }
   // middle line
   ctx.fillRect(coordinates.width / 2, 0, 1, coordinates.height);
 
