@@ -245,4 +245,34 @@ footer {
     overflow-y: auto;
 
   }
+
+}
+
+@media all and (max-height: 930px) and (min-width: 1500px) {
+
+  #boardDiv
+  {
+    padding-bottom: 250px;
+  }
+
+  #board{
+    border: 15px solid red;
+    max-width: 60vw;
+    height: 80vh;
+  }
+}
+
+@media all and (max-height: 500px) and (min-width: 1500px) {
+
+  #board{
+    max-width: 40vw;
+  }
+}
+
+@media all and (max-height: 450px) {
+
+  #board{
+    max-width: 35vw;
+    height: 40vh;
+  }
 }
