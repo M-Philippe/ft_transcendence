@@ -13,6 +13,14 @@ function AvatarUpload(props: { user: userState, dispatch: DispatchType }) {
 	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		if (event.target.files === null)
 			return;
+			console.log("FILES SIZE :" + event.target.files[0].size);
+		if(event.target.files[0].size > 5097152)
+		{
+			alert("Your avatar is too big, max size: 5mo");
+			event.target.files = null;
+			document.getElementById('submitAvatarButton')?.remove();
+			return;
+		};	
 		document.getElementById('submitAvatarButton')?.setAttribute('style', 'visibility:visible');
 		console.log(event.target.files[0]);
 		setSelectedFile(event.target.files[0]);
@@ -20,7 +28,10 @@ function AvatarUpload(props: { user: userState, dispatch: DispatchType }) {
 
 	const handleSubmit = () => {
 		if (selectedFile === null)
+		{
+			document.getElementById('submitAvatarButton')?.remove();
 			return;
+		}
 		const data = new FormData();
 		data.append("avatar", selectedFile);
 		fetch(API_USER_AVATAR_UPLOAD, {
