@@ -23,6 +23,9 @@ export default function ChatInput(props: IChatInputProps) {
     event.preventDefault();
     if (text.length === 0 || Date.now() - timer < 400)
       return;
+    if (text.length > 250)
+      return(alert("Too long message (max 250 characters)."));
+
     setTimer(Date.now());
     props.socket.emit("postMessage", {id: props.state.chatFocusId +1, username: props.username, message: text});
     setText("");
