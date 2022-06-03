@@ -270,9 +270,9 @@ export function ChatConnected(props: PropsChatConnected) {
             online: res["online"],
           };
           setData(tmp);
+          handleOpen();
         }
       );
-      handleOpen();
   });
 
   props.socket.on("receivedListChat", (...args: any) => {
@@ -354,7 +354,10 @@ export function ChatConnected(props: PropsChatConnected) {
           <InvitationGameQueryBox nameProfile={data.name} closePopUp={handleClose}/>
         }
           </Typography>
-        { !data.online && <p className="errorMessage"> {data.name} is not connected. </p> }
+        { 
+          !data.online && <div style={{ alignItems: 'center'}}><p className="errorMessage"> {data.name} is not connected. </p>
+				  <Button variant="contained" color="error" onClick={() => handleClose()} >Close</Button></div>
+        }
         </Box>
       </Modal>
 			<div id = "chatButtonTop">
