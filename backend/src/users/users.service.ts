@@ -164,15 +164,16 @@ export class UsersService {
     let user = await this.findOne(idUser);
     user.userAlert.socket = "";
     user.online = false;
-    await this.usersRepository.save(user);
+    await this.usersRepository.update(user.id, { online: false, userAlert: user.userAlert });
   }
 
   async updateSocketAndGetUserAlert(userId: number, socket: string) {
     let user = await this.usersRepository.findOne({where: {id: userId}});
-    if (user === undefined || user === null)
+    if (user === undefined || user === null) {
       return undefined;
+    }
     user.userAlert.socket = socket;
-    await this.usersRepository.save(user);
+    await this.usersRepository.update({id: userId}, {userAlert: user.userAlert});
     return (user.userAlert);
   }
 
@@ -222,7 +223,6 @@ export class UsersService {
       else
         return (undefined);
     }
-    await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
     return (undefined);
   }
 

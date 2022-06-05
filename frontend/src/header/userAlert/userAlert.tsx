@@ -123,6 +123,7 @@ function UserAlert(props: {user: userState}) {
 			socket.off("disconnectManual");
 			socket.on("disconnectManual", () => {
 				socket.disconnect();
+				window.location.assign(DISCONNECTING_URL);
 			})
 
 			socket.off("getUserAlert");
