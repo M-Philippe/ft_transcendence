@@ -238,6 +238,7 @@ export class UsersService {
     } catch (error) {
       return (undefined);
     }
+    console.error("REQUESTER: ", requester?.name, " | online: ", requester?.online, " | inGame: ", requester?.inGame);
     if (requester === undefined || requester === null)
       return (undefined)
     else if (!requester.online || requester.inGame) {
