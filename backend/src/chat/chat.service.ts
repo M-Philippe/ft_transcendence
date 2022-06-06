@@ -973,7 +973,8 @@ export class ChatService {
     chat.timeMessages.push(this.getTimestamp());
     chat.messages.push(data.message);
     try {
-      await this.chatRepository.save(chat);
+      //await this.chatRepository.save(chat);
+      await this.chatRepository.update({id: chat.id}, { usernames: chat.usernames, timeMessages: chat.timeMessages, messages: chat.messages });
     } catch (error) {}
     return chat;
   }
