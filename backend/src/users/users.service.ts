@@ -194,7 +194,7 @@ export class UsersService {
       requesteeId: idUserToAlert,
       type: type
     });
-    await this.usersRepository.save(user);
+    await this.usersRepository.update({id: user.id}, { userAlert: user.userAlert });
     await this.usersGateway.sendUserNewAlert(user.userAlert);
   }
 

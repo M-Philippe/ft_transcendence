@@ -168,6 +168,9 @@ function UserAlert(props: {user: userState}) {
 	const open = Boolean(anchorEl);
 	const id = open ? 'simple-popover' : undefined;
 
+	if (props.user.isInGame)
+		return (null);
+
 	return (
 		<div>
 

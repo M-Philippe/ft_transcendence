@@ -34,6 +34,7 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 			}
 			await this.usersService.setUserOnline(payload.idUser, true);
 			// send UserAlert
+			console.error("USER_GATEWAY_CONNECTION: ", client.id);
 			let userAlert = await this.usersService.updateSocketAndGetUserAlert(payload.idUser, client.id);
 			if (userAlert === undefined || userAlert.alert === undefined || userAlert.alert.length === 0) {
 				return;
@@ -47,9 +48,8 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	}
 
 	async handleDisconnect(client: any) {
-		//console.error("DISCONNECT: ", client.id);
+		console.error("USER_GATEWAY_DISCONNECT: ", client.id);
 		if (client.handshake.headers.cookie) {
-			//console.error("COOKIES: ", typeof(client.handshake.headers.cookie));
 			let cookie: string = client.handshake.headers.cookie;
 			let jwt = extractJwtFromCookie(client.handshake.headers.cookie);
 			try {
@@ -66,23 +66,14 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	}
 
 	async contactUsers(socketOne: string, socketTwo: string, event: string) {
-		// console.error("\n\n\n\tCONTACT SOCKETS:\n", socketOne, " | ", socketTwo, "\n\n\n");
 		this.server.to([socketOne, socketTwo]).emit(event);
 	}
 
 	async sendUserNewAlert(userAlert: UserAlert) {
-		// console.error("\n\n\n\tSEND_USER_NEW_ALERT\n\n\n");
 		if (userAlert.socket === "")
 			return;
 		this.server.to(userAlert.socket).emit("getUserAlert", {
 			data: userAlert.alert,
 		});
-		// console.error("\n\n\n\tSEND_USER_NEW_ALERT AFTER REAL SEND\n\n\n");
 	}
-
-	@SubscribeMessage("tst")
-	async tst(@ConnectedSocket() socket: Socket) {
-		// console.error("\n\n\n\n\n\n\t HAVE RECEIVED FROM: ", socket.id, "\n\n\n");
-	}
-
 }
