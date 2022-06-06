@@ -164,7 +164,8 @@ export class UsersService {
     let user = await this.findOne(idUser);
     user.userAlert.socket = "";
     user.online = false;
-    await this.usersRepository.save(user);
+    //await this.usersRepository.save(user);
+    await this.usersRepository.update(user.id, { online: false, userAlert: user.userAlert });
   }
 
   async updateSocketAndGetUserAlert(userId: number, socket: string) {
@@ -222,7 +223,6 @@ export class UsersService {
       else
         return (undefined);
     }
-    await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
     return (undefined);
   }
 

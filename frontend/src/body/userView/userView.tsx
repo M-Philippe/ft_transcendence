@@ -114,7 +114,6 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
   }
 
   if (load) {
-    console.log("DATA: ", data);
     return (
       <div>
       <Stack direction="row" spacing={2}>

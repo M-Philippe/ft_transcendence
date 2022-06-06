@@ -4,7 +4,7 @@
 import { DefaultEventsMap } from '@socket.io/component-emitter/index';
 import { io, Socket } from 'socket.io-client';
 import { useEffect } from 'react';
-import { BASE_API_URL, SOCKET_MATCHESONGOING } from '../../urlConstString';
+import { BASE_API_URL } from '../../urlConstString';
 
 interface ISocketHandler {
   setSocket: (input: Socket<DefaultEventsMap, DefaultEventsMap>) => void,

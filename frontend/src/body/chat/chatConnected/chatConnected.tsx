@@ -22,7 +22,6 @@ import { styled } from '@mui/material/styles';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import { Navigate } from "react-router-dom";
 
 interface PropsChatConnected {
   name: string,
