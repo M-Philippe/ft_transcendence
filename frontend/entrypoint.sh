@@ -5,6 +5,7 @@ npm install && npm run build
 mkdir -p /usr/share/nginx/html
 cp -rf /app_frontend/build /usr/share/nginx/html/ft_transcendence
 
+mkdir -p /etc/nginx/conf.d
 cp /app_frontend/nginx_files/default.conf /etc/nginx/conf.d/default.conf
 cp /app_frontend/nginx_files/nginx.conf /etc/nginx/
 
