@@ -38,8 +38,9 @@ function Board(props: BoardProps) {
 		return () => {
 			props.socket.disconnect();
 			props.dispatch({type: UNSET_USER_INGAME, user: props.user});
-		}
+		} // eslint-disable-next-line
 	}, []);
+
 
 	if (cancelGame || endGame)
 		return (
