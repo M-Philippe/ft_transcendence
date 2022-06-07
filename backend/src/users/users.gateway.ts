@@ -34,12 +34,12 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 			}
 			await this.usersService.setUserOnline(payload.idUser, true);
 			// send UserAlert
-			console.error("USER_GATEWAY_CONNECTION: ", client.id);
+			console.error("USER_GATEWAY_CONNECTION: ", client.id , " | idUser: ", payload.idUser);
 			let userAlert = await this.usersService.updateSocketAndGetUserAlert(payload.idUser, client.id);
 			if (userAlert === undefined || userAlert.alert === undefined || userAlert.alert.length === 0) {
 				return;
 			}
-			this.server.to(userAlert.socket).emit("getUserAlert", {
+			this.server.to(client.id).emit("getUserAlert", {
 				data: userAlert.alert
 			});
 		} else {
