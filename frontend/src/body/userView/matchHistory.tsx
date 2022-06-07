@@ -14,10 +14,10 @@ interface IMatchHistory {
 }
 
 function assembleMatchHistory(usernameFetched: string, matchHistory: IMatchHistory[]) {
-    let ret: JSX.Element[] = [];
+    let retJsx = [];
     let count = 0;
     for (let i = 0; i < matchHistory.length; i++) {
-        ret.push(
+        retJsx.push(
             <div key={count++} style={{display: 'flex', alignItems: 'center', flexWrap: 'wrap'}}>
                 {matchHistory[i].winner === usernameFetched ? <EmojiEventsIcon sx={{color:'gold', fontSize: 35 }} />: <CloseIcon color="error" sx={{ fontSize: 35 }} />}&nbsp; 
                 {usernameFetched} VS &nbsp; 
@@ -26,7 +26,7 @@ function assembleMatchHistory(usernameFetched: string, matchHistory: IMatchHisto
             </div>
         );
     }
-    return ret;
+    return retJsx;
 }
 
 export default function MatchHistory(props: any) {
