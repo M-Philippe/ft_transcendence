@@ -122,7 +122,8 @@ export class UsersService {
   @HttpCode(200)
   async disconnectUser(idUser: number) {
     try {
-      await this.usersRepository.update({ id: idUser}, { online: false, hasAlreadyChanged42Name: true });
+      await PostgresDataSource.createQueryBuilder().update(User).set({online: false, hasAlreadyChanged42Name: true}).where("id = :id", {id: idUser}).execute();
+      // await this.usersRepository.update({ id: idUser}, { online: false, hasAlreadyChanged42Name: true });
     } catch (error) {
       throw new HttpException({
         type: "No such User."
@@ -147,7 +148,7 @@ export class UsersService {
       throw new Error("New password isn't the same");
     let newPassword = await encryptPasswordToStoreInDb(undefined, changePasswordDto.newPassword);
     try {
-      await this.usersRepository.update({id: idUser}, { password: newPassword});
+      await PostgresDataSource.getRepository(User).update({id: idUser}, { password: newPassword});
     } catch (error) {
       throw new Error("Internal Server Error, please try later");
     }
@@ -155,18 +156,26 @@ export class UsersService {
 
   @HttpCode(200)
   async setUserOnline(idUser: number, status: boolean) {
-    // must set socket in userAlert to empty string.
     try {
-      await this.usersRepository.update({ id: idUser }, { online: status, hasAlreadyChanged42Name: true });
+      await PostgresDataSource
+        .createQueryBuilder()
+        .update(User)
+        .set({online: status, hasAlreadyChanged42Name: true})
+        .where("id = :id", {id: idUser})
+        .execute();
+      // await this.usersRepository.update({ id: idUser }, { online: status, hasAlreadyChanged42Name: true });
     } catch (error) {}
   }
 
   async setUserOfflineAndSocketToNull(idUser: number) {
     let user = await this.findOne(idUser);
-    //user.userAlert.socket = "";
-    user.online = false;
-    //await this.usersRepository.save(user);
-    await this.usersRepository.update(user.id, { online: false });
+    user.userAlert.socket = "";
+    await PostgresDataSource
+      .createQueryBuilder()
+      .update(User)
+      .set({online: false, userAlert: user.userAlert})
+      .where("id = :id", {id: idUser})
+      .execute();
   }
 
   async updateSocketAndGetUserAlert(userId: number, socket: string) {
@@ -174,7 +183,13 @@ export class UsersService {
     if (user === undefined || user === null)
       return undefined;
     user.userAlert.socket = socket;
-    await this.usersRepository.update({ id: userId }, { userAlert: user.userAlert });
+    await PostgresDataSource
+      .createQueryBuilder()
+      .update(User)
+      .set({userAlert: user.userAlert})
+      .where("id = :id", {id: userId})
+      .execute()
+
     return (user.userAlert);
   }
 
@@ -195,7 +210,13 @@ export class UsersService {
       requesteeId: idUserToAlert,
       type: type
     });
-    await this.usersRepository.update({id: user.id}, { userAlert: user.userAlert });
+    await PostgresDataSource
+      .createQueryBuilder()
+      .update(User)
+      .set({userAlert: user.userAlert})
+      .where("id = :id", {id: user.id})
+      .execute();
+    // await this.usersRepository.update({id: user.id}, { userAlert: user.userAlert });
     await this.usersGateway.sendUserNewAlert(user.userAlert);
   }
 
@@ -203,7 +224,8 @@ export class UsersService {
     // Here we must pull a fresh instance of User because relationship isn't up-to-date with previous user instance.
     let user = await this.findOne(userId);
     user.userAlert.alert.splice(index, 1);
-    await this.usersRepository.save(user);
+    await PostgresDataSource.createQueryBuilder().update(User).set({userAlert: user.userAlert}).where("id = :id", {id: user.id}).execute();
+    // await this.usersRepository.save(user);
     await this.usersGateway.sendUserNewAlert(user.userAlert);
   }
 
@@ -388,14 +410,12 @@ export class UsersService {
       user.achievements = this.replaceAt(GAME1000, user.achievements);
       await this.addEventToUserAlert(-1, user.id, "Nothing but pong: You played one thousand games...", false, "achievements");
     }
-    // CHECK THIS UPDATE WITH VROTH-DI
-    //await this.usersRepository.save(user);
-    await this.usersRepository.update({id: user.id}, { achievements: user.achievements });
+    await PostgresDataSource.getRepository(User).update({id: user.id}, { achievements: user.achievements });
   }
 
   async getUserAchievements(id: number) {
     // let userAchievements = (await this.findOne(id)).achievements;
-    const user = await PostgresDataSource.createQueryBuilder(User, "u").where("u.id = id", {id: id}).getOne();
+    const user = await PostgresDataSource.createQueryBuilder(User, "u").where("u.id = :Id", {Id: id}).getOne();
     let achievements: String[] = [];
     if (user !== null) {
       if (user.achievements[WIN10] == 'o')
@@ -467,7 +487,7 @@ export class UsersService {
   }
 
   async changeUsername42(idUser: number, newName: string) {
-    let user = await this.usersRepository.findOne({where: {id: idUser}});
+    let user = await PostgresDataSource.getRepository(User).findOne({where: {id: idUser}});
     if (user === null || user === undefined)
       return ({ message: "Error intern." });
     if (user.hasAlreadyChanged42Name) {
@@ -475,13 +495,7 @@ export class UsersService {
     } else if (user.id42 === -1)
       return ("You can't change your username");
     else {
-      user.hasAlreadyChanged42Name = true;
-      user.name = newName;
-      try {
-        user = await this.usersRepository.save(user);
-      } catch (error) {
-        return ({ message: "Error intern." });
-      }
+      await PostgresDataSource.createQueryBuilder().update(User).set({name: newName, hasAlreadyChanged42Name: true}).where("id = :id", {id: user.id}).execute()
       return ({
         message: "Ok",
         username: user.name,
@@ -495,7 +509,7 @@ export class UsersService {
     let user;
     try {
       await this.usersRepository.update({id: idUser}, { hasAlreadyChanged42Name: true });
-      user = await this.usersRepository.findOne({ where: { id: idUser }});
+      user = await PostgresDataSource.getRepository(User).findOne({ where: { id: idUser }});
     } catch (error) { return; }
     if (user === null)
       return;
@@ -507,7 +521,7 @@ export class UsersService {
     if (user === null || user === undefined)
       return (undefined);
     try {
-      await this.usersRepository.update({ id: idUser }, { avatar: API_USER_AVATAR + avatar });
+      await PostgresDataSource.getRepository(User).update({ id: idUser }, { avatar: API_USER_AVATAR + avatar });
     } catch (error) {
       return undefined;
     }
@@ -521,21 +535,21 @@ export class UsersService {
   **  AUTH
   */
   async updateTwoFactorSecret(id: number, secret: string) {
-    await this.usersRepository.update(id, { twoFactorSecret: secret });
+    await PostgresDataSource.getRepository(User).update(id, { twoFactorSecret: secret });
     return this.findOne(id);
   }
 
   async updateTwoFactorEnabled(id: number, twoFactorEnable: boolean) {
-    await this.usersRepository.update(id, { twoFactorIsEnabled: twoFactorEnable });
+    await PostgresDataSource.getRepository(User).update(id, { twoFactorIsEnabled: twoFactorEnable });
     return this.findOne(id);
   }
 
   findAll() {
-    return this.usersRepository.find({ relations: ["matches", "listChat", "requestedRelationships", "requesteeRelationships"] });
+    return PostgresDataSource.getRepository(User).find({ relations: ["matches", "listChat", "requestedRelationships", "requesteeRelationships"] });
   }
 
   async findAllForRanking() {
-    let ret = await this.usersRepository.findAndCount({select: ["name", "avatar", "wonCount", "lostCount"]});
+    let ret = await PostgresDataSource.getRepository(User).findAndCount({select: ["name", "avatar", "wonCount", "lostCount"]});
     let returnedUsers = ret[0];
     for (let i = 0; i < returnedUsers.length; i++) {
       if (returnedUsers[i].name === "Admin")
@@ -547,7 +561,7 @@ export class UsersService {
   async findOne(id: number) {
     const user = await PostgresDataSource
       .createQueryBuilder(User, "u")
-      .where("u.id = Id", {Id: id})
+      .where("u.id = :Id", {Id: id})
       .getOne();
     if (user !== null) {
       return user;
@@ -560,7 +574,7 @@ export class UsersService {
   }
 
   async findOneByName(name: string) {
-    const user = await PostgresDataSource.createQueryBuilder(User, "u").where("u.name = name", {name: name}).getOne();
+    const user = await PostgresDataSource.createQueryBuilder(User, "u").where("u.name = :Name", {Name: name}).getOne();
     if (user) {
       return user;
     }
@@ -572,12 +586,13 @@ export class UsersService {
   }
 
   async getListChatUser(name: string) {
-    const user = await PostgresDataSource
-      .createQueryBuilder(User, "u")
-      .leftJoinAndSelect("u.matches", "matches")
-      .where("u.name = name", {name: name})
-      .getOne();
-    //const user = await this.usersRepository.findOne({name}, { relations: ["matches", "listChat"]});
+    const user = await PostgresDataSource.getRepository(User).findOne({ where: {name: name}, relations: ["listChat"]});
+    // const user = await PostgresDataSource
+    //   .createQueryBuilder(User, "u")
+    
+    //   .leftJoinAndSelect("u.listChat", "listChat")
+    //   .where("name = :name", {name: name})
+    //   .getOne();
     // const user = await this.usersRepository.findOne({ where: {name: name}, relations: ["matches", "listChat"]});
     if (user) {
       return JSON.stringify(user.listChat);
@@ -613,6 +628,10 @@ export class UsersService {
       throw new Error(error);
     }
   }
+  // async addChat(chat: Chat, user: User) {
+  //   user.listChat.push(chat);
+  //   PostgresDataSource.createQueryBuilder().update(User).set({listChat: user.listChat}).where("id = :id", {id: user.id}).execute();
+  // }
 
   async findAllRelationships(id: number) {
     let user = await this.findOne(id);
@@ -626,12 +645,12 @@ export class UsersService {
 
   async setInGame(username: string, value: boolean) {
     try {
-      await this.usersRepository.update({ name: username }, { inGame: true });
+      await PostgresDataSource.getRepository(User).update({ name: username }, { inGame: true });
     } catch(error) {}
   }
 
   async setNotInGame(username: string) {
-    await this.usersRepository.update({name: username}, {inGame: false});
+    await PostgresDataSource.getRepository(User).update({name: username}, {inGame: false});
   }
 
   async remove(id: number) {
