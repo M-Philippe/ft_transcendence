@@ -107,7 +107,7 @@ export class RelationshipsService {
     let ret: string[] = [];
     let user;
     try {
-      user = await this.usersService.findOne(idUser);
+      user = await this.usersService.findOneWithRelations(idUser);
     } catch (error) {
       console.error("ERROR [getAcceptedRelationships]: ", error);
       return ([]);
@@ -124,7 +124,7 @@ export class RelationshipsService {
   async getAllFriendships(idUser: number, relationships: {username: string, status: string}[]) {
     let user;
     try {
-      user = await this.usersService.findOne(idUser);
+      user = await this.usersService.findOneWithRelations(idUser);
     } catch (error) {
       console.error("ERROR [getAllFriendships]: ", error);
       return;
@@ -165,7 +165,7 @@ export class RelationshipsService {
     let ret: string[] = [];
     let user;
     try {
-      user = await this.usersService.findOneByName(username);
+      user = await this.usersService.findOneByNameWithRelations(username);
     } catch (error) {
       console.error("ERROR [getAcceptedRelationships]: ", error);
       return ([]);

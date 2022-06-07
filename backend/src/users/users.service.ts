@@ -169,11 +169,11 @@ export class UsersService {
 
   async setUserOfflineAndSocketToNull(idUser: number) {
     let user = await this.findOne(idUser);
-    user.userAlert.socket = "";
+    //user.userAlert.socket = "";
     await PostgresDataSource
       .createQueryBuilder()
       .update(User)
-      .set({online: false, userAlert: user.userAlert})
+      .set({online: false/*, userAlert: user.userAlert*/})
       .where("id = :id", {id: idUser})
       .execute();
   }
@@ -255,6 +255,10 @@ export class UsersService {
   }
 
   async handleAlertInvitationGame(requestee: User, requesterId: number, response: string, indexAlert: number) {
+    if (response === "no") {
+      await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
+      return (undefined);
+    }
     let requester;
     try {
       requester = await this.usersRepository.findOne({where: {id: requesterId}});
@@ -270,22 +274,14 @@ export class UsersService {
         message: requester.name + requester.inGame ? " is in game/queue." : " isn't connected!"/* (requester) online: " + requester.online + " | ingame: " + requester.inGame*/
       });
     }
-    else if (requestee.inGame) {
-      return undefined;
-    }
     // createMatch with ids and emit to socket to assign new Location.
-    if (response === "no") {
+    if (requester.userAlert.socket === "") {
       await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
-      return (undefined);
-    } else if (response === "yes") {
-      if (requester.userAlert.socket === "") {
-        await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
-        return ({ message: "Intern problem, socket"});
-      }
-      this.matchesOnGoingGateway.createMatchFromInvitation(requester.id, requestee.id, requestee.userAlert.alert[indexAlert].message);
-      await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
-      return ({redirection: true});
+      return ({ message: "Empty Socket"});
     }
+    this.matchesOnGoingGateway.createMatchFromInvitation(requester.id, requestee.id, requestee.userAlert.alert[indexAlert].message);
+    this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
+    return ({redirection: true});
   }
 
   async findAlertByMessageAndExecute(requesterId: number, requesteeId: number, message: string, response: string) {
@@ -577,14 +573,58 @@ export class UsersService {
     const user = await PostgresDataSource
       .createQueryBuilder(User, "u")
       .leftJoinAndSelect("u.listChat", "listChat")
-      .where("u.id = Id", {Id: id})
+      .where("u.id = :Id", {Id: id})
       .getOne();
-    console.error("PARTICULAR USER: ", user);
+    //console.error("PARTICULAR USER: ", user);
     return user;
+  }
+
+  async findOneWithRelations(idUser: number) {
+    const user = await PostgresDataSource.createQueryBuilder(User, "u")
+    .leftJoinAndSelect("u.requestedRelationships", "requestedRelationships")
+    .leftJoinAndSelect("u.requesteeRelationships", "requesteeRelationships")
+    .where("u.id = :id", {id: idUser}).getOne();
+    if (user) {
+      return user;
+    }
+    throw new HttpException({
+      code: "e2300",
+      type: "Invalid name.",
+      description: "Please choose a valid user name."
+    }, HttpStatus.NOT_FOUND);
   }
 
   async findOneByName(name: string) {
     const user = await PostgresDataSource.createQueryBuilder(User, "u").where("u.name = :Name", {Name: name}).getOne();
+    if (user) {
+      return user;
+    }
+    throw new HttpException({
+      code: "e2300",
+      type: "Invalid name.",
+      description: "Please choose a valid user name."
+    }, HttpStatus.NOT_FOUND);
+  }
+
+  async findOneByNameWithMatchHistory(name: string) {
+    const user = await PostgresDataSource.createQueryBuilder(User, "u")
+    .leftJoinAndSelect("u.matches", "matches")
+    .where("u.name = :Name", {Name: name}).getOne();
+    if (user) {
+      return user;
+    }
+    throw new HttpException({
+      code: "e2300",
+      type: "Invalid name.",
+      description: "Please choose a valid user name."
+    }, HttpStatus.NOT_FOUND);
+  }
+
+  async findOneByNameWithRelations(name: string) {
+    const user = await PostgresDataSource.createQueryBuilder(User, "u")
+    .leftJoinAndSelect("u.requestedRelationships", "requestedRelationships")
+    .leftJoinAndSelect("u.requesteeRelationships", "requesteeRelationships")
+    .where("u.name = :Name", {Name: name}).getOne();
     if (user) {
       return user;
     }

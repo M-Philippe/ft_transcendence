@@ -81,7 +81,6 @@ function assembleUnfriendButton(nameUserFetched: string, countKeys: number, setR
   return (
     <Button variant="contained" color="error" key={countKeys} onClick={() => {
       // Send friend request to back.
-      console.log("UNFRIEND");
       let headers = new Headers();
       headers.append("Content-Type", "application/json");
       fetch(API_UNFRIEND_USER, {

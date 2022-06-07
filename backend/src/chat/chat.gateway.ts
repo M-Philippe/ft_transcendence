@@ -878,9 +878,6 @@ export class ChatGateway {
         timeMessages: chat.timeMessages
       });
     }
-    //socket.emit("newChat", {
-    //  newChatId: chat.id,
-    //});
   }
 
   /*
