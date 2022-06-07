@@ -474,10 +474,10 @@ export class MatchesOnGoingGateway {
 				console.error(error);
 			  }
 			await this.sendEndGameToSockets(game.id);
+      await this.usersService.setNotInGame(game.players.p1.name);
+			await this.usersService.setNotInGame(game.players.p2.name);
 			await this.usersService.checkUserAchievements(game.players.p1.name);
 			await this.usersService.checkUserAchievements(game.players.p2.name);
-			await this.usersService.setNotInGame(game.players.p1.name);
-			await this.usersService.setNotInGame(game.players.p2.name);
 			game.inUse = false;
       /* For fps at the end of the game */ if (!cons) {console.error("End Game: ", Math.round(1000 / (total_ms / loop_count)), " fps."); cons = true;}
 			return;
