@@ -559,6 +559,16 @@ export class UsersService {
     }, HttpStatus.NOT_FOUND);
   }
 
+  async findOneWithListChat(id: number) {
+    const user = await PostgresDataSource
+      .createQueryBuilder(User, "u")
+      .leftJoinAndSelect("u.listChat", "listChat")
+      .where("u.id = Id", {Id: id})
+      .getOne();
+    console.error("PARTICULAR USER: ", user);
+    return user;
+  }
+
   async findOneByName(name: string) {
     const user = await PostgresDataSource.createQueryBuilder(User, "u").where("u.name = name", {name: name}).getOne();
     if (user) {
