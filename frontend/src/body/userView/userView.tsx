@@ -12,14 +12,44 @@ import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
+import MilitaryTechIcon from '@mui/icons-material/MilitaryTech';
+import Tooltip, { TooltipProps, tooltipClasses } from '@mui/material/Tooltip';
+import { styled } from '@mui/material/styles';
+
+
+const AchievTooltip = styled(({ className, ...props }: TooltipProps) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: theme.palette.common.black,
+    color: 'rgba(255, 255, 255)',
+    boxShadow: theme.shadows[1],
+    fontSize: 15,
+    marginTop: "-60px !important",
+  },
+}));
+
+function achievementsTooltipMaker(achievement: string) {
+  let ret : string;
+  ret = " "
+  if (achievement === "Worst Of The Best")
+    ret = "Has been in the 10 best players.";
+  if (achievement === "The Podium")
+    ret = "Has been in the 3 best players.";
+  if (achievement === "Above The Others")
+    ret = "Has been THE BEST player.";
+  return ret;
+}
 
 function assembleAchievements(achievements: any[]) {
   let retJsx = [];
   for (let i = 0; i < achievements.length; i++) {
     retJsx.push(
-      <p style={{color:'black'}} key={i}>
+      <AchievTooltip title={achievementsTooltipMaker(achievements[i])} key={i}>
+      <p style={{color:'black'}}>
         {achievements[i]}
       </p>
+      </AchievTooltip>
     );
   }
   return (retJsx);
@@ -138,14 +168,7 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
             <b><p style={{color:"#FF4500"}}>OFFLINE</p></b>
           ))
         }
-        {/* {
-          data.online &&
-          <b><p style={{color:"#00FF00"}}>ONLINE</p></b>
-        }
-        {
-          !data.online &&
-          <b><p style={{color:"#FF4500"}}>OFFLINE</p></b>
-        } */}
+
         <p>Victory: {data.wonCount} &emsp;&emsp; Defeat: {data.lostCount}</p>
         {
           data.online &&
@@ -169,7 +192,7 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
         </Box>
       </Modal>
         {data.achievements.length !== 0 && <Button variant="contained" onClick={() => {handleOpenAchievements()}}>
-        <b>{data.achievements.length}</b> &nbsp;&nbsp;Achivements</Button> }
+        <MilitaryTechIcon sx={{ color:'gold' }}/> <b>{data.achievements.length}</b> &nbsp;&nbsp;Achivements</Button> }
         <Modal
 				open={openAchievements}
 				onClose={handleCloseAchievements}
