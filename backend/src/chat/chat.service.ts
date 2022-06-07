@@ -1218,11 +1218,13 @@ export class ChatService {
   }
 
   async propagateSocketInChat(idUser: number, newSocket: string) {
-    let user: User;
+    let user: User | null;
     let returnIdsChat: number[] = [1];
     try {
-      user = await this.usersService.findOne(idUser);
+      user = await this.usersService.findOneWithListChat(idUser);
     } catch (error) { return; }
+    if (!user)
+      return;
     if (user.id === 1) // custom handle for admin
       await this.updateAdminInGlobal(user, newSocket);
     else // custom handle for global
