@@ -13,6 +13,7 @@ import { MatchesOnGoingGateway } from 'src/matchesOngoing/matchesOnGoing.gateway
 import { RelationshipStatus } from 'src/relationships/entities/relationship.entity';
 import { ChangePasswordDto } from './users.types';
 import { API_USER_AVATAR, FRONT_GENERIC_AVATAR } from 'src/urlConstString';
+import { PostgresDataSource } from 'src/dataSource';
 
 const WIN10 = 0;
 const WIN100 = 1;
@@ -393,28 +394,31 @@ export class UsersService {
   }
 
   async getUserAchievements(id: number) {
-    let userAchievements = (await this.findOne(id)).achievements;
+    // let userAchievements = (await this.findOne(id)).achievements;
+    const user = await PostgresDataSource.createQueryBuilder(User, "u").where("u.id = id", {id: id}).getOne();
     let achievements: String[] = [];
-    if (userAchievements[WIN10] == 'o')
-      achievements.push("I can see the pallet - 10 victory");
-    if (userAchievements[WIN100] == 'o')
-      achievements.push("Master of Pallet - 100 victory");
-    if (userAchievements[WINNINGSTREAK3] == 'o')
-      achievements.push("On The Road - 3 victory in a row");
-    if (userAchievements[WINNINGSTREAK10] == 'o')
-      achievements.push("Unstoppable - 10 victory in a row");
-    if (userAchievements[TOP10] == 'o')
-      achievements.push("Worst Of The Best");
-    if (userAchievements[TOP3] == 'o')
-      achievements.push("The Podium");
-    if (userAchievements[TOP1] == 'o')
-      achievements.push("Above The Others");
-    if (userAchievements[GAME10] == 'o')
-      achievements.push("Begginer Player - 10 games");
-    if (userAchievements[GAME100] == 'o')
-      achievements.push("Semi Pro Player - 100 games");
-    if (userAchievements[GAME1000] == 'o')
-      achievements.push("Pro Player - 1000 games");
+    if (user !== null) {
+      if (user.achievements[WIN10] == 'o')
+        achievements.push("I can see the pallet - 10 victory");
+      if (user.achievements[WIN100] == 'o')
+        achievements.push("Master of Pallet - 100 victory");
+      if (user.achievements[WINNINGSTREAK3] == 'o')
+        achievements.push("On The Road - 3 victory in a row");
+      if (user.achievements[WINNINGSTREAK10] == 'o')
+        achievements.push("Unstoppable - 10 victory in a row");
+      if (user.achievements[TOP10] == 'o')
+        achievements.push("Worst Of The Best");
+      if (user.achievements[TOP3] == 'o')
+        achievements.push("The Podium");
+      if (user.achievements[TOP1] == 'o')
+        achievements.push("Above The Others");
+      if (user.achievements[GAME10] == 'o')
+        achievements.push("Begginer Player - 10 games");
+      if (user.achievements[GAME100] == 'o')
+        achievements.push("Semi Pro Player - 100 games");
+      if (user.achievements[GAME1000] == 'o')
+        achievements.push("Pro Player - 1000 games");
+    }
     return (achievements);
   }
 
@@ -541,9 +545,11 @@ export class UsersService {
   }
 
   async findOne(id: number) {
-    //const user = await this.usersRepository.findOne(id, { relations: ["matches", "listChat"] });
-    const user = await this.usersRepository.findOne({ where: {id: id}, relations: ["matches", "listChat"]});//id, { relations: ["matches", "listChat"] });
-    if (user) {
+    const user = await PostgresDataSource
+      .createQueryBuilder(User, "u")
+      .where("u.id = Id", {Id: id})
+      .getOne();
+    if (user !== null) {
       return user;
     }
     throw new HttpException({
@@ -554,8 +560,7 @@ export class UsersService {
   }
 
   async findOneByName(name: string) {
-    //const user = await this.usersRepository.findOne({name}, { relations: ["matches", "listChat", "requestedRelationships", "requesteeRelationships"] });
-    const user = await this.usersRepository.findOne({ where: {name: name}, relations: ["matches", "listChat", "requestedRelationships", "requesteeRelationships"] });
+    const user = await PostgresDataSource.createQueryBuilder(User, "u").where("u.name = name", {name: name}).getOne();
     if (user) {
       return user;
     }
@@ -567,8 +572,13 @@ export class UsersService {
   }
 
   async getListChatUser(name: string) {
+    const user = await PostgresDataSource
+      .createQueryBuilder(User, "u")
+      .leftJoinAndSelect("u.matches", "matches")
+      .where("u.name = name", {name: name})
+      .getOne();
     //const user = await this.usersRepository.findOne({name}, { relations: ["matches", "listChat"]});
-    const user = await this.usersRepository.findOne({ where: {name: name}, relations: ["matches", "listChat"]});
+    // const user = await this.usersRepository.findOne({ where: {name: name}, relations: ["matches", "listChat"]});
     if (user) {
       return JSON.stringify(user.listChat);
     }

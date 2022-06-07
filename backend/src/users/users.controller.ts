@@ -13,6 +13,7 @@ import { RelationshipsService } from 'src/relationships/relationships.service';
 import { Relationship, RelationshipStatus } from 'src/relationships/entities/relationship.entity';
 import { ChangePasswordDto } from './users.types';
 import { API_USER_AVATAR } from 'src/urlConstString';
+import { PostgresDataSource } from 'src/dataSource';
 
 @Controller('users')
 export class UsersController {
@@ -212,26 +213,14 @@ export class UsersController {
   @UseGuards(JwtGuard)
   @Get('/name/:input')
   async findOneByName(@Param('input') input: string, @Req() request: Request) {
-    let userToFetch: User;
-    try {
-      userToFetch = await this.usersService.findOneByName(input);
-    } catch (error) {
-      throw new HttpException({
-        type: "No such User."
-      }, HttpStatus.NO_CONTENT);
-    }
+    const d = Date.now();
+    let userToFetch = await this.usersService.findOneByName(input);
     let idUserInit: number = this.getIdUserFromCookie(request.cookies.authentication);
-    let userInit: User;
-    try {
-      userInit = await this.usersService.findOne(idUserInit);
-    } catch (error) {
-      throw new HttpException({
-        type: "No such User."
-      }, HttpStatus.NO_CONTENT);
-    }
+    let userInit = await this.usersService.findOne(idUserInit);
     let relationshipStatus: string = "none";
     let relationship: Relationship | undefined | null;
     if ((relationship = await this.relationshipsService.checkRelationshipExistWithId(userInit.id, userToFetch.id))
+        // !== null) {
         !== null && (relationship !== undefined)) {
       if (relationship.status === RelationshipStatus.BLOCKED_REQUESTER && relationship.requester.id === userInit.id)
           relationshipStatus = "blocker";
@@ -241,6 +230,7 @@ export class UsersController {
         relationshipStatus = relationship.status;
     }
     let achievements = await this.usersService.getUserAchievements(userToFetch.id);
+    console.error("Time: ", Date.now() - d);
     return ({
       name: userToFetch.name,
       avatar: userToFetch.avatar,
