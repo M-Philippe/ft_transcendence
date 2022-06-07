@@ -162,10 +162,10 @@ export class UsersService {
 
   async setUserOfflineAndSocketToNull(idUser: number) {
     let user = await this.findOne(idUser);
-    user.userAlert.socket = "";
+    //user.userAlert.socket = "";
     user.online = false;
     //await this.usersRepository.save(user);
-    await this.usersRepository.update(user.id, { online: false, userAlert: user.userAlert });
+    await this.usersRepository.update(user.id, { online: false });
   }
 
   async updateSocketAndGetUserAlert(userId: number, socket: string) {
@@ -173,7 +173,7 @@ export class UsersService {
     if (user === undefined || user === null)
       return undefined;
     user.userAlert.socket = socket;
-    await this.usersRepository.save(user);
+    await this.usersRepository.update({ id: userId }, { userAlert: user.userAlert });
     return (user.userAlert);
   }
 
@@ -346,48 +346,50 @@ export class UsersService {
       return;
     if (user.achievements[WIN10] == 'x' && user.wonCount > 9) {
       user.achievements = this.replaceAt(WIN10, user.achievements);
-      this.addEventToUserAlert(-1, user.id, "Felicitation ! This is your tenth victory !", false, "achievements");
+      await this.addEventToUserAlert(-1, user.id, "Felicitation ! This is your tenth victory !", false, "achievements");
     }
     if (user.achievements[WIN100] == 'x' && user.wonCount > 99) {
       user.achievements = this.replaceAt(WIN100, user.achievements);
-      this.addEventToUserAlert(-1, user.id, "Felicitation ! This is your hundredth victory !", false, "achievements");
+      await this.addEventToUserAlert(-1, user.id, "Felicitation ! This is your hundredth victory !", false, "achievements");
     }
     if (user.achievements[WINNINGSTREAK3] == 'x' && user.winningStreak > 2) {
       user.achievements = this.replaceAt(WINNINGSTREAK3, user.achievements);
-      this.addEventToUserAlert(-1, user.id, "Congratulations ! You have won three game in a row !", false, "achievements");
+      await this.addEventToUserAlert(-1, user.id, "Congratulations ! You have won three game in a row !", false, "achievements");
     }
     if (user.achievements[WINNINGSTREAK10] == 'x' && user.winningStreak > 9) {
       user.achievements = this.replaceAt(WINNINGSTREAK10, user.achievements);
-      this.addEventToUserAlert(-1, user.id, "Congratulations ! You have won ten game in a row !", false, "achievements");
+      await this.addEventToUserAlert(-1, user.id, "Congratulations ! You have won ten game in a row !", false, "achievements");
     }
     if (user.wonCount + user.lostCount > 0 && user.achievements[TOP1] == 'x') {
       let count = await this.usersRepository.count({ where: { wonCount: MoreThan(user.wonCount) }});
       if (user.achievements[TOP10] == 'x' && count < 10) {
         user.achievements = this.replaceAt(TOP10, user.achievements);
-        this.addEventToUserAlert(-1, user.id, "Congratulations ! You are in the ten best players !", false, "achievements");
+        await this.addEventToUserAlert(-1, user.id, "Congratulations ! You are in the ten best players !", false, "achievements");
       }
       if (user.achievements[TOP3] == 'x' && count < 3) {
         user.achievements = this.replaceAt(TOP3, user.achievements);
-        this.addEventToUserAlert(-1, user.id, "Congratulations ! You are in the three best players !", false, "achievements");
+        await this.addEventToUserAlert(-1, user.id, "Congratulations ! You are in the three best players !", false, "achievements");
       }
       if (user.achievements[TOP1] == 'x' && count == 0) {
         user.achievements = this.replaceAt(TOP1, user.achievements);
-        this.addEventToUserAlert(-1, user.id, "Congratulations ! You are THE best players !", false, "achievements");
+        await this.addEventToUserAlert(-1, user.id, "Congratulations ! You are THE best players !", false, "achievements");
       }
     }
     if (user.achievements[GAME10] == 'x' && user.wonCount + user.lostCount > 9) {
       user.achievements = this.replaceAt(GAME10, user.achievements);
-      this.addEventToUserAlert(-1, user.id, "First step: You played ten games.", false, "achievements");
+      await this.addEventToUserAlert(-1, user.id, "First step: You played ten games.", false, "achievements");
     }
     if (user.achievements[GAME100] == 'x' && user.wonCount + user.lostCount > 99) {
       user.achievements = this.replaceAt(GAME100, user.achievements);
-      this.addEventToUserAlert(-1, user.id, "Road to pro player: You played one hundred games.", false, "achievements");
+      await this.addEventToUserAlert(-1, user.id, "Road to pro player: You played one hundred games.", false, "achievements");
     }
     if (user.achievements[GAME1000] == 'x' && user.wonCount + user.lostCount > 999) {
       user.achievements = this.replaceAt(GAME1000, user.achievements);
-      this.addEventToUserAlert(-1, user.id, "Nothing but pong: You played one thousand games...", false, "achievements");
+      await this.addEventToUserAlert(-1, user.id, "Nothing but pong: You played one thousand games...", false, "achievements");
     }
-    await this.usersRepository.save(user);
+    // CHECK THIS UPDATE WITH VROTH-DI
+    //await this.usersRepository.save(user);
+    await this.usersRepository.update({id: user.id}, { achievements: user.achievements });
   }
 
   async getUserAchievements(id: number) {
