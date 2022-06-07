@@ -58,7 +58,6 @@ export default function FirstLogin(props: any) {
 		})
 		.then(response => {
 			if (response.status === 403) {
-				// TODO put URL with CONST.
 				window.location.assign(DISCONNECTING_URL);
 			}
 			return (response.json());
@@ -73,7 +72,6 @@ export default function FirstLogin(props: any) {
 						avatar: payload.avatar,
 					},
 				});
-				// TODO: SET URL WITH CONST
 				window.location.href = BASE_URL;
 			} else
 				setErrorMessage(payload.message);

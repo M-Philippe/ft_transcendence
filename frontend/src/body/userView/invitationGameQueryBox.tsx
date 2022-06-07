@@ -79,10 +79,10 @@ export default function InvitationGameQueryBox(props: { nameProfile: string, clo
 						})
 					})
 					.then(response => {
-						console.log("STATUS: ", response.status);
 						if (response.status === 403)
 							window.location.assign(DISCONNECTING_URL);
-					});
+					})
+          .catch(error => {});
           props.closePopUp(true)}}>
 					Invite
 			 </Button>

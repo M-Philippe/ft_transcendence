@@ -1,7 +1,6 @@
 import { connect } from "react-redux";
 import { storeState } from "../store/types";
 
-// TODO Need to avoid actualisation needed to align footer
 function Footer(props: { isInGame: boolean, isConnected: boolean }) 
 {
   if (props.isInGame)

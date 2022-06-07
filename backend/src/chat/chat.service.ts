@@ -34,8 +34,6 @@ export class ChatService {
   }
 
   async onApplicationBootstrap() {
-    // We create global [id: 0]
-    // TODO -> Do nothing if chat 0 already exists.
     const checkChatGlobalExist = await this.chatRepository.findOne({where: {id: 1}});
     if (checkChatGlobalExist !== null)
       return;

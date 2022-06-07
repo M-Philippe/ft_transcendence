@@ -164,7 +164,6 @@ export class UsersService {
     let user = await this.findOne(idUser);
     //user.userAlert.socket = "";
     user.online = false;
-    //await this.usersRepository.save(user);
     await this.usersRepository.update(user.id, { online: false });
   }
 
@@ -232,13 +231,16 @@ export class UsersService {
   }
 
   async handleAlertInvitationGame(requestee: User, requesterId: number, response: string, indexAlert: number) {
+    if (response === "no") {
+      await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
+      return (undefined);
+    }
     let requester;
     try {
       requester = await this.usersRepository.findOne({where: {id: requesterId}});
     } catch (error) {
       return (undefined);
     }
-    console.error("REQUESTER: ", requester?.name, " | online: ", requester?.online, " | inGame: ", requester?.inGame);
     if (requester === undefined || requester === null)
       return (undefined)
     else if (!requester.online || requester.inGame) {
@@ -247,17 +249,14 @@ export class UsersService {
         message: requester.name + requester.inGame ? " is in game/queue." : " isn't connected!"/* (requester) online: " + requester.online + " | ingame: " + requester.inGame*/
       });
     }
-    else if (requestee.inGame) {
+    if (requestee.inGame) {
       return undefined;
     }
     // createMatch with ids and emit to socket to assign new Location.
-    if (response === "no") {
-      await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
-      return (undefined);
-    } else if (response === "yes") {
+     else if (response === "yes") {
       if (requester.userAlert.socket === "") {
         await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
-        return ({ message: "Intern problem, socket"});
+        return ({ message: "User can't be contacted"});
       }
       this.matchesOnGoingGateway.createMatchFromInvitation(requester.id, requestee.id, requestee.userAlert.alert[indexAlert].message);
       await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
@@ -387,8 +386,6 @@ export class UsersService {
       user.achievements = this.replaceAt(GAME1000, user.achievements);
       await this.addEventToUserAlert(-1, user.id, "Nothing but pong: You played one thousand games...", false, "achievements");
     }
-    // CHECK THIS UPDATE WITH VROTH-DI
-    //await this.usersRepository.save(user);
     await this.usersRepository.update({id: user.id}, { achievements: user.achievements });
   }
 
