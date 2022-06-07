@@ -82,7 +82,6 @@ const userMenu = [
 ]
 
 const Header = (props: IProps) => {
-	// const [redirectDisconnect, setRedirectDisconnect] = useState(false);
 
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
@@ -125,7 +124,6 @@ const Header = (props: IProps) => {
 		<AppBar id ="navBar" position="static">
 		<Container maxWidth={false}>
 			<Toolbar disableGutters>
-			{/* <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} /> */}
 			<Typography variant="h6" noWrap component={NavLink}	to="/"	sx={{mr: 2, display: { xs: 'none', md: 'flex' }, 
 				fontFamily: 'monospace', fontWeight: 700, color: 'inherit', textDecoration: 'none', }}	>
 					Ft_transcendence
