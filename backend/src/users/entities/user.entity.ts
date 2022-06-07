@@ -6,7 +6,7 @@ import { Column, CreateDateColumn, Entity, ManyToMany, OneToMany, PrimaryGenerat
 import { UserAlert } from "../users.types";
 
 @Entity()
-@Unique(['name'])
+@Unique(['id', 'name'])
 export class User {
     @PrimaryGeneratedColumn()
     public id: number;
