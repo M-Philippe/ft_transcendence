@@ -13,6 +13,7 @@ import { MatchesOnGoingGateway } from 'src/matchesOngoing/matchesOnGoing.gateway
 import { RelationshipStatus } from 'src/relationships/entities/relationship.entity';
 import { ChangePasswordDto } from './users.types';
 import { API_USER_AVATAR, FRONT_GENERIC_AVATAR } from 'src/urlConstString';
+import { PostgresDataSource } from 'src/dataSource';
 
 const WIN10 = 0;
 const WIN100 = 1;
@@ -121,7 +122,8 @@ export class UsersService {
   @HttpCode(200)
   async disconnectUser(idUser: number) {
     try {
-      await this.usersRepository.update({ id: idUser}, { online: false, hasAlreadyChanged42Name: true });
+      await PostgresDataSource.createQueryBuilder().update(User).set({online: false, hasAlreadyChanged42Name: true}).where("id = :id", {id: idUser}).execute();
+      // await this.usersRepository.update({ id: idUser}, { online: false, hasAlreadyChanged42Name: true });
     } catch (error) {
       throw new HttpException({
         type: "No such User."
@@ -146,7 +148,7 @@ export class UsersService {
       throw new Error("New password isn't the same");
     let newPassword = await encryptPasswordToStoreInDb(undefined, changePasswordDto.newPassword);
     try {
-      await this.usersRepository.update({id: idUser}, { password: newPassword});
+      await PostgresDataSource.getRepository(User).update({id: idUser}, { password: newPassword});
     } catch (error) {
       throw new Error("Internal Server Error, please try later");
     }
@@ -154,17 +156,26 @@ export class UsersService {
 
   @HttpCode(200)
   async setUserOnline(idUser: number, status: boolean) {
-    // must set socket in userAlert to empty string.
     try {
-      await this.usersRepository.update({ id: idUser }, { online: status, hasAlreadyChanged42Name: true });
+      await PostgresDataSource
+        .createQueryBuilder()
+        .update(User)
+        .set({online: status, hasAlreadyChanged42Name: true})
+        .where("id = :id", {id: idUser})
+        .execute();
+      // await this.usersRepository.update({ id: idUser }, { online: status, hasAlreadyChanged42Name: true });
     } catch (error) {}
   }
 
   async setUserOfflineAndSocketToNull(idUser: number) {
     let user = await this.findOne(idUser);
     //user.userAlert.socket = "";
-    user.online = false;
-    await this.usersRepository.update(user.id, { online: false });
+    await PostgresDataSource
+      .createQueryBuilder()
+      .update(User)
+      .set({online: false/*, userAlert: user.userAlert*/})
+      .where("id = :id", {id: idUser})
+      .execute();
   }
 
   async updateSocketAndGetUserAlert(userId: number, socket: string) {
@@ -172,7 +183,13 @@ export class UsersService {
     if (user === undefined || user === null)
       return undefined;
     user.userAlert.socket = socket;
-    await this.usersRepository.update({ id: userId }, { userAlert: user.userAlert });
+    await PostgresDataSource
+      .createQueryBuilder()
+      .update(User)
+      .set({userAlert: user.userAlert})
+      .where("id = :id", {id: userId})
+      .execute()
+
     return (user.userAlert);
   }
 
@@ -193,7 +210,13 @@ export class UsersService {
       requesteeId: idUserToAlert,
       type: type
     });
-    await this.usersRepository.update({id: user.id}, { userAlert: user.userAlert });
+    await PostgresDataSource
+      .createQueryBuilder()
+      .update(User)
+      .set({userAlert: user.userAlert})
+      .where("id = :id", {id: user.id})
+      .execute();
+    // await this.usersRepository.update({id: user.id}, { userAlert: user.userAlert });
     await this.usersGateway.sendUserNewAlert(user.userAlert);
   }
 
@@ -201,7 +224,8 @@ export class UsersService {
     // Here we must pull a fresh instance of User because relationship isn't up-to-date with previous user instance.
     let user = await this.findOne(userId);
     user.userAlert.alert.splice(index, 1);
-    await this.usersRepository.save(user);
+    await PostgresDataSource.createQueryBuilder().update(User).set({userAlert: user.userAlert}).where("id = :id", {id: user.id}).execute();
+    // await this.usersRepository.save(user);
     await this.usersGateway.sendUserNewAlert(user.userAlert);
   }
 
@@ -249,19 +273,14 @@ export class UsersService {
         message: requester.name + requester.inGame ? " is in game/queue." : " isn't connected!"/* (requester) online: " + requester.online + " | ingame: " + requester.inGame*/
       });
     }
-    if (requestee.inGame) {
-      return undefined;
-    }
     // createMatch with ids and emit to socket to assign new Location.
-     else if (response === "yes") {
-      if (requester.userAlert.socket === "") {
-        await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
-        return ({ message: "User can't be contacted"});
-      }
-      this.matchesOnGoingGateway.createMatchFromInvitation(requester.id, requestee.id, requestee.userAlert.alert[indexAlert].message);
+    if (requester.userAlert.socket === "") {
       await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
-      return ({redirection: true});
+      return ({ message: "Empty Socket"});
     }
+    this.matchesOnGoingGateway.createMatchFromInvitation(requester.id, requestee.id, requestee.userAlert.alert[indexAlert].message);
+    this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
+    return ({redirection: true});
   }
 
   async findAlertByMessageAndExecute(requesterId: number, requesteeId: number, message: string, response: string) {
@@ -386,32 +405,35 @@ export class UsersService {
       user.achievements = this.replaceAt(GAME1000, user.achievements);
       await this.addEventToUserAlert(-1, user.id, "Nothing but pong: You played one thousand games...", false, "achievements");
     }
-    await this.usersRepository.update({id: user.id}, { achievements: user.achievements });
+    await PostgresDataSource.getRepository(User).update({id: user.id}, { achievements: user.achievements });
   }
 
   async getUserAchievements(id: number) {
-    let userAchievements = (await this.findOne(id)).achievements;
+    // let userAchievements = (await this.findOne(id)).achievements;
+    const user = await PostgresDataSource.createQueryBuilder(User, "u").where("u.id = :Id", {Id: id}).getOne();
     let achievements: String[] = [];
-    if (userAchievements[WIN10] == 'o')
-      achievements.push("I can see the pallet - 10 victory");
-    if (userAchievements[WIN100] == 'o')
-      achievements.push("Master of Pallet - 100 victory");
-    if (userAchievements[WINNINGSTREAK3] == 'o')
-      achievements.push("On The Road - 3 victory in a row");
-    if (userAchievements[WINNINGSTREAK10] == 'o')
-      achievements.push("Unstoppable - 10 victory in a row");
-    if (userAchievements[TOP10] == 'o')
-      achievements.push("Worst Of The Best");
-    if (userAchievements[TOP3] == 'o')
-      achievements.push("The Podium");
-    if (userAchievements[TOP1] == 'o')
-      achievements.push("Above The Others");
-    if (userAchievements[GAME10] == 'o')
-      achievements.push("Begginer Player - 10 games");
-    if (userAchievements[GAME100] == 'o')
-      achievements.push("Semi Pro Player - 100 games");
-    if (userAchievements[GAME1000] == 'o')
-      achievements.push("Pro Player - 1000 games");
+    if (user !== null) {
+      if (user.achievements[WIN10] == 'o')
+        achievements.push("I can see the pallet - 10 victory");
+      if (user.achievements[WIN100] == 'o')
+        achievements.push("Master of Pallet - 100 victory");
+      if (user.achievements[WINNINGSTREAK3] == 'o')
+        achievements.push("On The Road - 3 victory in a row");
+      if (user.achievements[WINNINGSTREAK10] == 'o')
+        achievements.push("Unstoppable - 10 victory in a row");
+      if (user.achievements[TOP10] == 'o')
+        achievements.push("Worst Of The Best");
+      if (user.achievements[TOP3] == 'o')
+        achievements.push("The Podium");
+      if (user.achievements[TOP1] == 'o')
+        achievements.push("Above The Others");
+      if (user.achievements[GAME10] == 'o')
+        achievements.push("Begginer Player - 10 games");
+      if (user.achievements[GAME100] == 'o')
+        achievements.push("Semi Pro Player - 100 games");
+      if (user.achievements[GAME1000] == 'o')
+        achievements.push("Pro Player - 1000 games");
+    }
     return (achievements);
   }
 
@@ -460,7 +482,7 @@ export class UsersService {
   }
 
   async changeUsername42(idUser: number, newName: string) {
-    let user = await this.usersRepository.findOne({where: {id: idUser}});
+    let user = await PostgresDataSource.getRepository(User).findOne({where: {id: idUser}});
     if (user === null || user === undefined)
       return ({ message: "Error intern." });
     if (user.hasAlreadyChanged42Name) {
@@ -468,13 +490,7 @@ export class UsersService {
     } else if (user.id42 === -1)
       return ("You can't change your username");
     else {
-      user.hasAlreadyChanged42Name = true;
-      user.name = newName;
-      try {
-        user = await this.usersRepository.save(user);
-      } catch (error) {
-        return ({ message: "Error intern." });
-      }
+      await PostgresDataSource.createQueryBuilder().update(User).set({name: newName, hasAlreadyChanged42Name: true}).where("id = :id", {id: user.id}).execute()
       return ({
         message: "Ok",
         username: user.name,
@@ -488,7 +504,7 @@ export class UsersService {
     let user;
     try {
       await this.usersRepository.update({id: idUser}, { hasAlreadyChanged42Name: true });
-      user = await this.usersRepository.findOne({ where: { id: idUser }});
+      user = await PostgresDataSource.getRepository(User).findOne({ where: { id: idUser }});
     } catch (error) { return; }
     if (user === null)
       return;
@@ -500,7 +516,7 @@ export class UsersService {
     if (user === null || user === undefined)
       return (undefined);
     try {
-      await this.usersRepository.update({ id: idUser }, { avatar: API_USER_AVATAR + avatar });
+      await PostgresDataSource.getRepository(User).update({ id: idUser }, { avatar: API_USER_AVATAR + avatar });
     } catch (error) {
       return undefined;
     }
@@ -514,21 +530,21 @@ export class UsersService {
   **  AUTH
   */
   async updateTwoFactorSecret(id: number, secret: string) {
-    await this.usersRepository.update(id, { twoFactorSecret: secret });
+    await PostgresDataSource.getRepository(User).update(id, { twoFactorSecret: secret });
     return this.findOne(id);
   }
 
   async updateTwoFactorEnabled(id: number, twoFactorEnable: boolean) {
-    await this.usersRepository.update(id, { twoFactorIsEnabled: twoFactorEnable });
+    await PostgresDataSource.getRepository(User).update(id, { twoFactorIsEnabled: twoFactorEnable });
     return this.findOne(id);
   }
 
   findAll() {
-    return this.usersRepository.find({ relations: ["matches", "listChat", "requestedRelationships", "requesteeRelationships"] });
+    return PostgresDataSource.getRepository(User).find({ relations: ["matches", "listChat", "requestedRelationships", "requesteeRelationships"] });
   }
 
   async findAllForRanking() {
-    let ret = await this.usersRepository.findAndCount({select: ["name", "avatar", "wonCount", "lostCount"]});
+    let ret = await PostgresDataSource.getRepository(User).findAndCount({select: ["name", "avatar", "wonCount", "lostCount"]});
     let returnedUsers = ret[0];
     for (let i = 0; i < returnedUsers.length; i++) {
       if (returnedUsers[i].name === "Admin")
@@ -538,9 +554,11 @@ export class UsersService {
   }
 
   async findOne(id: number) {
-    //const user = await this.usersRepository.findOne(id, { relations: ["matches", "listChat"] });
-    const user = await this.usersRepository.findOne({ where: {id: id}, relations: ["matches", "listChat"]});//id, { relations: ["matches", "listChat"] });
-    if (user) {
+    const user = await PostgresDataSource
+      .createQueryBuilder(User, "u")
+      .where("u.id = :Id", {Id: id})
+      .getOne();
+    if (user !== null) {
       return user;
     }
     throw new HttpException({
@@ -550,9 +568,62 @@ export class UsersService {
     }, HttpStatus.NOT_FOUND);
   }
 
+  async findOneWithListChat(id: number) {
+    const user = await PostgresDataSource
+      .createQueryBuilder(User, "u")
+      .leftJoinAndSelect("u.listChat", "listChat")
+      .where("u.id = :Id", {Id: id})
+      .getOne();
+    //console.error("PARTICULAR USER: ", user);
+    return user;
+  }
+
+  async findOneWithRelations(idUser: number) {
+    const user = await PostgresDataSource.createQueryBuilder(User, "u")
+    .leftJoinAndSelect("u.requestedRelationships", "requestedRelationships")
+    .leftJoinAndSelect("u.requesteeRelationships", "requesteeRelationships")
+    .where("u.id = :id", {id: idUser}).getOne();
+    if (user) {
+      return user;
+    }
+    throw new HttpException({
+      code: "e2300",
+      type: "Invalid name.",
+      description: "Please choose a valid user name."
+    }, HttpStatus.NOT_FOUND);
+  }
+
   async findOneByName(name: string) {
-    //const user = await this.usersRepository.findOne({name}, { relations: ["matches", "listChat", "requestedRelationships", "requesteeRelationships"] });
-    const user = await this.usersRepository.findOne({ where: {name: name}, relations: ["matches", "listChat", "requestedRelationships", "requesteeRelationships"] });
+    const user = await PostgresDataSource.createQueryBuilder(User, "u").where("u.name = :Name", {Name: name}).getOne();
+    if (user) {
+      return user;
+    }
+    throw new HttpException({
+      code: "e2300",
+      type: "Invalid name.",
+      description: "Please choose a valid user name."
+    }, HttpStatus.NOT_FOUND);
+  }
+
+  async findOneByNameWithMatchHistory(name: string) {
+    const user = await PostgresDataSource.createQueryBuilder(User, "u")
+    .leftJoinAndSelect("u.matches", "matches")
+    .where("u.name = :Name", {Name: name}).getOne();
+    if (user) {
+      return user;
+    }
+    throw new HttpException({
+      code: "e2300",
+      type: "Invalid name.",
+      description: "Please choose a valid user name."
+    }, HttpStatus.NOT_FOUND);
+  }
+
+  async findOneByNameWithRelations(name: string) {
+    const user = await PostgresDataSource.createQueryBuilder(User, "u")
+    .leftJoinAndSelect("u.requestedRelationships", "requestedRelationships")
+    .leftJoinAndSelect("u.requesteeRelationships", "requesteeRelationships")
+    .where("u.name = :Name", {Name: name}).getOne();
     if (user) {
       return user;
     }
@@ -564,8 +635,14 @@ export class UsersService {
   }
 
   async getListChatUser(name: string) {
-    //const user = await this.usersRepository.findOne({name}, { relations: ["matches", "listChat"]});
-    const user = await this.usersRepository.findOne({ where: {name: name}, relations: ["matches", "listChat"]});
+    const user = await PostgresDataSource.getRepository(User).findOne({ where: {name: name}, relations: ["listChat"]});
+    // const user = await PostgresDataSource
+    //   .createQueryBuilder(User, "u")
+    
+    //   .leftJoinAndSelect("u.listChat", "listChat")
+    //   .where("name = :name", {name: name})
+    //   .getOne();
+    // const user = await this.usersRepository.findOne({ where: {name: name}, relations: ["matches", "listChat"]});
     if (user) {
       return JSON.stringify(user.listChat);
     }
@@ -600,6 +677,10 @@ export class UsersService {
       throw new Error(error);
     }
   }
+  // async addChat(chat: Chat, user: User) {
+  //   user.listChat.push(chat);
+  //   PostgresDataSource.createQueryBuilder().update(User).set({listChat: user.listChat}).where("id = :id", {id: user.id}).execute();
+  // }
 
   async findAllRelationships(id: number) {
     let user = await this.findOne(id);
@@ -613,12 +694,12 @@ export class UsersService {
 
   async setInGame(username: string, value: boolean) {
     try {
-      await this.usersRepository.update({ name: username }, { inGame: true });
+      await PostgresDataSource.getRepository(User).update({ name: username }, { inGame: true });
     } catch(error) {}
   }
 
   async setNotInGame(username: string) {
-    await this.usersRepository.update({name: username}, {inGame: false});
+    await PostgresDataSource.getRepository(User).update({name: username}, {inGame: false});
   }
 
   async remove(id: number) {

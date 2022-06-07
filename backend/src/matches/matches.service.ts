@@ -53,7 +53,7 @@ export class MatchesService {
   }
 
   async getMatchHistory(usernameToFetch: string) {
-    let user = await this.usersService.findOneByName(usernameToFetch);
+    let user = await this.usersService.findOneByNameWithMatchHistory(usernameToFetch);
     if (user === undefined)
       return "No such user.";
     let ret: Array<{opponent: string, winner: string, date: Date}> = [];

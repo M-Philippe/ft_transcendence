@@ -13,10 +13,9 @@ import { isPasswordEmpty } from "./utils/chat.password.utils";
 import { comparePassword, encryptPasswordToStoreInDb } from "src/passwordEncryption/passwordEncryption";
 import { BANNED_MESSAGE, INVITE_MESSAGE, JOINED_MESSAGE, LACK_ADMIN_RIGHT, LACK_OWNER_RIGHT, MUTED_MESSAGE, QUIT_MESSAGE, RESOLVED_PASSWORD, SET_CHAT_PRIVATE, SET_CHAT_PUBLIC, SET_PASSWORD, UNBANNED_MESSAGE, UNMUTED_MESSAGE, UNSET_PASSWORD } from "./chat.constMessages";
 import { ChatGateway } from "./chat.gateway";
-import { queueScheduler } from "rxjs";
 import { RelationshipsService } from "src/relationships/relationships.service";
 import { RelationshipStatus } from "src/relationships/entities/relationship.entity";
-import { userInfo } from "os";
+import { PostgresDataSource } from 'src/dataSource';
 
 @Injectable()
 export class ChatService {
@@ -34,7 +33,8 @@ export class ChatService {
   }
 
   async onApplicationBootstrap() {
-    const checkChatGlobalExist = await this.chatRepository.findOne({where: {id: 1}});
+    // We create global [id: 0]
+    const checkChatGlobalExist = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: 1}).getOne();
     if (checkChatGlobalExist !== null)
       return;
     const chat = this.chatRepository.create({});
@@ -63,7 +63,7 @@ export class ChatService {
 
   async getListPublicChat(idUser: number) {
     let response: Array<any> = [];
-    let arrayChat = await this.findAll();
+    let arrayChat = await PostgresDataSource.createQueryBuilder(Chat, "c").getMany();
     if(arrayChat === undefined)
       return;
     for (let i = 0; i < arrayChat.length; i++) {
@@ -77,7 +77,7 @@ export class ChatService {
     return (response);
   }
 
-  async addMessageInArray(chat: Chat, username: string, message: string) {
+  addMessageInArray(chat: Chat, username: string, message: string) {
     chat.timeMessages.push(this.getTimestamp());
     chat.messages.push(message);
     chat.usernames.push(username);
@@ -92,6 +92,7 @@ export class ChatService {
           userWhoMute.listChat[i].usersInfos[getIndexUser(userWhoMute.listChat[i].usersInfos, userWhoMute.id)].persoMutedUsers.push(userToMute.id);
         try {
           await this.chatRepository.save(userWhoMute.listChat[i]);
+          //await PostgresDataSource.createQueryBuilder().update(User).set({listChat[i]: userWhoMute.listChat[i]})
         } catch (error) {
           return;
         }
@@ -106,7 +107,7 @@ export class ChatService {
     // propagateToAllChat.
     await this.propagateMute(user, userToMute);
     try {
-      await this.chatRepository.save(chat);
+      await PostgresDataSource.createQueryBuilder().update(Chat).set({usersInfos: chat.usersInfos}).where("id = :id", { id: chat.id }).execute();
     } catch (error) {
       throw new Error(error);
     }
@@ -124,6 +125,7 @@ export class ChatService {
     chat.usersInfos[getIndexUser(chat.usersInfos, user.id)].persoMutedUsers.splice(index, 1);
     try {
       await this.chatRepository.save(chat);
+      await PostgresDataSource.createQueryBuilder().update(Chat).set({usersInfos: chat.usersInfos}).where("id = :id", {id: chat.id}).execute();
     } catch (error) {
       throw new Error(error);
     }
@@ -135,14 +137,9 @@ export class ChatService {
     let mutedUser;
     let chat;
 
-    try {
-      chat = await this.chatRepository.findOne({where: {id: idChat}});
-    } catch (error) {
-      throw new Error(error);
-    }
+    chat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: idChat}).getOne();
     if (chat === null)
       return undefined;
-
     try {
       adminUser = await this.usersService.findOne(idUser);
     } catch (error) {
@@ -171,10 +168,11 @@ export class ChatService {
       dateMute: 0,
       timer: 0,
     });
-    if ((chat = await this.addMessageInArray(chat, adminUser.name, MUTED_MESSAGE + " " + mutedUser.name)) === undefined)
-      return undefined;
+    chat = this.addMessageInArray(chat, adminUser.name, MUTED_MESSAGE + " " + mutedUser.name)
     try {
-      await this.chatRepository.save(chat);
+      await PostgresDataSource.createQueryBuilder().update(Chat).set({
+        mutedUsers: chat.mutedUsers, timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
+      }).where("id = :id", {id: chat.id}).execute();
     } catch (error) {
       throw new Error(error);
     }
@@ -186,11 +184,7 @@ export class ChatService {
     let mutedUser;
     let chat;
 
-    try {
-      chat = await this.chatRepository.findOne({where: {id: idChat}});
-    } catch (error) {
-      throw new Error(error);
-    }
+    chat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: idChat}).getOne();
     if (chat === null)
       return undefined;
     try {
@@ -214,10 +208,11 @@ export class ChatService {
     || !isUserMuted(chat.mutedUsers, mutedUser.id))
       return ("User not in chat / already banned / not muted");
     chat.mutedUsers.splice(getIndexMutedUser(chat.mutedUsers, mutedUser.id), 1);
-    if ((chat = await this.addMessageInArray(chat, adminUser.name, UNMUTED_MESSAGE + " " + mutedUser.name)) === undefined)
-      return undefined;
+    chat = this.addMessageInArray(chat, adminUser.name, UNMUTED_MESSAGE + " " + mutedUser.name);
     try {
-      await this.chatRepository.save(chat);
+      await PostgresDataSource.createQueryBuilder().update(Chat).set({
+          mutedUsers: chat.mutedUsers, timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
+        }).where("id = :id", {id: chat.id}).execute();
     } catch (error) {
       throw new Error(error);
     }
@@ -230,10 +225,11 @@ export class ChatService {
     || !isUserMuted(chat.mutedUsers, mutedUser.id))
       return false;
     chat.mutedUsers.splice(getIndexMutedUser(chat.mutedUsers, mutedUser.id), 1);
-    if ((chat = await this.addMessageInArray(chat, "System", UNMUTED_MESSAGE + " " + mutedUser.name)) === undefined)
-      return false;
+    chat = this.addMessageInArray(chat, "System", UNMUTED_MESSAGE + " " + mutedUser.name);
     try {
-      await this.chatRepository.save(chat);
+      await PostgresDataSource.createQueryBuilder().update(Chat).set({
+        mutedUsers: chat.mutedUsers, timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
+      }).where("id = :id", {id: chat.id}).execute();
     } catch (error) {
       throw new Error(error);
     }
@@ -244,11 +240,8 @@ export class ChatService {
     let adminUser;
     let mutedUser;
     let chat;
-    try {
-      chat = await this.chatRepository.findOne({where: {id: idChat}});
-    } catch (error) {
-      throw new Error(error);
-    }
+
+    chat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: idChat}).getOne();
     if (chat === null)
       return undefined;
     try {
@@ -277,10 +270,11 @@ export class ChatService {
       dateMute: date.valueOf(),
       timer: timer * 1000,
     });
-    if ((chat = await this.addMessageInArray(chat, adminUser.name, MUTED_MESSAGE + " " + mutedUser.name + " for " + timer.toString())) === undefined)
-      return undefined;
+    chat = this.addMessageInArray(chat, adminUser.name, MUTED_MESSAGE + " " + mutedUser.name + " for " + timer.toString());
     try {
-      await this.chatRepository.save(chat);
+      await PostgresDataSource.createQueryBuilder().update(Chat).set({
+        mutedUsers: chat.mutedUsers, timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
+      }).where("id = :id", {id: chat.id}).execute();
     } catch (error) {
       throw new Error(error);
     }
@@ -300,11 +294,7 @@ export class ChatService {
     let chat;
     let transitionChat;
 
-    try {
-      chat = await this.chatRepository.findOne({where: {id: idChat}});
-    } catch (error) {
-      throw new Error(error);
-    }
+    chat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: idChat}).getOne();
     try {
       adminUser = await this.usersService.findOne(idUser);
     } catch (error) {
@@ -334,7 +324,9 @@ export class ChatService {
     });
     this.addMessageInArray(chat, adminUser.name, BANNED_MESSAGE + " " + banishedUser.name);
     try {
-      await this.chatRepository.save(chat);
+      await PostgresDataSource.createQueryBuilder().update(Chat).set({
+        bannedUsers: chat.bannedUsers, timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
+      }).where("id = :id", {id: chat.id}).execute();
     } catch (error) {
       throw new Error("Can't save chat: " + error);
     }
@@ -352,7 +344,7 @@ export class ChatService {
     if (count >= banishedUser.listChat.length) {
       transitionChat = await this.findOne(1);
       transitionChat.messages = ["You're not allowed here"];
-      transitionChat.timeMessages = [this.getTimestamp()]
+      transitionChat.timeMessages = [this.getTimestamp()];
       transitionChat.usernames = ["Admin"];
     }
     socketToEmit = transitionChat.usersInfos[getIndexUser(transitionChat.usersInfos, banishedUser.id)].socket;
@@ -365,11 +357,9 @@ export class ChatService {
     let chat;
     let transitionChat;
 
-    try {
-      chat = await this.chatRepository.findOne({where: {id: idChat}});
-    } catch (error) {
-      throw new Error(error);
-    }
+    chat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: idChat}).getOne();
+    if (chat === null)
+      return undefined;
     try {
       adminUser = await this.usersService.findOne(idUser);
     } catch (error) {
@@ -381,8 +371,6 @@ export class ChatService {
     } catch (error) {
       return ("No user named '" + userToBan + "'");
     }
-    if (chat === null)
-      return undefined;
     if (adminUser.name === banishedUser.name)
       return "Can't do command on yourself.";
     if (chat.admins.indexOf(adminUser.id) < 0) {
@@ -401,7 +389,9 @@ export class ChatService {
     });
     this.addMessageInArray(chat, adminUser.name, BANNED_MESSAGE + " " + banishedUser.name + " for " + timer.toString());
     try {
-      await this.chatRepository.save(chat);
+      await PostgresDataSource.createQueryBuilder().update(Chat).set({
+        bannedUsers: chat.bannedUsers, timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
+      }).where("id = :id", {id: chat.id}).execute();
     } catch (error) {
       throw new Error("Can't save chat: " + error);
     }
@@ -433,11 +423,9 @@ export class ChatService {
     let banishedUser;
     let chat;
 
-    try {
-      chat = await this.chatRepository.findOne({where: {id: idChat}});
-    } catch (error) {
-      throw new Error(error);
-    }
+    chat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: idChat}).getOne();
+    if (chat === null)
+      return undefined;
     try {
       adminUser = await this.usersService.findOne(idUser);
     } catch (error) {
@@ -448,8 +436,6 @@ export class ChatService {
     } catch (error) {
       return ("No user '" + userToBan + "'");
     }
-    if (chat === null)
-      return undefined;
     if (adminUser.name === banishedUser.name)
       return "Can't do command on yourself.";
     if (chat.admins.indexOf(adminUser.id) < 0)
@@ -461,7 +447,9 @@ export class ChatService {
     chat.bannedUsers.splice(getIndexBannedUser(chat.bannedUsers, banishedUser.id), 1);
     this.addMessageInArray(chat, adminUser.name, UNBANNED_MESSAGE + " " + banishedUser.name);
     try {
-      await this.chatRepository.save(chat);
+      await PostgresDataSource.createQueryBuilder().update(Chat).set({
+        bannedUsers: chat.bannedUsers, timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
+      }).where("id = :id", {id: chat.id}).execute();
     } catch (error) {
       throw new Error("Can't save chat: " + error);
     }
@@ -474,7 +462,7 @@ export class ChatService {
     // (in this case we take the one from global because socket could have changed when chat was invisible)
     let globalChat;
     try {
-      globalChat = await this.chatRepository.findOne({where: {id: 1}});
+      globalChat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: 1}).getOne();
     } catch (error) {
       throw new Error(error);
     }
@@ -510,20 +498,12 @@ export class ChatService {
       let ret = "No such user";
       return("No user named '" + usernameToInvite +"'");
     }
-    try {
-      globalChat = await this.chatRepository.findOne({where: {id: 1}});
-    } catch (error) {
-      throw new Error(error);
-    }
+    globalChat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: 1}).getOne();
     if (globalChat === undefined || globalChat === null)
       return undefined;
     if (!isUserPresent(globalChat.usersInfos, userToInvite.id))
       return undefined;
-    try {
-      chat = await this.chatRepository.findOne({where: {id: idChat}, relations: ["usersInChat"]});
-    } catch (error) {
-      throw new Error(error);
-    }
+      chat = await PostgresDataSource.createQueryBuilder(Chat, "c").leftJoinAndSelect("c.usersInChat", "usersInChat").where("c.id = :id", {id: idChat}).getOne();
     if (chat === undefined || chat === null)
       return undefined;
     if (userInit.name === userToInvite.name)
@@ -550,7 +530,10 @@ export class ChatService {
     });
     this.addMessageInArray(chat, userInit.name, INVITE_MESSAGE + " " + userToInvite.name);
     try {
-      this.chatRepository.save(chat);
+      // await PostgresDataSource.createQueryBuilder().update(Chat).set({
+      //   usersInfos: chat.usersInfos, usersInChat: chat.usersInChat, timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
+      // }).where("id = :id", {id: chat.id}).execute();
+      await this.chatRepository.save(chat);
     } catch (error) {
       throw new Error("Can't save chat: " + error);
     }
@@ -566,13 +549,17 @@ export class ChatService {
         socket: socket
       });
       try {
-        await this.chatRepository.save(chat);
+        await PostgresDataSource.createQueryBuilder().update(Chat).set({
+          usersInfos: chat.usersInfos
+        }).where("id = :id", {id: chat.id}).execute();
       } catch (error) { return; }
     }
     if (chat.usersInfos[getIndexUser(chat.usersInfos, user.id)].socket === undefined) {
       /**/
       try {
-        await this.chatRepository.save(chat);
+        await PostgresDataSource.createQueryBuilder().update(Chat).set({
+          usersInfos: chat.usersInfos
+          }).where("id = :id", {id: chat.id}).execute();
       } catch (error) {
         throw new Error(error);
       }
@@ -580,7 +567,9 @@ export class ChatService {
     if (chat.usersInfos[getIndexUser(chat.usersInfos, user.id)].socket !== socket) {
       chat.usersInfos[getIndexUser(chat.usersInfos, user.id)].socket = socket;
       try {
-        await this.chatRepository.save(chat);
+        await PostgresDataSource.createQueryBuilder().update(Chat).set({
+          usersInfos: chat.usersInfos
+          }).where("id = :id", {id: chat.id}).execute();
       } catch (error) {
         throw new Error(error);
       }
@@ -590,11 +579,7 @@ export class ChatService {
   async suscribeUserToGlobal(user: User, socket: string) {
     let globalChat;
 
-    try {
-      globalChat = await this.chatRepository.findOne({where: {id: 1}, relations: ["usersInChat"]});
-    } catch (error) {
-      throw new Error(error);
-    }
+    globalChat = await PostgresDataSource.createQueryBuilder(Chat, "c").leftJoinAndSelect("c.usersInChat", "usersInChat").where("c.id = :id", {id: 1}).getOne();
     if (globalChat === null)
       return undefined;
     if (isUserPresent(globalChat.usersInfos, user.id)) {
@@ -602,8 +587,13 @@ export class ChatService {
       if (user.id === 1 && user.name === "Admin" && globalChat.owners.indexOf(1) < 0) {
         globalChat.owners.push(1);
         globalChat.admins.push(1);
+        await PostgresDataSource.createQueryBuilder().update(Chat).set({
+          owners: globalChat.owners, admins: globalChat.admins
+        }).where("id = :id", {id: 1}).execute();
       }
       await this.saveSocketInChat(user, socket, globalChat);
+      //await PostgresDataSource.createQueryBuilder().update(Chat).set({usersInChat: globalChat.usersInChat}).where("id = :id", {id: 1}).execute();
+      await this.chatRepository.save(globalChat);
       return globalChat;
     }
     globalChat.usersInfos.push({
@@ -617,8 +607,11 @@ export class ChatService {
     }
     globalChat.usersInChat.push(user);
     if (user.id !== 1 && user.name !== "Admin")
-      globalChat = await this.addMessageInArray(globalChat, user.name, JOINED_MESSAGE);
+      globalChat = this.addMessageInArray(globalChat, user.name, JOINED_MESSAGE);
     try {
+      // await PostgresDataSource.createQueryBuilder().update(Chat).set({
+      //   usersInChat: globalChat.usersInChat, timeMessages: globalChat.timeMessages, messages: globalChat.messages, usernames: globalChat.usernames
+      // }).where("id = :id", {id: 1}).execute();
       await this.chatRepository.save(globalChat);
     } catch (error) {
       throw new Error(error);
@@ -633,7 +626,8 @@ export class ChatService {
         continue;
       if (user.listChat[i].usersInfos[idx].socket !== socket) {
         user.listChat[i].usersInfos[idx].socket = socket;
-        await this.chatRepository.update({id: user.listChat[i].id}, { usersInfos: user.listChat[i].usersInfos });
+        //await this.chatRepository.update({id: user.listChat[i].id}, { usersInfos: user.listChat[i].usersInfos });
+        await PostgresDataSource.createQueryBuilder().update(Chat).set({ usersInfos: user.listChat[i].usersInfos }).where("id = :id", { id: user.listChat[i].id }).execute();
       }
     }
   }
@@ -642,11 +636,7 @@ export class ChatService {
     let chat;
     let adminUser;
 
-    try {
-      chat = await this.chatRepository.findOne({where: {id: idChat}});
-    } catch (error) {
-      throw new Error(error);
-    }
+    chat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: idChat}).getOne();
     if (chat === null)
       return;
     try {
@@ -659,9 +649,11 @@ export class ChatService {
     if (chat.owners[0] !== adminUser.id)
       return (LACK_OWNER_RIGHT);
     chat.type = "public";
-    chat = await this.addMessageInArray(chat, adminUser.name, SET_CHAT_PUBLIC);
+    chat = this.addMessageInArray(chat, adminUser.name, SET_CHAT_PUBLIC);
     try {
-      await this.chatRepository.save(chat);
+      await PostgresDataSource.createQueryBuilder().update(Chat).set({
+        type: chat.type, timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
+      }).where("id = :id", {id: chat.id}).execute();
     } catch (error) {
       throw new Error(error);
     }
@@ -672,11 +664,7 @@ export class ChatService {
     let chat;
     let adminUser;
 
-    try {
-      chat = await this.chatRepository.findOne({where: {id: idChat}});
-    } catch (error) {
-      throw new Error(error);
-    }
+    chat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: idChat}).getOne();
     if (chat === null)
       return;
     try {
@@ -689,9 +677,11 @@ export class ChatService {
     if (chat.owners[0] !== adminUser.id)
       return (LACK_OWNER_RIGHT);
     chat.type = "private";
-    chat = await this.addMessageInArray(chat, adminUser.name + " (System)", SET_CHAT_PRIVATE);
+    chat = this.addMessageInArray(chat, adminUser.name + " (System)", SET_CHAT_PRIVATE);
     try {
-      await this.chatRepository.save(chat);
+      await PostgresDataSource.createQueryBuilder().update(Chat).set({
+        type: chat.type, timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
+      }).where("id = :id", {id: chat.id}).execute();
     } catch (error) {
       throw new Error(error);
     }
@@ -701,19 +691,23 @@ export class ChatService {
   async setChatName(idChat: number, idUser: number, newName: string) {
     let user: User;
     let chat: Chat | null;
+    
+    chat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: idChat}).getOne();
+    if (chat === null)
+      return "No such chat.";
     try {
       user = await this.usersService.findOne(idUser);
-      chat = await this.chatRepository.findOne({where: {id: idChat}});
     } catch (error) {
       return "No such user.";
     }
-    if (chat === null)
-      return "No such chat.";
     if (user.id !== chat.owners[0])
       return "Only the owner can change chat's name.";
     try {
       await this.chatRepository.update(idChat, { roomName: newName });
-      chat = await this.chatRepository.findOne({where: {id: idChat}});
+      await PostgresDataSource.createQueryBuilder().update(Chat).set({
+        roomName: newName
+      }).where("id = :id", {id: chat.id}).execute();
+      chat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: idChat}).getOne();
     } catch (error) {
       throw new Error(error);
     }
@@ -726,11 +720,7 @@ export class ChatService {
 
     if (idChat === 1)
       return;
-    try {
-      chat = await this.chatRepository.findOne({where: {id: idChat}});
-    } catch (error) {
-      throw new Error(error);
-    }
+    chat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: idChat}).getOne();
     if (chat === undefined || chat === null)
       return;
     try {
@@ -746,8 +736,10 @@ export class ChatService {
       return "Chat already protected by password, unset it first.";
     else if (password.length > 8 || password.length < 3)
       return "Password must be 3 < password < 8";
-    await this.chatRepository.update({id: idChat}, {password: await encryptPasswordToStoreInDb(chat.password, password)});
-    chat = await this.chatRepository.findOne({where : {id: idChat}});
+    await PostgresDataSource.createQueryBuilder().update(Chat).set({
+      password: await encryptPasswordToStoreInDb(chat.password, password)
+      }).where("id = :id", {id: chat.id}).execute();
+    chat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: idChat}).getOne();
     if (chat === undefined || chat === null)
       return;
     chat.usersInfos[getIndexUser(chat.usersInfos, adminUser.id)].hasProvidedPassword = true;
@@ -755,9 +747,11 @@ export class ChatService {
       if (chat.admins.indexOf(chat.usersInfos[i].userId) < 0)
         chat.usersInfos[i].hasProvidedPassword = false;
     }
-    chat = await this.addMessageInArray(chat, adminUser.name, SET_PASSWORD);
+    chat = this.addMessageInArray(chat, adminUser.name, SET_PASSWORD);
     try {
-      await this.chatRepository.save(chat);
+      await PostgresDataSource.createQueryBuilder().update(Chat).set({
+        usersInfos: chat.usersInfos, timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
+      }).where("id = :id", {id: chat.id}).execute();
     } catch (error) {
       throw new Error(error);
     }
@@ -770,11 +764,7 @@ export class ChatService {
 
     if (idChat === 1)
       return;
-    try {
-      chat = await this.chatRepository.findOne({where: {id: idChat}});
-    } catch (error) {
-      throw new Error(error);
-    }
+    chat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: idChat}).getOne();
     if (chat === undefined || chat === null)
       return;
     try {
@@ -787,13 +777,15 @@ export class ChatService {
     if (chat.owners.indexOf(adminUser.id) < 0)
       return (LACK_OWNER_RIGHT);
     chat.password = undefined;
-    chat = await this.addMessageInArray(chat, adminUser.name, UNSET_PASSWORD);
+    chat = this.addMessageInArray(chat, adminUser.name, UNSET_PASSWORD);
     try {
-      await this.chatRepository.save(chat);
+      await PostgresDataSource.createQueryBuilder().update(Chat).set({
+        password: {}, timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
+      }).where("id = :id", {id: chat.id}).execute();
     } catch (error) {
       throw new Error(error);
     }
-    await this.chatRepository.update({id: idChat}, {password: {}});
+    //await this.chatRepository.update({id: idChat}, {password: {}});
     return (chat);
   }
 
@@ -804,7 +796,9 @@ export class ChatService {
     let tmpUser;
     for (let i = 0; i < chat.usersInfos.length; i++) {
       // find transitionChat
-      tmpUser = await this.usersService.findOne(chat.usersInfos[i].userId);
+      tmpUser = await this.usersService.findOneWithListChat(chat.usersInfos[i].userId);
+      if (!tmpUser)
+        break;
       let count = 0;
       transitionChat = tmpUser.listChat[count];
       while (isUserBanned(transitionChat.bannedUsers, tmpUser.id) && count < tmpUser.listChat.length)
@@ -819,7 +813,7 @@ export class ChatService {
       });
     }
     try {
-      await this.chatRepository.remove(chat);
+      await PostgresDataSource.createQueryBuilder().delete().from(Chat).where("id = :id", {id: chat.id}).execute();
     } catch (error) {
       throw new Error(error);
     }
@@ -837,7 +831,7 @@ export class ChatService {
     if (count == user.listChat.length)
       transitionChat = user.listChat[0];
 
-    chat = await this.addMessageInArray(chat, user.name, QUIT_MESSAGE);
+    chat = this.addMessageInArray(chat, user.name, QUIT_MESSAGE);
     arraySocketsToEmit.push({
       oldChat: chat,
       newChat: transitionChat,
@@ -858,6 +852,9 @@ export class ChatService {
     if (chat.admins.indexOf(user.id) >= 0)
       chat.admins.splice(chat.admins.indexOf(user.id), 1);
     try {
+      // await PostgresDataSource.createQueryBuilder().update(Chat).set({
+      //   mutedUsers: chat.mutedUsers, admins: chat.admins, usersInChat: chat.usersInChat, timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
+      // }).where("id = :id", {id: chat.id}).execute();
       await this.chatRepository.save(chat);
     } catch (error) {
       throw new Error(error);
@@ -873,14 +870,15 @@ export class ChatService {
     if (idChat == 1)
       return undefined;
     try {
-      chat = await this.chatRepository.findOne({where: {id: idChat}, relations: ["usersInChat"]});
+      //chat = await this.chatRepository.findOne({where: {id: idChat}, relations: ["usersInChat"]});
+      chat = await PostgresDataSource.createQueryBuilder(Chat, "c").leftJoinAndSelect("c.usersInChat", "usersInChat").where("c.id = :id", {id: idChat}).getOne();
     } catch (error) {
       throw new Error(error);
     }
     if (chat === undefined || chat === null)
       return;
     try {
-      user = await this.usersService.findOne(idUser);
+      user = await this.usersService.findOneWithListChat(idUser);
     } catch (error) {
       throw new Error(error);
     }
@@ -932,29 +930,29 @@ export class ChatService {
   }
 
   async tryResolvePassword(chat: Chat, user: User, tryPassword: string) {
-    let ret;
     if (await comparePassword(chat.password, tryPassword)) {
       chat.usersInfos[getIndexUser(chat.usersInfos, user.id)].hasProvidedPassword = true;
-      chat = await this.addMessageInArray(chat, user.name, RESOLVED_PASSWORD);
+      chat = this.addMessageInArray(chat, user.name, RESOLVED_PASSWORD);
       try {
-        ret = await this.chatRepository.save(chat);
+        await PostgresDataSource.createQueryBuilder().update(Chat).set({
+          usersInfos: chat.usersInfos, timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
+        }).where("id = :id", {id: chat.id}).execute();
       } catch (error) {
         throw new Error(error);
       }
-      return (ret);
+      return (chat);
     }
     return (undefined);
   }
 
   async pushMessage(data: IMessage, user: User, socket: string) {
-    let chat: Chat | undefined | null = await this.chatRepository.findOne({where: {id: data.id}});
+    let chat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: data.id}).getOne();
     if (!chat)
       throw new Error("no chat");
     await this.saveSocketInChat(user, socket, chat);
     // If passwordProtected take input as a try
     if (!isPasswordEmpty(chat.password) && chat.usersInfos[getIndexUser(chat.usersInfos, user.id)].hasProvidedPassword === false) {
-      chat = await this.tryResolvePassword(chat, user, data.message);
-      return chat;
+      return await this.tryResolvePassword(chat, user, data.message);
     }
     if (isUserMuted(chat.mutedUsers, user.id)) {
       if (chat.mutedUsers[getIndexMutedUser(chat.mutedUsers, user.id)].timer === 0)
@@ -971,8 +969,10 @@ export class ChatService {
     chat.timeMessages.push(this.getTimestamp());
     chat.messages.push(data.message);
     try {
-      //await this.chatRepository.save(chat);
       await this.chatRepository.update({id: chat.id}, { usernames: chat.usernames, timeMessages: chat.timeMessages, messages: chat.messages });
+      await PostgresDataSource.createQueryBuilder().update(Chat).set({
+        timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
+      }).where("id = :id", {id: chat.id}).execute();
     } catch (error) {}
     return chat;
   }
@@ -983,7 +983,7 @@ export class ChatService {
     let initialChat;
 
     try {
-      initialChat = await this.chatRepository.findOne({where: {id: idChat}});
+      initialChat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: idChat}).getOne();
       userInit = await this.usersService.findOne(idUser);
     } catch (error) {
       throw new Error(error);
@@ -1006,8 +1006,6 @@ export class ChatService {
     && initialChat.usersInfos[getIndexUser(initialChat.usersInfos, userInvited.id)].persoMutedUsers.indexOf(userInit.id) >= 0)
       return;
     let firstSocket = initialChat.usersInfos[getIndexUser(initialChat.usersInfos, userInit.id)].socket;
-    // If bug check here.
-    
     if (initialChat.id !== 1 && initialChat.usersInfos.length === 2 && 
       isUserPresent(initialChat.usersInfos, userInvited.id))
     {
@@ -1052,11 +1050,13 @@ export class ChatService {
     let userToAdd: User;
 
     try {
-      chat = await this.findOne(idChat);
+      chat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: idChat}).getOne();
       userInit = await this.usersService.findOne(idUser);
     } catch (error) {
       throw new Error(error);
     }
+    if (!chat)
+      return "No such chat.";
     if (chat.owners[0] !== userInit.id)
       return ("You aren't the owner of this chat");
     try {
@@ -1073,9 +1073,11 @@ export class ChatService {
     else if (chat.admins.indexOf(userToAdd.id) >= 0)
       return (usernameToAdd + " is already an admin!");
     chat.admins.push(userToAdd.id);
-    chat = await this.addMessageInArray(chat, userInit.name, "Has promoted " + userToAdd.name + " to admin");
+    chat = this.addMessageInArray(chat, userInit.name, "Has promoted " + userToAdd.name + " to admin");
     try {
-      await this.chatRepository.save(chat);
+      await PostgresDataSource.createQueryBuilder().update(Chat).set({
+        admins: chat.admins, timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
+      }).where("id = :id", {id: chat.id}).execute();
     } catch (error) {
       throw new Error(error);
     }
@@ -1088,11 +1090,13 @@ export class ChatService {
     let userToRemove: User;
 
     try {
-      chat = await this.findOne(idChat);
+      chat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: idChat}).getOne();
       userInit = await this.usersService.findOne(idUser);
     } catch (error) {
       throw new Error(error);
     }
+    if (!chat)
+      return "No such chat.";
     if (chat.owners[0] !== userInit.id)
       return ("You aren't the owner of this chat");
     try {
@@ -1105,9 +1109,11 @@ export class ChatService {
     if (chat.admins.indexOf(userToRemove.id) < 0)
       return (usernameToAdd + " isn't an admin!");
     chat.admins.splice(chat.admins.indexOf(userToRemove.id), 1);
-    chat = await this.addMessageInArray(chat, userInit.name, "Has demoted " + userToRemove.name + " to simple user");
+    chat = this.addMessageInArray(chat, userInit.name, "Has demoted " + userToRemove.name + " to simple user");
     try {
-      await this.chatRepository.save(chat);
+      await PostgresDataSource.createQueryBuilder().update(Chat).set({
+        admins: chat.admins, timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
+      }).where("id = :id", {id: chat.id}).execute();
     } catch (error) {
       throw new Error(error);
     }
@@ -1125,16 +1131,18 @@ export class ChatService {
   }
 
   async commandGameOptions(idChat: number, idUser: number, usernameToInvite: string, redirect: boolean) {
-    let chat: Chat | undefined;
+    let chat: Chat | null;
     let userInit: User | undefined;
     let userToInvite: User | undefined;
     
     try {
-      chat = await this.findOne(idChat);
+      chat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: idChat}).getOne();
       userInit = await this.usersService.findOne(idUser);
     } catch (error) {
       throw new Error(error);
     }
+    if (!chat)
+      return;
     try {
       userToInvite = await this.usersService.findOneByName(usernameToInvite);
     } catch (error) { return "No such user."; }
@@ -1159,12 +1167,13 @@ export class ChatService {
     }
   }
 
-  async findAll() {
+  /*async findAll() {
     return this.chatRepository.find({ relations: ["usersInChat"] });
-  }
+    return await PostgresDataSource.createQueryBuilder(Chat).leftJoinAndSelect("chat.users").getMany();
+  }*/
 
   async findOne(id: number) {
-    const chat = await this.chatRepository.findOne({where: {id: id}, relations: ["usersInChat"]});
+    const chat = await PostgresDataSource.createQueryBuilder(Chat, "c").leftJoinAndSelect("c.usersInChat", "usersInChat").where("c.id = :id", {id: id}).getOne();
     if (chat)
       return chat;
     throw new HttpException({
@@ -1189,7 +1198,9 @@ export class ChatService {
       globalChat.owners.push(user.id);
       globalChat.admins.push(user.id);
     }
-    await this.chatRepository.save(globalChat);
+    await PostgresDataSource.createQueryBuilder().update(Chat).set({
+      owners: globalChat.owners, admins: globalChat.admins, usersInfos: globalChat.usersInfos
+    }).where("id = :id", {id: globalChat.id}).execute();
   }
 
   async updateUserInGlobal(user: User, newSocket: string) {
@@ -1207,15 +1218,21 @@ export class ChatService {
       globalChat.usersInChat.push(user);
     } else
       globalChat.usersInfos[getIndexUser(globalChat.usersInfos, user.id)].socket = newSocket;
+    //await PostgresDataSource.createQueryBuilder().update(Chat).set({
+    //    owners: globalChat.owners, admins: globalChat.admins, usersInfos: globalChat.usersInfos, usersInChat: globalChat.usersInChat
+    //  }).where("id = :id", {id: globalChat.id}).execute();
     await this.chatRepository.save(globalChat);
   }
 
   async propagateSocketInChat(idUser: number, newSocket: string) {
-    let user: User;
+    let user: User | null;
     let returnIdsChat: number[] = [1];
+    console.error("ROPAGATE_SOCKET");
     try {
-      user = await this.usersService.findOne(idUser);
+      user = await this.usersService.findOneWithListChat(idUser);
     } catch (error) { return; }
+    if (!user)
+      return;
     if (user.id === 1) // custom handle for admin
       await this.updateAdminInGlobal(user, newSocket);
     else // custom handle for global
@@ -1256,8 +1273,11 @@ export class ChatService {
       socket: "",
     });
     chat.usersInChat.push(user);
-    chat = await this.addMessageInArray(chat, user.name, JOINED_MESSAGE);
+    chat = this.addMessageInArray(chat, user.name, JOINED_MESSAGE);
     try {
+      // await PostgresDataSource.createQueryBuilder().update(Chat).set({
+      //   usersInfos: chat.usersInfos, usersInChat: chat.usersInChat, timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
+      // }).where("id = :id", {id: chat.id}).execute();
       await this.chatRepository.save(chat);
     } catch (error) {
       return;

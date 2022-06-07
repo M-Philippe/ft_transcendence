@@ -878,9 +878,6 @@ export class ChatGateway {
         timeMessages: chat.timeMessages
       });
     }
-    //socket.emit("newChat", {
-    //  newChatId: chat.id,
-    //});
   }
 
   /*
@@ -930,11 +927,13 @@ export class ChatGateway {
       }
       let user;
       try {
-        user = await this.usersService.findOne(idUser);
+        user = await this.usersService.findOneWithListChat(idUser);
       } catch (error) {
         console.error("NO SUCH USER");
         return;
       }
+      if (user === null)
+        return;
       let ret: {id: number, name: string}[] = [];
       for (let i = 0; i < user.listChat.length; i++)
         ret.push({ id: user.listChat[i].id, name: user.listChat[i].roomName });

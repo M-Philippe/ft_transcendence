@@ -1,10 +1,11 @@
 import { HttpCode, HttpException, HttpStatus, Injectable, forwardRef, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { CreateRelationshipDto } from './dto/create-relationship.dto';
 import { UpdateRelationshipDto } from './dto/update-relationship.dto';
 import { Relationship, RelationshipStatus } from './entities/relationship.entity';
 import { UsersService } from 'src/users/users.service';
+import { PostgresDataSource } from 'src/dataSource';
 
 @Injectable()
 export class RelationshipsService {
@@ -63,15 +64,24 @@ export class RelationshipsService {
   }*/
 
   async checkRelationshipExistWithId(requesteeId: number, requesterId: number) {
-    let checkRelationship = await this.findAll();
-    for (let i = 0; i < checkRelationship.length; i++) {
-      if (
-        (checkRelationship[i].requester.id === requesterId && checkRelationship[i].requestee.id === requesteeId) ||
-        (checkRelationship[i].requester.id === requesteeId && checkRelationship[i].requestee.id === requesterId)
-        )
-        return checkRelationship[i];
-    }
-    return (null);
+    const relationship = await PostgresDataSource
+    .createQueryBuilder(Relationship, "relationship")
+    .innerJoinAndSelect("relationship.requester", "requester")
+    .innerJoinAndSelect("relationship.requestee", "requestee")
+    .where(
+      "(requester.id = :requesterId AND requestee.id = :requesteeId)\
+      OR (requester.id = :requesteeId AND requestee.id = :requesterId)",
+      {requesteeId: requesteeId, requesterId: requesterId})
+    .getOne();
+    // let checkRelationship = await this.findAll();
+    // for (let i = 0; i < checkRelationship.length; i++) {
+    //   if (
+    //     (checkRelationship[i].requester.id === requesterId && checkRelationship[i].requestee.id === requesteeId) ||
+    //     (checkRelationship[i].requester.id === requesteeId && checkRelationship[i].requestee.id === requesterId)
+    //     )
+    //     return checkRelationship[i];
+    // }
+    return (relationship);
   }
 
   async update(relationshipToSave: Relationship, updateRelationshipDto: UpdateRelationshipDto) {
@@ -97,7 +107,7 @@ export class RelationshipsService {
     let ret: string[] = [];
     let user;
     try {
-      user = await this.usersService.findOne(idUser);
+      user = await this.usersService.findOneWithRelations(idUser);
     } catch (error) {
       console.error("ERROR [getAcceptedRelationships]: ", error);
       return ([]);
@@ -114,7 +124,7 @@ export class RelationshipsService {
   async getAllFriendships(idUser: number, relationships: {username: string, status: string}[]) {
     let user;
     try {
-      user = await this.usersService.findOne(idUser);
+      user = await this.usersService.findOneWithRelations(idUser);
     } catch (error) {
       console.error("ERROR [getAllFriendships]: ", error);
       return;
@@ -155,7 +165,7 @@ export class RelationshipsService {
     let ret: string[] = [];
     let user;
     try {
-      user = await this.usersService.findOneByName(username);
+      user = await this.usersService.findOneByNameWithRelations(username);
     } catch (error) {
       console.error("ERROR [getAcceptedRelationships]: ", error);
       return ([]);
