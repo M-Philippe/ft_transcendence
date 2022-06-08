@@ -495,6 +495,7 @@ export class UsersService {
       return ("You can't change your username");
     else {
       await PostgresDataSource.createQueryBuilder().update(User).set({name: newName, hasAlreadyChanged42Name: true}).where("id = :id", {id: user.id}).execute()
+      user.name = newName;
       return ({
         message: "Ok",
         username: user.name,

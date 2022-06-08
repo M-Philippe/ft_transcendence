@@ -169,7 +169,7 @@ export class UsersController {
     response.status(200);
     let verifUserWithName;
     try {
-      verifUserWithName = await this.usersService.findOneByName(JSON.stringify(request.body.newName));
+      verifUserWithName = await this.usersService.findOneByName(request.body.newName);
     } catch (error) {
       let payloadToReturn = await this.usersService.changeUsername42(idUser, request.body.newName);
       response.send(JSON.stringify(payloadToReturn));
