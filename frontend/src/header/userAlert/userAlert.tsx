@@ -111,7 +111,7 @@ function UserAlert(props: {user: userState}) {
 	const [alert, setAlert] = useState<Array<{message: string, needResponse: boolean, requesterId: number, requesteeId: number}>>([]);
 	const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
 	const [alertNbr, setIcon] = useState(0);
-	console.log("USER_SOCKET: ", socket === undefined ? "undefined" : socket.id);
+
 	if (socket === undefined) {
 		setSocket(io(API_URL, {
 			path: "/user/userAlert",
