@@ -984,7 +984,7 @@ export class ChatService {
 
     try {
       initialChat = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: idChat}).getOne();
-      userInit = await this.usersService.findOne(idUser);
+      userInit = await this.usersService.findOneWithListChat(idUser);
     } catch (error) {
       throw new Error(error);
     }
