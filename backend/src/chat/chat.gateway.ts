@@ -9,9 +9,8 @@ import { Chat } from "./entities/chat.entity";
 import { User } from "src/users/entities/user.entity";
 import { isPasswordEmpty } from "./utils/chat.password.utils";
 import { ConsoleLogger, forwardRef, Inject, UseGuards } from "@nestjs/common";
-import { extractJwtFromCookie, JwtGatewayGuard } from "src/guards/jwtGateway.guards";
+import { extractJwtFromCookie, JwtGatewayGuard, extractIdUserFromCookie } from "src/guards/jwtGateway.guards";
 import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
-import { IncomingHttpHeaders } from "http";
 
 @WebSocketGateway({ path: "/chat/chatSocket", transports: ['websocket'] })
 export class ChatGateway {
@@ -613,10 +612,9 @@ export class ChatGateway {
   @ConnectedSocket() socket: Socket) {
     let idUser: number;
 
-    if ((idUser = this.extractIdUserFromCookie(socket.handshake.headers)) < 0)
+    if ((idUser = extractIdUserFromCookie(socket, socket.handshake.headers)) < 0)
       return;
 
-    const dateStart = new Date();
     if (data.message.length === 0)
       return;
     if (data.message[0] === "/") {
@@ -640,8 +638,6 @@ export class ChatGateway {
       return;
     }
     await this.sendToAllSocketsIntoChat(chat);
-    //const dateEnd = new Date();
-    //console.error("TIME: ", dateEnd.valueOf() - dateStart.valueOf());
   }
 
   async sendToAllSocketsIntoChat(chat: Chat) {
@@ -788,24 +784,9 @@ export class ChatGateway {
     return (newChat);
   }
 
-  extractIdUserFromCookie(headers: IncomingHttpHeaders) : number {
-    let idUser = -1;
-    let payload: any;
-    let jwt;
-
-    if (headers.cookie === undefined)
-      return (idUser);
-    jwt = extractJwtFromCookie(headers.cookie);
-    try {
-      payload = this.jwtService.verify(jwt);
-      if (payload.idUser !== undefined)
-        idUser = payload.idUser;
-    } catch (error) {}
-    return (idUser);
-  }
-
   async handleConnection(client: any, ...args: any[]) {
     let payload;
+    console.error("CHAT_CONNECTED: ", client.id);
     if (client.handshake.headers.cookie) {
 			let jwt = extractJwtFromCookie(client.handshake.headers.cookie);
 			if (jwt === "") {
@@ -818,6 +799,9 @@ export class ChatGateway {
         this.server.to(client.id).emit("disconnectManual");
         return;
       }
+			console.error("CHAT: ", Date.now() - payload.dateEmitted);
+      if (extractIdUserFromCookie(client, client.handshake.headers.cookie) < 0)
+        return;
     } else {
       this.server.to(client.id).emit("disconnectManual");
       return;
@@ -838,7 +822,7 @@ export class ChatGateway {
     let chat;
     let tmpChat;
     let idUser: number;
-    if ((idUser = this.extractIdUserFromCookie(socket.handshake.headers)) < 0)
+    if ((idUser = extractIdUserFromCookie(socket, socket.handshake.headers)) < 0)
       return;
     try {
       chat = await this.chatService.findOne(data.chatId)
@@ -891,7 +875,7 @@ export class ChatGateway {
   @ConnectedSocket() socket: Socket) {
     let idUser: number;
 
-    if ((idUser = this.extractIdUserFromCookie(socket.handshake.headers)) < 0)
+    if ((idUser = extractIdUserFromCookie(socket, socket.handshake.headers)) < 0)
       return;
     try {
       const response = await this.chatService.createChat(idUser, socket.id);
@@ -920,10 +904,8 @@ export class ChatGateway {
   async getListChat(
     @ConnectedSocket() socket: Socket) {
       let idUser: number;  
-      if ((idUser = this.extractIdUserFromCookie(socket.handshake.headers)) < 0) {
-        console.error("NO COOKIES");
+      if ((idUser = extractIdUserFromCookie(socket, socket.handshake.headers)) < 0)
         return;
-      }
       let user;
       try {
         user = await this.usersService.findOneWithListChat(idUser);

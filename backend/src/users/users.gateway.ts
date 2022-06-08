@@ -4,7 +4,7 @@ import { Server, Socket } from "socket.io";
 import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
 import { UsersService } from "./users.service";
 import { UserAlert } from "./users.types";
-import { extractJwtFromCookie } from "src/guards/jwtGateway.guards";
+import { extractJwtFromCookie, extractIdUserFromCookie } from "src/guards/jwtGateway.guards";
 
 @WebSocketGateway( { path: "/user/userAlert", transports: ['websocket'] })
 @Injectable()
@@ -19,6 +19,7 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	async handleConnection(client: any, ...args: any[]) {
 		// client.id is the same as socket.id
 		// UseGuards support on handleConnection isn't implemented in nest.js, so we check jwt manually.
+		console.error("USER_CONNECTED: ", client.id);
 		if (client.handshake.headers.cookie) {
 			let jwt = extractJwtFromCookie(client.handshake.headers.cookie);
 			if (jwt === "") {
@@ -32,6 +33,9 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 				this.server.to(client.id).emit("disconnectManual");
 				return;
 			}
+			console.error("USER: ", Date.now() - payload.dateEmitted);
+			if (extractIdUserFromCookie(client, client.handshake.headers) < 0)
+			 return;
 			await this.usersService.setUserOnline(payload.idUser, true);
 			// send UserAlert
 			console.error("USER_GATEWAY_CONNECTION: ", client.id , " | idUser: ", payload.idUser);

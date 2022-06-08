@@ -179,6 +179,7 @@ export function ChatConnected(props: PropsChatConnected) {
 
   props.socket.off("disconnectManual");
   props.socket.on("disconnectManual", (...args: any) => {
+    props.socket.disconnect();
     window.location.assign(DISCONNECTING_URL);
   });
 
