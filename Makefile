@@ -6,7 +6,7 @@
 #    By: ninieddu <ninieddu@student.42lyon.fr>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/05/10 11:17:21 by ninieddu          #+#    #+#              #
-#    Updated: 2022/05/10 11:17:22 by ninieddu         ###   ########lyon.fr    #
+#    Updated: 2022/06/08 00:42:18 by ninieddu         ###   ########lyon.fr    #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,7 +20,7 @@ down:
 	docker-compose -f ./docker-compose.yml down
 
 clean:	down
-	docker system prune -a --force
+	docker system prune -a --force --volumes
 
 del_useless:
 	rm -rf ./backend/dist

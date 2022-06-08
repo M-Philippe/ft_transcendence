@@ -12,6 +12,7 @@ services:
     volumes:
       - ./database/:/docker-entrypoint-initdb.d
       - ./database/database-data:/var/lib/postgresql/data
+    command: postgres -c stats_temp_directory=/tmp
     networks:
       - database
     hostname: db
@@ -46,7 +47,7 @@ services:
     volumes:
       - ./backend:/app_backend
     networks:
-      - webapp
+      # - webapp
       - database
     restart: always
     container_name: backend_app
@@ -62,8 +63,8 @@ services:
     #   - backend
     volumes:
     - ./frontend/:/app_frontend
-    networks:
-      - webapp
+    # networks:
+    #   - webapp
     ports:
       - "3005:3005"
       - "443:443"
@@ -71,7 +72,7 @@ services:
     container_name: frontend_app
 
 networks:
-  webapp:
-    driver: bridge
+  # webapp:
+  #   driver: bridge
   database:
     driver: bridge
