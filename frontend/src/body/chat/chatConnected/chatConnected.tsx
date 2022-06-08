@@ -177,11 +177,6 @@ export function ChatConnected(props: PropsChatConnected) {
   props.socket.off("updateChatName");
   props.socket.off("focusOnmp");
 
-  props.socket.off("disconnectManual");
-  props.socket.on("disconnectManual", (...args: any) => {
-    window.location.assign(DISCONNECTING_URL);
-  });
-
   props.socket.on("focusOnpm", (...args: any) => {
     state.lstButtonsGreen.splice(state.lstButtonsGreen.indexOf(args[0].chatFocusId - 1), 1)
     dispatch({ type: "UPDATE_FOCUS_AND_REMOVE_GREEN", 
@@ -189,6 +184,12 @@ export function ChatConnected(props: PropsChatConnected) {
     lstButtonsGreen: state.lstButtonsGreen
     });
     state.chatFocusId = args[0].chatFocusId - 1;
+  });
+
+  props.socket.off("disconnectManual");
+  props.socket.on("disconnectManual", () => {
+    //props.socket.disconnect();
+    window.location.assign(DISCONNECTING_URL);
   });
 
   props.socket.on("removeChat", (...args: any) => {

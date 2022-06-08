@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
-import { Server, Socket } from "socket.io";
+import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
+import { Server } from "socket.io";
 import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
 import { UsersService } from "./users.service";
 import { UserAlert } from "./users.types";
@@ -32,9 +32,13 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 				this.server.to(client.id).emit("disconnectManual");
 				return;
 			}
+			if (Date.now() - payload.dateEmitted > 14400000) {
+				this.server.to(client.id).emit("disconnectManual");
+				return;
+			}
 			await this.usersService.setUserOnline(payload.idUser, true);
 			// send UserAlert
-			console.error("USER_GATEWAY_CONNECTION: ", client.id , " | idUser: ", payload.idUser);
+			//console.error("USER_GATEWAY_CONNECTION: ", client.id , " | idUser: ", payload.idUser);
 			let userAlert = await this.usersService.updateSocketAndGetUserAlert(payload.idUser, client.id);
 			if (userAlert === undefined) {
 				return;
@@ -54,7 +58,7 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 			try {
 				let payload = this.jwtService.verify(jwt);
 				await this.usersService.setUserOfflineAndSocketToNull(payload.idUser);
-				console.error("USER_GATEWAY_DISCONNECT: ", client.id, " | idUser: ", payload.idUser);
+				//console.error("USER_GATEWAY_DISCONNECT: ", client.id, " | idUser: ", payload.idUser);
 			} catch (error) {}
 		}
 	}

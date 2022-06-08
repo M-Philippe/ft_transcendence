@@ -1,21 +1,19 @@
 import { CanActivate, ExecutionContext, forwardRef, Inject, Injectable, Req, UseGuards } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
+import { IncomingHttpHeaders } from "http";
+import { Server, Socket } from "socket.io";
 
 export function extractJwtFromCookie(cookies: string) {
 	let keys = cookies.split(";");
 	let jwt = "";
 	for (let i = 0; i < keys.length; i++) {
 		if (keys[i].search("authentication=") != -1) {
-			// console.error('BEFORE SLICE: ', keys[i]);
 			if (keys.length == 1) {
-				// console.error("\n\n\tNO OTHER COOKIES\n\n");
 				jwt = keys[i].slice("authentication=".length);
 			} else {
 				jwt = keys[i].slice("authentication=".length + 1);
-				// console.error("\n\n\tPRESENT OTHER COOKIES\n\n");
 			}
-			// console.error("AFTER SLICE: ", jwt);
 			return (jwt);
 		}
 	}
@@ -42,13 +40,14 @@ export class JwtGatewayGuard implements CanActivate {
 			console.error("JWT_EMPTY: ");
 			return (false);
 		}
+		let payload;
 		try {
-			let payload = this.jwtService.verify(jwt);
-			// console.error("VERIFY_SOCKET_TOKEN: ", payload);
+			payload = this.jwtService.verify(jwt);
 		} catch (error) {
-			// console.error("\nTOKEN_EXPIRED: ", error);
 			return (false);
 		}
+		//if (Date.now() - payload.dateEmitted > 14400000)
+		//	return false;
 		return (true);
 	}
 }

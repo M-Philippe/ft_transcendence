@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Put, Req, Res, UseGuards, UseInterceptors, UploadedFile, StreamableFile } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Request, Response } from 'express';
-import { JwtGuard } from 'src/guards/jwt.guards';
+import { JwtGuard, JwtGuardDisconnect } from 'src/guards/jwt.guards';
 import { JwtAuthService } from 'src/auth/jwt/jwt-auth.service';
 import { User } from './entities/user.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -123,7 +123,7 @@ export class UsersController {
     return this.usersService.findAllForRanking();
   }
 
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuardDisconnect)
   @Put("/disconnectUser")
   async disconnectUser(
     @Req() request: Request,

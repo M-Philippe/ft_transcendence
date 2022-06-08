@@ -8,7 +8,7 @@ import { isUserBanned } from "./utils/chat.userBanned.utils";
 import { Chat } from "./entities/chat.entity";
 import { User } from "src/users/entities/user.entity";
 import { isPasswordEmpty } from "./utils/chat.password.utils";
-import { ConsoleLogger, forwardRef, Inject, UseGuards } from "@nestjs/common";
+import { forwardRef, Inject, UseGuards } from "@nestjs/common";
 import { extractJwtFromCookie, JwtGatewayGuard } from "src/guards/jwtGateway.guards";
 import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
 import { IncomingHttpHeaders } from "http";
@@ -613,10 +613,9 @@ export class ChatGateway {
   @ConnectedSocket() socket: Socket) {
     let idUser: number;
 
-    if ((idUser = this.extractIdUserFromCookie(socket.handshake.headers)) < 0)
+    if ((idUser = this.extractIdUserFromCookie(socket.id, socket.handshake.headers)) < 0)
       return;
 
-    const dateStart = new Date();
     if (data.message.length === 0)
       return;
     if (data.message[0] === "/") {
@@ -636,12 +635,10 @@ export class ChatGateway {
     } catch (error) {
       console.error(error);
     }
-    if (chat === undefined) {
+    if (chat === undefined || chat === null) {
       return;
     }
     await this.sendToAllSocketsIntoChat(chat);
-    //const dateEnd = new Date();
-    //console.error("TIME: ", dateEnd.valueOf() - dateStart.valueOf());
   }
 
   async sendToAllSocketsIntoChat(chat: Chat) {
@@ -788,22 +785,6 @@ export class ChatGateway {
     return (newChat);
   }
 
-  extractIdUserFromCookie(headers: IncomingHttpHeaders) : number {
-    let idUser = -1;
-    let payload: any;
-    let jwt;
-
-    if (headers.cookie === undefined)
-      return (idUser);
-    jwt = extractJwtFromCookie(headers.cookie);
-    try {
-      payload = this.jwtService.verify(jwt);
-      if (payload.idUser !== undefined)
-        idUser = payload.idUser;
-    } catch (error) {}
-    return (idUser);
-  }
-
   async handleConnection(client: any, ...args: any[]) {
     let payload;
     if (client.handshake.headers.cookie) {
@@ -818,6 +799,8 @@ export class ChatGateway {
         this.server.to(client.id).emit("disconnectManual");
         return;
       }
+      if (this.extractIdUserFromCookie(client, client.handshake.headers) < 0)
+        return;
     } else {
       this.server.to(client.id).emit("disconnectManual");
       return;
@@ -838,7 +821,7 @@ export class ChatGateway {
     let chat;
     let tmpChat;
     let idUser: number;
-    if ((idUser = this.extractIdUserFromCookie(socket.handshake.headers)) < 0)
+    if ((idUser = this.extractIdUserFromCookie(socket.id, socket.handshake.headers)) < 0)
       return;
     try {
       chat = await this.chatService.findOne(data.chatId)
@@ -884,14 +867,33 @@ export class ChatGateway {
   **    CHAT
   */
 
+  extractIdUserFromCookie(socket: string, headers: IncomingHttpHeaders) : number {
+    let payload: any;
+    let jwt;
+  
+    if (headers.cookie === undefined)
+      return (-1);
+    jwt = extractJwtFromCookie(headers.cookie);
+    try {
+      payload = this.jwtService.verify(jwt);
+    } catch (error) {
+      return -1;
+    }
+    console.error("TIME: ", Date.now() - payload.dateEmitted);
+    if (Date.now() - payload.dateEmitted > 14400000) {
+      this.server.to(socket).emit("disconnectManual");
+      return -1;
+    }
+    return (payload.idUser);
+  }
+
   @UseGuards(JwtGatewayGuard)
   @SubscribeMessage('createChat')
   async createChat(
   @MessageBody("nameUser") nameUser: string,
   @ConnectedSocket() socket: Socket) {
     let idUser: number;
-
-    if ((idUser = this.extractIdUserFromCookie(socket.handshake.headers)) < 0)
+    if ((idUser = this.extractIdUserFromCookie(socket.id, socket.handshake.headers)) < 0)
       return;
     try {
       const response = await this.chatService.createChat(idUser, socket.id);
@@ -920,10 +922,8 @@ export class ChatGateway {
   async getListChat(
     @ConnectedSocket() socket: Socket) {
       let idUser: number;  
-      if ((idUser = this.extractIdUserFromCookie(socket.handshake.headers)) < 0) {
-        console.error("NO COOKIES");
+      if ((idUser = this.extractIdUserFromCookie(socket.id, socket.handshake.headers)) < 0)
         return;
-      }
       let user;
       try {
         user = await this.usersService.findOneWithListChat(idUser);
