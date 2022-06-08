@@ -105,5 +105,8 @@ export class User {
       default: () => "'{}'",
       nullable: false,
     })
-    userAlert: UserAlert;
+    userAlert: Array<UserAlert>;
+
+    @Column({default: ""})
+    socketAlert: string;
 }

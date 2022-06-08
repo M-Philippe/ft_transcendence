@@ -52,7 +52,7 @@ export class UsersService {
     user.online = false;
     user.inGame = false;
     user.listChat = [];
-    user.userAlert = {socket: "", alert: []};
+    user.userAlert = [];
     this.createUserAchievements(user);
     try {
       await this.usersRepository.save(user);
@@ -88,7 +88,8 @@ export class UsersService {
       hasAlreadyChanged42Name: false,
       twoFactorIsEnabled: false,
       listChat: [],
-      userAlert: {socket: "", alert: []},
+      userAlert: [],
+      socketAlert: "",
       online: false,
       inGame: false,
     });
@@ -173,7 +174,7 @@ export class UsersService {
     await PostgresDataSource
       .createQueryBuilder()
       .update(User)
-      .set({online: false/*, userAlert: user.userAlert*/})
+      .set({online: false, socketAlert: "" /*, userAlert: user.userAlert*/})
       .where("id = :id", {id: idUser})
       .execute();
   }
@@ -182,14 +183,12 @@ export class UsersService {
     let user = await this.usersRepository.findOne({where: {id: userId}});
     if (user === undefined || user === null)
       return undefined;
-    user.userAlert.socket = socket;
     await PostgresDataSource
       .createQueryBuilder()
       .update(User)
-      .set({userAlert: user.userAlert})
+      .set({socketAlert: socket})
       .where("id = :id", {id: userId})
       .execute()
-
     return (user.userAlert);
   }
 
@@ -201,9 +200,9 @@ export class UsersService {
     let user = await this.usersRepository.findOne({where: {id: idUserToAlert}});
     if (user === undefined || user === null)
       return;
-    if (user.userAlert.alert === undefined)
-      user.userAlert.alert = [];
-    user.userAlert.alert.unshift({
+    if (user.userAlert === undefined)
+      user.userAlert = [];
+    user.userAlert.unshift({
       message: message,
       needResponse: needResponse,
       requesterId: idUserInitiator,
@@ -217,16 +216,17 @@ export class UsersService {
       .where("id = :id", {id: user.id})
       .execute();
     // await this.usersRepository.update({id: user.id}, { userAlert: user.userAlert });
-    await this.usersGateway.sendUserNewAlert(user.userAlert);
+    await this.usersGateway.sendUserNewAlert(user.socketAlert, user.userAlert);
   }
 
   async removeAlertFromUserAlertAndContactSocket(userId: number, index: number) {
     // Here we must pull a fresh instance of User because relationship isn't up-to-date with previous user instance.
     let user = await this.findOne(userId);
-    user.userAlert.alert.splice(index, 1);
+    user.userAlert.splice(index, 1);
     await PostgresDataSource.createQueryBuilder().update(User).set({userAlert: user.userAlert}).where("id = :id", {id: user.id}).execute();
     // await this.usersRepository.save(user);
-    await this.usersGateway.sendUserNewAlert(user.userAlert);
+    console.error("REMOVE_AND_SEND_TO: ", user.socketAlert);
+    await this.usersGateway.sendUserNewAlert(user.socketAlert, user.userAlert);
   }
 
   async handleAlertFriendship(requestee: User, requesteeId: number, requesterId: number, response: string, indexAlert: number) {
@@ -274,26 +274,26 @@ export class UsersService {
       });
     }
     // createMatch with ids and emit to socket to assign new Location.
-    if (requester.userAlert.socket === "") {
+    if (requester.socketAlert === "") {
       await this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
       return ({ message: "Empty Socket"});
     }
-    this.matchesOnGoingGateway.createMatchFromInvitation(requester.id, requestee.id, requestee.userAlert.alert[indexAlert].message);
+    this.matchesOnGoingGateway.createMatchFromInvitation(requester.id, requestee.id, requestee.userAlert[indexAlert].message);
     this.removeAlertFromUserAlertAndContactSocket(requestee.id, indexAlert);
     return ({redirection: true});
   }
 
   async findAlertByMessageAndExecute(requesterId: number, requesteeId: number, message: string, response: string) {
     let requestee = await this.usersRepository.findOne({where: {id : requesteeId}});
-    if (requestee === undefined || requestee === null || requestee.userAlert.alert === undefined || requestee.userAlert.alert.length === 0)
+    if (requestee === undefined || requestee === null || requestee.userAlert === undefined || requestee.userAlert.length === 0)
       return (undefined);
-    for (let i = 0; i < requestee.userAlert.alert.length; i++) {
-      if (requestee.userAlert.alert[i].message === message) {
-        if (requestee.userAlert.alert[i].type === "friendships") {
+    for (let i = 0; i < requestee.userAlert.length; i++) {
+      if (requestee.userAlert[i].message === message) {
+        if (requestee.userAlert[i].type === "friendships") {
           return (await this.handleAlertFriendship(requestee, requesteeId, requesterId, response, i));
-        } else if (requestee.userAlert.alert[i].type === "invitationGame") {
+        } else if (requestee.userAlert[i].type === "invitationGame") {
           return (await this.handleAlertInvitationGame(requestee, requesterId, response, i));
-        } else if (requestee.userAlert.alert[i].type === "achievements") {
+        } else if (requestee.userAlert[i].type === "achievements") {
           return (await this.handleAlertClear(requestee, i));
         }
       }
@@ -302,9 +302,10 @@ export class UsersService {
 
   async contactSocketUser(idUser: number, message: string) {
     let user = await this.usersRepository.findOne({where: {id: idUser}});
-    if (user === undefined || user === null || user.userAlert.socket === "")
+    if (user === undefined || user === null || user.socketAlert === "")
       return;
-    this.usersGateway.contactUser(user.userAlert.socket, message);
+    console.error("USER_CONTACT: ", user.socketAlert);
+    this.usersGateway.contactUser(user.socketAlert, message);
   }
 
   async sendRedirectionBothSocket(requesterId: number, requesteeId: number) {
@@ -318,10 +319,10 @@ export class UsersService {
     }
     if ((userOne === null || userTwo === null) || (userOne === undefined || userTwo === undefined))
       return;
-    if (userOne.userAlert.socket === "" || userTwo.userAlert.socket === "")
+    if (userOne.socketAlert === "" || userTwo.socketAlert === "")
       return;
     console.error("REDIRECTION_TO_BOARD");
-    this.usersGateway.contactUsers(userOne.userAlert.socket, userTwo.userAlert.socket, "redirectionToBoard");
+    this.usersGateway.contactUsers(userOne.socketAlert, userTwo.socketAlert, "redirectionToBoard");
   }
 
   async getGameInfos(idUser: number) {
@@ -455,7 +456,8 @@ export class UsersService {
     if (user !== null && user !== undefined) {
       user.online = true;
       user.inGame = false;
-      user.userAlert = {socket: "", alert: []};
+      //user.socketAlert = "";
+      //user.userAlert = [];
       try {
         user = await this.usersRepository.save(user);
       } catch (error) {
@@ -473,6 +475,8 @@ export class UsersService {
       user = this.usersRepository.create(userToCreate);
       user.online = true;
       user.inGame = false;
+      user.socketAlert = "";
+      user.userAlert = [];
       this.createUserAchievements(user);
       user = await this.usersRepository.save(user);
     } catch (error) {

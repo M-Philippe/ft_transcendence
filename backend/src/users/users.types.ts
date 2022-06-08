@@ -1,13 +1,23 @@
+//export interface UserAlert {
+//  //socket: string,
+//  alert: {
+//    message: string,
+//    needResponse: boolean,
+//    requesterId: number,
+//    requesteeId: number,
+//    type: "friendships" | "achievements" | "invitationGame";
+//  }[]
+//}
+
+
 export interface UserAlert {
-  socket: string,
-  alert: {
-    message: string,
-    needResponse: boolean,
-    requesterId: number,
-    requesteeId: number,
-    type: "friendships" | "achievements" | "invitationGame";
-  }[]
-}
+  message: string,
+  needResponse: boolean,
+  requesterId: number,
+  requesteeId: number,
+  type: "friendships" | "achievements" | "invitationGame"
+};
+
 
 export interface ChangePasswordDto {
   currentPassword: string,

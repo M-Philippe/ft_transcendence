@@ -36,11 +36,11 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 			// send UserAlert
 			console.error("USER_GATEWAY_CONNECTION: ", client.id , " | idUser: ", payload.idUser);
 			let userAlert = await this.usersService.updateSocketAndGetUserAlert(payload.idUser, client.id);
-			if (userAlert === undefined || userAlert.alert === undefined || userAlert.alert.length === 0) {
+			if (userAlert === undefined) {
 				return;
 			}
 			this.server.to(client.id).emit("getUserAlert", {
-				data: userAlert.alert
+				data: userAlert
 			});
 		} else {
 			this.server.to(client.id).emit("disconnectManual");
@@ -48,13 +48,13 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	}
 
 	async handleDisconnect(client: any) {
-		console.error("USER_GATEWAY_DISCONNECT: ", client.id);
 		if (client.handshake.headers.cookie) {
 			let cookie: string = client.handshake.headers.cookie;
 			let jwt = extractJwtFromCookie(client.handshake.headers.cookie);
 			try {
 				let payload = this.jwtService.verify(jwt);
 				await this.usersService.setUserOfflineAndSocketToNull(payload.idUser);
+				console.error("USER_GATEWAY_DISCONNECT: ", client.id, " | idUser: ", payload.idUser);
 			} catch (error) {}
 		}
 	}
@@ -69,11 +69,11 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 		this.server.to([socketOne, socketTwo]).emit(event);
 	}
 
-	async sendUserNewAlert(userAlert: UserAlert) {
-		if (userAlert.socket === "")
+	async sendUserNewAlert(socketToContact: string, userAlert: UserAlert[]) {
+		if (socketToContact === "")
 			return;
-		this.server.to(userAlert.socket).emit("getUserAlert", {
-			data: userAlert.alert,
+		this.server.to(socketToContact).emit("getUserAlert", {
+			data: userAlert,
 		});
 	}
 }

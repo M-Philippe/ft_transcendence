@@ -919,7 +919,6 @@ export class ChatGateway {
   @SubscribeMessage("getListChat")
   async getListChat(
     @ConnectedSocket() socket: Socket) {
-      console.error("GET_LIST_CHAT");
       let idUser: number;  
       if ((idUser = this.extractIdUserFromCookie(socket.handshake.headers)) < 0) {
         console.error("NO COOKIES");

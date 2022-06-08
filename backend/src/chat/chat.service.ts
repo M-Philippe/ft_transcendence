@@ -1227,7 +1227,6 @@ export class ChatService {
   async propagateSocketInChat(idUser: number, newSocket: string) {
     let user: User | null;
     let returnIdsChat: number[] = [1];
-    console.error("ROPAGATE_SOCKET");
     try {
       user = await this.usersService.findOneWithListChat(idUser);
     } catch (error) { return; }

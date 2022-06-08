@@ -230,7 +230,7 @@ export class UsersController {
         relationshipStatus = relationship.status;
     }
     let achievements = await this.usersService.getUserAchievements(userToFetch.id);
-    console.error("Time: ", Date.now() - d);
+    //console.error("Time: ", Date.now() - d);
     return ({
       name: userToFetch.name,
       avatar: userToFetch.avatar,
