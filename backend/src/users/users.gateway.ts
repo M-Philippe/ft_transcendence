@@ -1,10 +1,10 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
-import { Server, Socket } from "socket.io";
+import { OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
+import { Server } from "socket.io";
 import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
 import { UsersService } from "./users.service";
 import { UserAlert } from "./users.types";
-import { extractJwtFromCookie, extractIdUserFromCookie } from "src/guards/jwtGateway.guards";
+import { extractJwtFromCookie } from "src/guards/jwtGateway.guards";
 
 @WebSocketGateway( { path: "/user/userAlert", transports: ['websocket'] })
 @Injectable()
@@ -19,7 +19,6 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 	async handleConnection(client: any, ...args: any[]) {
 		// client.id is the same as socket.id
 		// UseGuards support on handleConnection isn't implemented in nest.js, so we check jwt manually.
-		console.error("USER_CONNECTED: ", client.id);
 		if (client.handshake.headers.cookie) {
 			let jwt = extractJwtFromCookie(client.handshake.headers.cookie);
 			if (jwt === "") {
@@ -33,12 +32,13 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 				this.server.to(client.id).emit("disconnectManual");
 				return;
 			}
-			console.error("USER: ", Date.now() - payload.dateEmitted);
-			if (extractIdUserFromCookie(client, client.handshake.headers) < 0)
-			 return;
+			if (Date.now() - payload.dateEmitted > 14400000) {
+				this.server.to(client.id).emit("disconnectManual");
+				return;
+			}
 			await this.usersService.setUserOnline(payload.idUser, true);
 			// send UserAlert
-			console.error("USER_GATEWAY_CONNECTION: ", client.id , " | idUser: ", payload.idUser);
+			//console.error("USER_GATEWAY_CONNECTION: ", client.id , " | idUser: ", payload.idUser);
 			let userAlert = await this.usersService.updateSocketAndGetUserAlert(payload.idUser, client.id);
 			if (userAlert === undefined) {
 				return;
@@ -58,7 +58,7 @@ export class UsersGateway implements OnGatewayConnection, OnGatewayDisconnect{
 			try {
 				let payload = this.jwtService.verify(jwt);
 				await this.usersService.setUserOfflineAndSocketToNull(payload.idUser);
-				console.error("USER_GATEWAY_DISCONNECT: ", client.id, " | idUser: ", payload.idUser);
+				//console.error("USER_GATEWAY_DISCONNECT: ", client.id, " | idUser: ", payload.idUser);
 			} catch (error) {}
 		}
 	}

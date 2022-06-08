@@ -20,30 +20,6 @@ export function extractJwtFromCookie(cookies: string) {
 	return (jwt);
 }
 
-export function extractIdUserFromCookie(socket: Socket, headers: IncomingHttpHeaders) : number {
-	let payload: any;
-	let jwt;
-
-	if (headers.cookie === undefined)
-		return (-1);
-	//console.error("HEADERS: ", headers);
-	jwt = extractJwtFromCookie(headers.cookie);
-	try {
-		console.error("JWT: ", jwt);
-		payload = this.jwtService.verify(jwt);
-	} catch (error) {
-		console.error("I HAVE CATCH: ", error);
-		socket.emit("disconnectManual");
-		return -1;
-	}
-	console.error("PAYLOAD: ", payload);
-	if (Date.now() - payload.dateEmitted > 14400000) {
-		socket.emit("disconnectManual");
-		return -1;
-	}
-	return (payload.idUser);
-}
-
 @Injectable()
 export class JwtGatewayGuard implements CanActivate {
 	constructor(
@@ -70,8 +46,8 @@ export class JwtGatewayGuard implements CanActivate {
 		} catch (error) {
 			return (false);
 		}
-		if (Date.now() - payload.dateEmitted > 14400000)
-			return false;
+		//if (Date.now() - payload.dateEmitted > 14400000)
+		//	return false;
 		return (true);
 	}
 }

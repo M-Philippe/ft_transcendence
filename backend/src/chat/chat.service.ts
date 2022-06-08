@@ -974,7 +974,8 @@ export class ChatService {
         timeMessages: chat.timeMessages, messages: chat.messages, usernames: chat.usernames
       }).where("id = :id", {id: chat.id}).execute();
     } catch (error) {}
-    return chat;
+    const chatReturn = await PostgresDataSource.createQueryBuilder(Chat, "c").where("c.id = :id", {id: chat.id}).getOne();
+    return chatReturn;
   }
 
   async createPrivateMessage(userToInvite: string, idChat: number, idUser: number) {

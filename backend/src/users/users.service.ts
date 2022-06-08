@@ -488,7 +488,7 @@ export class UsersService {
   async changeUsername42(idUser: number, newName: string) {
     let user = await PostgresDataSource.getRepository(User).findOne({where: {id: idUser}});
     if (user === null || user === undefined)
-      return ({ message: "Error intern." });
+      return ({ message: "No such user." });
     if (user.hasAlreadyChanged42Name) {
       return ({ message: "You already have changed your username" });
     } else if (user.id42 === -1)
