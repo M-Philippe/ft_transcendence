@@ -37,8 +37,8 @@ export default function ChatInput(props: IChatInputProps) {
   }
 
   return (
-      <form className="chatForm" onSubmit={(event) => {handleSubmit(event);}}>
-        <input className="chatForm" value={text} onChange={(event) => {handleChange(event)}} />
+      <form onSubmit={(event) => {handleSubmit(event);}}>
+        <input className="chatForm" placeholder='  Type your message' value={text} onChange={(event) => {handleChange(event)}} />
       </form>
   );
 }

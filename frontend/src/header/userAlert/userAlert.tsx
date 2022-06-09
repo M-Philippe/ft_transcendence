@@ -156,6 +156,7 @@ function UserAlert(props: {user: userState}) {
 	}
 
 	const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+		event.preventDefault();
 		setIcon(0);
 	  setAnchorEl(event.currentTarget);
 	};

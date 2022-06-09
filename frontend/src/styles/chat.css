@@ -3,9 +3,10 @@
   order: 2;
   max-height: 89vh;
   min-height: 89vh;
-  max-width: 24vw;
-  min-width: 24vw;
+  /* max-width: 24vw; */
+  /* min-width: 24vw; */
   /* border-radius: 15px; */
+  /* border-left: 2px solid rgba(0, 0, 0, 0.301); */
   background: linear-gradient( rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.185));
 }
 
@@ -18,18 +19,29 @@
   overflow-y: auto;
 }
 
- .chatForm {
-  right: 0;
+ /* .chatForm {
+  right: 1;
   bottom: 4vh;
   min-height: 3vh;
   width: 22vw;
-  max-width: 22vw;
+  max-width: 22vw; 
   padding-right: 1%;
   padding-left: 1%;
   border:0;
   border-radius: 5px;
   align-items: center;
+} */
+.chatForm {
+  width: 100%;
+  min-height: 3vh;
+  padding-right: 1%;
+  padding-left: 1%;
+  bottom: 4vh;
+  min-height: 3vh;
+  background-color: white;
+  border-radius: 5px;
 }
+
 
 #chatCmdHelp p{
   color:black;
@@ -41,6 +53,7 @@
   max-height: 75vh;
   padding-bottom: 8%;
   word-wrap: break-word;
+  text-align: center;
   overflow-y: auto;
 }
 

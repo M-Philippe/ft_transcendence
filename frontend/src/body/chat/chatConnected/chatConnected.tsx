@@ -141,6 +141,7 @@ export function ChatConnected(props: PropsChatConnected) {
   };
 
   const keyDownHandler = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    event.preventDefault();
     if (event.code === "Enter" || event.code === "NumpadEnter") {
       handleChanNameChange();
       handlecloseSetChanName();
@@ -418,13 +419,13 @@ export function ChatConnected(props: PropsChatConnected) {
             errorMessage={state.errorMessage}
           />
         }
+      </div>
       <ChatInput
         socket={props.socket}
         state={state}
         dispatch={dispatch}
         username={props.name}
         />
-        </div>
     </div>
   );
 }

@@ -9,6 +9,8 @@ import store from "./store/store";
 import './styles/index.css';
 import './styles/chat.css';
 
+import { Resizable } from 'react-resizable-element';
+
 function App () {
   return (
     <Router>
@@ -16,7 +18,11 @@ function App () {
         <Header />
       <div id="body">
         <Body />
+    <Resizable direction="left" minSize={350} maxSize={750}>
+      <div> 
         <Chat />
+      </div>
+    </Resizable>
       </div>
         <Footer />
       </div>

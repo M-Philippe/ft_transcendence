@@ -26,6 +26,7 @@ export default function ChatLine(props: IChatLineProps) {
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
     
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault();
     setAnchorElNav(event.currentTarget);
   };
 
