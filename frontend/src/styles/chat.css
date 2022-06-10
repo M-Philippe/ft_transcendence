@@ -4,7 +4,7 @@
   max-height: 89vh;
   min-height: 89vh;
   /* max-width: 24vw; */
-  /* min-width: 24vw; */
+  min-width: 300px;
   /* border-radius: 15px; */
   /* border-left: 2px solid rgba(0, 0, 0, 0.301); */
   background: linear-gradient( rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.185));
@@ -16,6 +16,7 @@
   border-radius: 15px;
   max-height: 14vh;
   min-height: 100px;
+  max-width: 750px;
   overflow-y: auto;
 }
 
@@ -83,11 +84,17 @@
     margin-top: 15%;
     margin-bottom: 10%;
     max-height: 80vh;
-    min-width: 85vw;
+    min-width: 80vw;
+    max-width: 80vw;
+    padding-left: 10px;
+    align-items: center;
+    text-align: center;
   }
 
   .chatForm {
-    min-width: 75vw;
+    min-width: 76vw;
+    max-width: 76vw;
+    padding-left: 10px;
   }
 
   #chatButtonTop

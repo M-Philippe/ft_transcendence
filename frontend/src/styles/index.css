@@ -82,6 +82,7 @@ label {
   flex: 1;
   /* order: 1; */
   width: 88vw;
+  /* min-width: 750px; */
 }
 
 
@@ -140,8 +141,8 @@ caption {
 
 #avatarMyProfil {
   border-radius: 8px;
-  width: 20vw;
-  height: 24vh;
+  max-width: 18vw;
+  max-height: 20vh;
   min-width: 200px;
   min-height: 200px;
 }
@@ -153,7 +154,6 @@ caption {
   min-height: 100px;
   max-height: 300px;
   max-width: 280px;
-
 }
 
 #RanktropheeImg {
