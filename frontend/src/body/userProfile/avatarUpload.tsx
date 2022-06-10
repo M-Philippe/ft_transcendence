@@ -11,7 +11,6 @@ function AvatarUpload(props: { user: userState, dispatch: DispatchType }) {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
 	const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		event.preventDefault();
 		if (event.target.files === null)
 			return;
 			console.log("FILES SIZE :" + event.target.files[0].size);

@@ -16,7 +16,6 @@ function ConnectForm(props: ConnectFormProps) {
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    event.preventDefault();
     props.dispatch(
       {
         type: UPDATE_USERNAME,

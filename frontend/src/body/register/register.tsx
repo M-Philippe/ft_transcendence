@@ -83,7 +83,6 @@ function Register(props: {user: userState}) {
 	)
 
 	const keyDownHandler = (event: React.KeyboardEvent<HTMLInputElement>) => {
-		event.preventDefault();
 		if (event.code === "Enter" || event.code === "NumpadEnter") {
 			handleSubmit();
 		}

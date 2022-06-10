@@ -48,7 +48,6 @@ function Board(props: BoardProps) {
 		);
 
 	const keyDown = (event: React.KeyboardEvent<HTMLCanvasElement>) => {
-		event.preventDefault();
 		if (event.key === "ArrowUp") {
 			props.socket.emit("keyDown", {
 				username: props.user.username,
@@ -63,7 +62,6 @@ function Board(props: BoardProps) {
 	}
 
 	const keyUp = (event: React.KeyboardEvent<HTMLCanvasElement>) => {
-		event.preventDefault();
 		if (event.key === "ArrowUp") {
 			props.socket.emit("keyUp", {
 				username: props.user.username,
