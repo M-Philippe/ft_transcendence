@@ -3,10 +3,8 @@
   order: 2;
   max-height: 89vh;
   min-height: 89vh;
-  /* max-width: 24vw; */
-  min-width: 300px;
-  /* border-radius: 15px; */
-  /* border-left: 2px solid rgba(0, 0, 0, 0.301); */
+  max-width: 24vw;
+  min-width: 24vw;
   background: linear-gradient( rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.185));
 }
 
@@ -16,33 +14,21 @@
   border-radius: 15px;
   max-height: 14vh;
   min-height: 100px;
-  max-width: 750px;
   overflow-y: auto;
 }
 
- /* .chatForm {
-  right: 1;
+ .chatForm {
+  right: 0;
   bottom: 4vh;
   min-height: 3vh;
   width: 22vw;
-  max-width: 22vw; 
+  max-width: 22vw;
   padding-right: 1%;
   padding-left: 1%;
   border:0;
   border-radius: 5px;
   align-items: center;
-} */
-.chatForm {
-  width: 100%;
-  min-height: 3vh;
-  padding-right: 1%;
-  padding-left: 1%;
-  bottom: 4vh;
-  min-height: 3vh;
-  background-color: white;
-  border-radius: 5px;
 }
-
 
 #chatCmdHelp p{
   color:black;
@@ -84,17 +70,11 @@
     margin-top: 15%;
     margin-bottom: 10%;
     max-height: 80vh;
-    min-width: 80vw;
-    max-width: 80vw;
-    padding-left: 10px;
-    align-items: center;
-    text-align: center;
+    min-width: 85vw;
   }
 
   .chatForm {
-    min-width: 76vw;
-    max-width: 76vw;
-    padding-left: 10px;
+    min-width: 75vw;
   }
 
   #chatButtonTop

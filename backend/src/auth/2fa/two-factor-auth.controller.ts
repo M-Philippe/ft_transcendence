@@ -37,7 +37,16 @@ export class TwoFactorAuthController {
       await this.usersService.updateTwoFactorEnabled(idUser, true);
       // new JwtToken with secret.
       let newJwtToken = await this.jwtAuthService.getAccessTokenTwoFactor(idUser, true!);
-      response.cookie("authentication", newJwtToken.access_token, { httpOnly: true, sameSite: "strict"});
+
+      if (req.headers["user-agent"] !== undefined &&
+      (req.headers["user-agent"].indexOf("Chrome") !== -1 || req.headers["user-agent"].indexOf("Firefox") !== -1))
+        response.cookie("authentication", newJwtToken.access_token, { httpOnly: true, sameSite: "strict", secure: false });
+      else if (req.headers["user-agent"] !== undefined && req.headers["user-agent"].indexOf("Safari") !== -1)
+        response.cookie("authentication", newJwtToken.access_token, { httpOnly: true, sameSite: "none", secure: false });
+      else
+        response.cookie("authentication", newJwtToken.access_token, { httpOnly: true, sameSite: "none"});
+
+
       let queryString = "?id=" + user.id + "&username=" + user.name + "&avatar=" + user.avatar;
       response.status(302);
       //console.log("NEW_TOKEN: ", newJwtToken.access_token);
@@ -48,7 +57,6 @@ export class TwoFactorAuthController {
     @Post("/authenticate")
     @UseGuards(JwtGuardWaiting2faCode)
     async authenticate(@Req() req: Request, @Body() { twoFactorCode }: TwoFactorAuthCodeDto, @Res() response: Response) {
-      console.error("[2fa]: AUTHENTICATE");
       let idUser = this.jwtAuthService.verify(req.cookies.authentication).idUser;
       const user = await this.usersService.findOne(idUser);
       try {
@@ -60,7 +68,16 @@ export class TwoFactorAuthController {
         return (response);
       }
       response.status(302);
-      response.cookie("authentication", (await this.jwtAuthService.getAccessTokenTwoFactor(idUser, true)).access_token, { httpOnly: true, sameSite: "strict"});
+
+      let jwt = await this.jwtAuthService.getAccessTokenTwoFactor(idUser, true);
+      if (req.headers["user-agent"] !== undefined &&
+      (req.headers["user-agent"].indexOf("Chrome") !== -1 || req.headers["user-agent"].indexOf("Firefox") !== -1))
+        response.cookie("authentication", jwt.access_token, { httpOnly: true, sameSite: "strict", secure: false });
+      else if (req.headers["user-agent"] !== undefined && req.headers["user-agent"].indexOf("Safari") !== -1)
+        response.cookie("authentication", jwt.access_token, { httpOnly: true, sameSite: "none", secure: false });
+      else
+        response.cookie("authentication", jwt.access_token, { httpOnly: true, sameSite: "none"});
+
       let queryString = "?id=" + user.id + "&username=" + user.name + "&avatar=" + user.avatar;
       response.send(JSON.stringify({ location: FRONT_LOGIN_SUCCESS + queryString }));
       return (response);

@@ -126,7 +126,7 @@ function UserView(props: {username: string, showGameOptions: boolean}) {
             relationshipStatus: res["relationshipStatus"],
             achievements: res["achievements"],
           };
-          //console.error(tmp.achievements);
+          ////console.error(tmp.achievements);
           setData(tmp);
         },
         (error) => {}

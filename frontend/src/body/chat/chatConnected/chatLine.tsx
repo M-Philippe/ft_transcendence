@@ -1,4 +1,3 @@
-import Avatar from '@mui/material/Avatar'
 import Stack from '@mui/material/Stack';
 import { useState } from "react";
 import Menu from '@mui/material/Menu';

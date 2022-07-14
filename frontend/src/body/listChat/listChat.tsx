@@ -37,11 +37,8 @@ const suscribeToChat = async (username: string, idChat: number, setLoad: React.D
   let response: Response;
   try {
     response = await fetch(API_SUSCRIBE_CHAT, myInit);
-    console.log("IS THIS HERE?");
     if (!response.ok)
       return null;
-    // let returnedBody = await response.text();
-    //if (returnedBody === "Chat not availaible")
     setLoad(false);
   } catch (error) {
     console.log("Problem connecting with backend");
@@ -75,8 +72,6 @@ function ListChat(props: any) {
     <Stack spacing={2}>
       {data.length !== 0 &&
         data.map((element: any, index: number) => (
-          //index != 0 && Put this line to remove chat 0.
-          
           <div key={index}>
           <Button variant="contained" min-height="2vh" key={index} onClick={() => wrapperSuscribeToChat(props.username, element.idChat, setLoad)}> {element.chatName} </Button>
           </div>

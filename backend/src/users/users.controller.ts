@@ -83,18 +83,21 @@ export class UsersController {
       userWhoInvite = await this.usersService.findOne(idUser);
       userToInvite = await this.usersService.findOneByName(body.usernameToInvite);
     } catch (error) {
+      //console.error("SOCKET_ERROR_GATEWAY: ", error);
       throw new HttpException({
         code: "e2300",
         type: "Invalid name.",
         description: "Please choose a valid user name."
       }, HttpStatus.NOT_FOUND);
     }
+    //console.error("Send invitation game one socket: ", userToInvite.socketAlert);
     // check that user isn't blocked
     let existingRelationship = await this.relationshipsService.checkRelationshipExistWithId(userWhoInvite.id, userToInvite.id);
     if (existingRelationship !== null &&
       (existingRelationship.status === RelationshipStatus.BLOCKED_REQUESTEE ||
         existingRelationship.status === RelationshipStatus.BLOCKED_REQUESTER))
       return;
+    // //console.error("RELATIONS");
     let assembledRulesString =
       "(points:" + body.rules.scoreMax
       + ",power-up:" + (body.rules.powerUp ? "yes" : "no")
@@ -129,7 +132,17 @@ export class UsersController {
     @Req() request: Request,
     @Res() response: Response) {
       let jwtDecrypt = this.jwtService.verify(request.cookies.authentication);
-      response.cookie("authentication", "", { httpOnly: true, sameSite: "strict"});
+      //response.cookie("authentication", "", { httpOnly: true, sameSite: "none", secure: false });
+
+      if (request.headers["user-agent"] !== undefined &&
+      (request.headers["user-agent"].indexOf("Chrome") !== -1 || request.headers["user-agent"].indexOf("Firefox") !== -1))
+        response.cookie("authentication", "", { httpOnly: true, sameSite: "strict", secure: false });
+      else if (request.headers["user-agent"] !== undefined && request.headers["user-agent"].indexOf("Safari") !== -1)
+        response.cookie("authentication", "", { httpOnly: true, sameSite: "none", secure: false });
+      else
+        response.cookie("authentication", "", { httpOnly: true, sameSite: "none"});
+
+
       try {
         await this.usersService.disconnectUser(jwtDecrypt.idUser);
       } catch (error) {}
@@ -166,6 +179,16 @@ export class UsersController {
       response.send();
       return;
     }
+    if (request.body.newName === undefined)
+      throw new HttpException({
+        type: "Invalid name.",
+        message: "bad username"
+      }, HttpStatus.BAD_REQUEST);
+    else if (request.body.newName.length < 3 || request.body.newName.length >= 12)
+      throw new HttpException({
+        type: "Invalid name.",
+        message: "username too short or too long (3 < username <= 12)"
+      }, HttpStatus.BAD_REQUEST);
     response.status(200);
     let verifUserWithName;
     try {
@@ -230,7 +253,7 @@ export class UsersController {
         relationshipStatus = relationship.status;
     }
     let achievements = await this.usersService.getUserAchievements(userToFetch.id);
-    //console.error("Time: ", Date.now() - d);
+    ////console.error("Time: ", Date.now() - d);
     return ({
       name: userToFetch.name,
       avatar: userToFetch.avatar,

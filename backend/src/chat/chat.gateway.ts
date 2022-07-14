@@ -12,6 +12,7 @@ import { forwardRef, Inject, UseGuards } from "@nestjs/common";
 import { extractJwtFromCookie, JwtGatewayGuard } from "src/guards/jwtGateway.guards";
 import { JwtAuthService } from "src/auth/jwt/jwt-auth.service";
 import { IncomingHttpHeaders } from "http";
+import { PostgresDataSource } from "src/dataSource";
 
 @WebSocketGateway({ path: "/chat/chatSocket", transports: ['websocket'] })
 export class ChatGateway {
@@ -37,7 +38,7 @@ export class ChatGateway {
     try {
       response = await this.chatService.inviteUserIntoChat(command[1], idChat, idUser);
     } catch (error) {
-      console.error(error);
+      //console.error(error);
       return;
     }
     if (response === undefined)
@@ -70,9 +71,9 @@ export class ChatGateway {
     }
     let response;
     try {
-      response = await this.chatService.kickUserFromChat(command[1], idChat, idUser)
+      response = await this.chatService.kickUserFromChat(command[1], idChat, idUser, 0)
     } catch (error) {
-      console.error(error);
+      //console.error(error);
       return;
     }
     if (response === undefined)
@@ -105,9 +106,9 @@ export class ChatGateway {
       return;
     }
     try {
-      response = await this.chatService.kickUserFromChatWithTimer(command[1], idChat, idUser, timer)
+      response = await this.chatService.kickUserFromChat(command[1], idChat, idUser, timer)
     } catch (error) {
-      console.error(error);
+      //console.error(error);
       return;
     }
     if (response === undefined)
@@ -134,7 +135,7 @@ export class ChatGateway {
         }, timer * 1000);
       this.server.to(response.socket).emit("removeChat", {
         oldIdChat: idChat === 1 ? -1 : idChat,
-        newMessages: response.transitionChat.usernames,
+        newMessages: response.transitionChat.messages,
         newTimeMessages: response.transitionChat.timeMessages,
         newUsernames: response.transitionChat.usernames,
         newChatId: response.transitionChat.id,
@@ -153,7 +154,7 @@ export class ChatGateway {
     let response; try {
       response = await this.chatService.unkickUserFromChat(command[1], idChat, idUser);
     } catch (error) {
-      console.error(error);
+      //console.error(error);
       return;
     }
     if (response === undefined)
@@ -182,7 +183,7 @@ export class ChatGateway {
     try {
       response = await this.chatService.muteUserFromChat(command[1], idChat, idUser);
     } catch (error) {
-      console.error(error);
+      //console.error(error);
       return;
     }
     if (response === undefined)
@@ -191,8 +192,9 @@ export class ChatGateway {
       this.server.to(socketId).emit("errorMessage", {
         errorMessage: response,
       });
-    } else
-      await this.sendToAllSocketsIntoChat(response);
+    } else {
+        await this.sendToAllSocketsIntoChat(response);
+    }
   }
 
   secureWithBoundsParseInt(numberAsString: string) {
@@ -222,7 +224,7 @@ export class ChatGateway {
     try {
       response = await this.chatService.muteUserFromChatWithTimer(command[1], idChat, idUser, timer)
     } catch(error) {
-      console.error(error);
+      //console.error(error);
     }
     if (response === undefined)
       return;
@@ -245,7 +247,7 @@ export class ChatGateway {
     try {
       response = await this.chatService.unmuteUserFromChat(command[1], idChat, idUser);
     } catch (error) {
-      console.error(error);
+      //console.error(error);
       return;
     }
     if (response === undefined)
@@ -267,9 +269,9 @@ export class ChatGateway {
     }
     let response;
     try {
-      response = await this.chatService.setChatToPublic(idChat, idUser);
+      response = await this.chatService.setChatType(idChat, idUser, "public");
     } catch (error) {
-      console.error(error);
+      //console.error(error);
       return;
     }
     if (response === undefined)
@@ -290,9 +292,9 @@ export class ChatGateway {
       return;
     }
     let response; try {
-      response = await this.chatService.setChatToPrivate(idChat, idUser);
+      response = await this.chatService.setChatType(idChat, idUser, "private");
     } catch (error) {
-      console.error(error);
+      //console.error(error);
       return;
     }
     if (response === undefined)
@@ -322,7 +324,7 @@ export class ChatGateway {
     let response; try {
       response = await this.chatService.setChatName(idChat, idUser, command[1]);
     } catch (error) {
-      console.error(error);
+      //console.error(error);
       return;
     }
     if (response === null || response === undefined)
@@ -351,9 +353,10 @@ export class ChatGateway {
     }
     let response;
     try {
-      response = await this.chatService.setPassword(idChat, idUser, command[1]);
+      response = await this.chatService.setPassword(idChat, idUser, command[1], false);
     } catch (error) {
       console.error(error);
+      return;
     }
     if (response === undefined)
       return;
@@ -366,6 +369,31 @@ export class ChatGateway {
       await this.sendToAllSocketsIntoChat(response);
   }
 
+  async commandChangePassword(command: string[], idChat: number, idUser: number, socketId: string) {
+    if (command.length != 2) {
+      this.server.to(socketId).emit("errorMessage", {
+        errorMessage: "Bad number of arguments"
+      });
+      return;
+    }
+    let response;
+    try {
+      response = await this.chatService.setPassword(idChat, idUser, command[1], true);
+    } catch (error) {
+      console.error(error);
+      return;
+    }
+    if (response === undefined)
+      return;
+    else if (typeof(response) === "string")
+      this.server.to(socketId).emit("errorMessage", {
+        errorMessage: response
+      });
+    else
+      await this.sendToAllSocketsIntoChat(response);
+  }
+
+
   async commandUnsetPassword(command: string[], idChat: number, idUser: number, socketId: string) {
     if (command.length != 1) {
       this.server.to(socketId).emit("errorMessage", {
@@ -377,7 +405,7 @@ export class ChatGateway {
     try {
       response = await this.chatService.unsetPassword(idChat, idUser);
     } catch (error) {
-      console.error(error);
+      //console.error(error);
       return;
     }
     if (response === undefined)
@@ -417,7 +445,7 @@ export class ChatGateway {
     try {
       response = await this.chatService.createPrivateMessage(command[1], idChat, idUser);
     } catch (error) {
-      console.error(error);
+      //console.error(error);
       return;
     }
     if (response === undefined)
@@ -461,7 +489,7 @@ export class ChatGateway {
     try {
       response = await this.chatService.commandAddAdmin(idChat, idUser, command[1]);
     } catch (error) {
-      console.error(error);
+      //console.error(error);
       this.server.to(socketId).emit("errorMessage", {
         errorMessage: "Internal Server Error, please retry later."
       });
@@ -485,7 +513,7 @@ export class ChatGateway {
     try {
       response = await this.chatService.commandRemoveAdmin(idChat, idUser, command[1]);
     } catch (error) {
-      console.error(error);
+      //console.error(error);
       this.server.to(socketId).emit("errorMessage", {
         errorMessage: "Internal Server Error, please retry later."
       });
@@ -509,7 +537,7 @@ export class ChatGateway {
     try {
       response = await this.chatService.commandGameOptions(idChat, idUser, command[1], redirect);
     } catch (error) {
-      console.error(error);
+      //console.error(error);
       this.server.to(socketId).emit("errorMessage", {
         errorMessage: "Internal Server Error, please retry later."
       });
@@ -522,7 +550,7 @@ export class ChatGateway {
       return;
     }
     if (redirect) {
-      console.error("HAS SEND REDIRECTION");
+      // //console.error("HAS SEND REDIRECTION");
       this.server.to(socketId).emit("redirectToInviteProfile", {
         usernameToRedirect: command[1]
       });
@@ -532,6 +560,12 @@ export class ChatGateway {
   async wrapperCommand(command: string, idChat: number, idUser: number, socketId: string) {
     // add more than one space?
     const arrayCommand = command.split(" ");
+    if (arrayCommand[1] !== undefined && arrayCommand[1] === "Admin") {
+      this.server.to(socketId).emit("errorMessage", {
+        errorMessage: "You can't do this to admin"
+       });
+       return;
+    }
     switch (arrayCommand[0]) {
       case "/invite":
         await this.commandInvite(arrayCommand, idChat, idUser, socketId);
@@ -576,6 +610,9 @@ export class ChatGateway {
         break;
       case "/unsetPassword":
         await this.commandUnsetPassword(arrayCommand, idChat, idUser, socketId);
+        break;
+      case "/changePassword":
+        await this.commandChangePassword(arrayCommand, idChat, idUser, socketId);
         break;
       case "/quit":
         await this.commandQuit(arrayCommand, idChat, idUser);
@@ -627,13 +664,13 @@ export class ChatGateway {
     try {
       user = await this.usersService.findOneByName(data.username);
     } catch (error) {
-      console.error(error);
+      //console.error(error);
       return;
     }
     try {
       chat = await this.chatService.pushMessage(data, user, socket.id);
     } catch (error) {
-      console.error(error);
+      //console.error(error);
     }
     if (chat === undefined || chat === null) {
       return;
@@ -702,7 +739,7 @@ export class ChatGateway {
     }
   }
 
-  async sendToOneSocketIntoChat(chat: Chat, socket: Socket, userId: number) {
+  async sendToOneSocketIntoChat(chat: Chat, socket: string, userId: number) {
     let index = getIndexUser(chat.usersInfos, userId);
     if (index < 0)
       return;
@@ -717,7 +754,7 @@ export class ChatGateway {
       tmpChat.usernames = ["System"];
       tmpChat.timeMessages = ["01:23:45"];
       tmpChat.messages = ["You must enter a password to enter this chat"];
-      socket.emit("receivedMessages", {
+      this.server.to(socket).emit("receivedMessages", {
         usernames: tmpChat.usernames,
         messages: tmpChat.messages,
         timeMessages: tmpChat.timeMessages,
@@ -730,14 +767,14 @@ export class ChatGateway {
       let splicedChat = await this.removedPersoMuted(chat, persoUser);
       if (splicedChat === undefined)
         return;
-      socket.emit("receivedMessages", {
+      this.server.to(socket).emit("receivedMessages", {
         usernames: splicedChat.usernames,
         messages: splicedChat.messages,
         timeMessages: splicedChat.timeMessages,
         chatRefreshed: chat.id,
       });
       } else {
-        socket.emit("receivedMessages", {
+        this.server.to(socket).emit("receivedMessages", {
           usernames: chat.usernames,
           messages: chat.messages,
           timeMessages: chat.timeMessages,
@@ -810,6 +847,8 @@ export class ChatGateway {
     let idUser: number = payload.idUser;
     let arrayIds = await this.chatService.propagateSocketInChat(idUser, client.id);
     this.server.to(client.id).emit("receiveListChat", {lstId: arrayIds});
+    let u = await PostgresDataSource.createQueryBuilder(User, "u").where("id = :id", {id: idUser}).getOne();
+    //console.error("User ", u?.id, " after connection chat. Socket alert: ", u?.socketAlert, "\n");
   }
 
 
@@ -832,7 +871,9 @@ export class ChatGateway {
     try {
       user = await this.usersService.findOne(idUser);
     } catch (error) {
-      throw new Error("No User");
+      //console.error("TRIED TO RETRIEV ID: ", idUser);
+      //console.error(error);
+      return;
     }
     if (isUserBanned(chat.bannedUsers, idUser)) {
       socket.emit("receivedMessages", {
@@ -854,12 +895,16 @@ export class ChatGateway {
         timeMessages: [this.chatService.getTimestamp()]
       })
     } else {
-      socket.emit("receivedMessages", {
-        chatRefreshed: chat.id,
-        messages: chat.messages,
-        usernames: chat.usernames,
-        timeMessages: chat.timeMessages
-      });
+      if (getIndexUser(chat.usersInfos, idUser) >= 0 && chat.usersInfos[getIndexUser(chat.usersInfos, idUser)].persoMutedUsers.length !== 0) {
+        await this.sendToOneSocketIntoChat(chat, socket.id, idUser);
+      } else {
+        socket.emit("receivedMessages", {
+          chatRefreshed: chat.id,
+          messages: chat.messages,
+          usernames: chat.usernames,
+          timeMessages: chat.timeMessages
+        });
+      }
     }
   }
 
@@ -870,7 +915,7 @@ export class ChatGateway {
   extractIdUserFromCookie(socket: string, headers: IncomingHttpHeaders) : number {
     let payload: any;
     let jwt;
-  
+
     if (headers.cookie === undefined)
       return (-1);
     jwt = extractJwtFromCookie(headers.cookie);
@@ -879,7 +924,7 @@ export class ChatGateway {
     } catch (error) {
       return -1;
     }
-    console.error("TIME: ", Date.now() - payload.dateEmitted);
+    // //console.error("TIME: ", Date.now() - payload.dateEmitted);
     if (Date.now() - payload.dateEmitted > 14400000) {
       this.server.to(socket).emit("disconnectManual");
       return -1;
@@ -921,14 +966,14 @@ export class ChatGateway {
   @SubscribeMessage("getListChat")
   async getListChat(
     @ConnectedSocket() socket: Socket) {
-      let idUser: number;  
+      let idUser: number;
       if ((idUser = this.extractIdUserFromCookie(socket.id, socket.handshake.headers)) < 0)
         return;
       let user;
       try {
         user = await this.usersService.findOneWithListChat(idUser);
       } catch (error) {
-        console.error("NO SUCH USER");
+        //console.error("NO SUCH USER");
         return;
       }
       if (user === null)

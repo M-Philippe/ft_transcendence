@@ -6,9 +6,13 @@ body {
 }
 
 #App {
-  background: linear-gradient(-45deg, #b95c40, #23a6d5, #23d5ab);
+  background: #2c3e50;  /* fallback for old browsers */
+  background: -webkit-linear-gradient(-45deg, #2c3e50, #bdc3c7);  /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(-45deg, #2c3e50, #bdc3c7); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+  /* background: linear-gradient(-45deg, #b95c40, #23a6d5, #23d5ab); */
 	background-size: 400% 400%;
-	animation: gradient 30s ease infinite;
+	animation: gradient 25s ease infinite;
   min-height: 100vh;
   min-width: 100vw;
   max-height: 100vh;
@@ -80,9 +84,9 @@ label {
 #content {
   text-align: center;
   flex: 1;
-  /* order: 1; */
+  order: 1;
   width: 88vw;
-  /* min-width: 750px; */
+  min-width: 350px;
 }
 
 
@@ -94,6 +98,7 @@ label {
 
 #board {
   width: 70%;
+  height: 60vh;
   border-radius: 15px;
 }
 
@@ -181,6 +186,7 @@ caption {
 /* ---------- OTHERS ---------- */
 
 footer {
+  color: rgba(255, 255, 255, 0.650);
   flex: 100%;
   text-align: center;
 }
@@ -191,7 +197,6 @@ footer {
   font-weight:bold;
   font-family: Arial, Helvetica, sans-serif;
 }
-
 
 
 /* ----------------------------------- */
@@ -222,7 +227,6 @@ footer {
 
 }
 
-/* ---------- WIDTH ---------- */
 
 @media all and (max-height: 1000px) {
 
@@ -239,33 +243,72 @@ footer {
     max-height: 500px;
     overflow-y: auto;
   }
-
 }
 
-@media all and (max-height: 930px) and (min-width: 1500px) {
+/* ---------- BOARD H ---------- */
 
-  #boardDiv
-  {
-    padding-bottom: 250px;
-  }
 
+@media all and (max-height: 800px) and (min-width: 1500px)
+{
   #board{
     max-width: 60vw;
-    height: 80vh;
   }
 }
 
-@media all and (max-height: 500px) and (min-width: 1500px) {
+@media all and (max-height: 700px) and (min-width: 1500px)
+{
+  #board{
+    max-width: 50vw;
+  }
+}
 
+@media all and (max-height: 600px) and (min-width: 1500px)
+{
   #board{
     max-width: 40vw;
   }
 }
 
-@media all and (max-height: 450px) {
-
+@media all and (max-height: 450px) and (min-width: 1500px)
+{
   #board{
-    max-width: 35vw;
-    height: 40vh;
+    max-width: 30vw;
+  }
+}
+
+/* ---------- BOARD W ---------- */
+
+@media all and (max-width: 900px)
+{
+  #board{
+    max-height: 50vh;
+  }
+}
+
+/* @media all and (max-width: 800px)
+{
+  #board{
+    max-height: 50vh;
+  }
+} */
+
+@media all and (max-width: 700px)
+{
+  #board{
+    max-height: 40vh;
+  }
+}
+
+@media all and (max-width: 600px)
+{
+  #board{
+    max-height: 30vh;
+  }
+}
+
+@media all and (max-width: 450px)
+{
+  #board{
+    max-height: 30vh;
   }
 }

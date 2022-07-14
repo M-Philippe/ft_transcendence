@@ -93,7 +93,7 @@ function Register(props: {user: userState}) {
 				{ errorMessage !== "" && <p className="errorMessage" >{errorMessage}</p> }
 				<form>
 				<label>Username</label><br />
-					<input type="text" onKeyDown={keyDownHandler} onChange={(event) => {handleChange(event ,"username")}}/><br /><br />
+					<input autoFocus type="text" onKeyDown={keyDownHandler} onChange={(event) => {handleChange(event ,"username")}}/><br /><br />
 				<label>Password</label><br />
 					<input type="password" onKeyDown={keyDownHandler} onChange={(event) => {handleChange(event, "password")}}/><br /><br />
 				<label>Confirm Password</label><br />

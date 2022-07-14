@@ -4,6 +4,8 @@ export interface GameMap {
 
 export interface Game {
 	inUse: boolean,
+	startTimer: number,
+	start: boolean,
 	id: number,
 	ball: Ball,
 	players: {

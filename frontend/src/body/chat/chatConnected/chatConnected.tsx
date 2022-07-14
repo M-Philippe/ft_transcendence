@@ -125,11 +125,11 @@ function findIndexLstId(lstId: ILstId[], idtoFind: number) {
 
 export function ChatConnected(props: PropsChatConnected) {
   const url = API_USER_LIST_CHAT + props.name;
-  
+
   const [openGameInvit, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  
+
   const [changeChanName, setChanName] = useState(false);
   const handleOpenSetChanName = () => setChanName(true);
   const handlecloseSetChanName = () => setChanName(false);
@@ -179,7 +179,7 @@ export function ChatConnected(props: PropsChatConnected) {
 
   props.socket.on("focusOnpm", (...args: any) => {
     state.lstButtonsGreen.splice(state.lstButtonsGreen.indexOf(args[0].chatFocusId - 1), 1)
-    dispatch({ type: "UPDATE_FOCUS_AND_REMOVE_GREEN", 
+    dispatch({ type: "UPDATE_FOCUS_AND_REMOVE_GREEN",
     chatFocusId: args[0].chatFocusId - 1,
     lstButtonsGreen: state.lstButtonsGreen
     });
@@ -276,9 +276,13 @@ export function ChatConnected(props: PropsChatConnected) {
   });
 
   props.socket.on("receivedListChat", (...args: any) => {
-    dispatch({type: "CHANGE_LIST_ID_LOAD", load: true, lstId: args[0].lstId});
+    function isGeneral(element: { id: number, name: string}) { return (element.name === "general" && element.id === 1 ); }
+    let tmp: ILstId[] = args[0].lstId;
+    if (!tmp.some(isGeneral))
+      tmp.unshift({id: 1, name: "general"});
+    tmp.sort(function(a, b){return a.id - b.id});
+    dispatch({type: "CHANGE_LIST_ID_LOAD", load: true, lstId: tmp});
   })
-
 
   useEffect(() => {
     if (!state.load) {
@@ -296,7 +300,7 @@ export function ChatConnected(props: PropsChatConnected) {
     top: chatWindow.scrollHeight,
     behavior: 'smooth'
     })
-    
+
   }, [state, url, props.socket, props.name]);
 
 
@@ -342,10 +346,10 @@ export function ChatConnected(props: PropsChatConnected) {
         onClose={handleClose}
       >
         <Box id ="inviteGamePopup" sx={style}>
-          { 
+          {
             data.online &&
             <Typography id="modal-modal-title" variant="h6" component="h2">
-              Choose your rules to play against :   
+              Choose your rules to play against :
             </Typography>
           }
           <Typography variant="subtitle1" id="modal-modal-description" sx={{ mt: 2, textAlign: 'center' }}>
@@ -354,7 +358,7 @@ export function ChatConnected(props: PropsChatConnected) {
           <InvitationGameQueryBox nameProfile={data.name} closePopUp={handleClose}/>
         }
           </Typography>
-        { 
+        {
           !data.online && <div style={{ alignItems: 'center'}}><p className="errorMessage"> {data.name} is not connected. </p>
 				  <Button variant="contained" color="error" onClick={() => handleClose()} >Close</Button></div>
         }
@@ -384,7 +388,7 @@ export function ChatConnected(props: PropsChatConnected) {
           open={changeChanName}
           onClose={handlecloseSetChanName}>
           <Box id ="setChatNameBox" sx={styleSetChanName}>
-            { 
+            {
             <div>
               <TextField autoFocus onKeyDown={keyDownHandler} id="newChatNameInput" label="Choose channel name" variant="outlined" type="text"/>
               <br/><br/>
@@ -418,13 +422,13 @@ export function ChatConnected(props: PropsChatConnected) {
             errorMessage={state.errorMessage}
           />
         }
-      </div>
       <ChatInput
         socket={props.socket}
         state={state}
         dispatch={dispatch}
         username={props.name}
         />
+        </div>
     </div>
   );
 }

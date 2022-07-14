@@ -61,12 +61,13 @@ export class MatchesOnGoingService {
 	}
 
 	initBall(side: boolean) {
+		let pos = (Math.floor(Math.random() * 100) % 2) === 0 ? 1 : -1;
 		return {
 			x: START_PUCKX,
 			y: START_PUCKY,
 			r: START_PUCK_R,
 			vX: side ? -START_PUCK_VEL : START_PUCK_VEL,
-			vY: ((Math.random() *  (100 - 1) + 1) * START_MAX_VEL_Y / 100) * (Math.random() *  (100 - 1) + 1) % 2 === 0 ? 1 : -1,
+			vY: (Math.random() * 2 * pos),
 		}
 	}
 
@@ -153,24 +154,16 @@ export class MatchesOnGoingService {
 
 	checkCollisionPo(x: number, y: number, l: number, puck: Ball) {
 		let collision: boolean = false;
-		let aN = new Point(puck.x, puck.y - puck.r);
-		let aS = new Point(puck.x, puck.y + puck.r);
-		let nN = new Point(puck.x + puck.vX, puck.y + puck.vY - puck.r);
-		let nS = new Point(puck.x + puck.vX, puck.y + puck.vY + puck.r);
-		if ((puck.vX > 0 && puck.vY > 0) || (puck.vX <= 0 && puck.vY <= 0)) {
+		let aP = new Point(puck.x, puck.y);
+		let nP = new Point(puck.x + puck.vX, puck.y + puck.vY);
+		if ((puck.vX > 0 && puck.vY > 0) || (puck.vX <= 0 && puck.vY <= 0)) {	//  ↘ ↖
 			let pSW = new Point(x, y + l);
 			let pNE = new Point(x + l, y );
-			if (puck.vX > 0) //  ↘
-				collision = this.doIntersect(aN, nN, pSW, pNE);
-			if (!collision)  // ↖
-				collision = this.doIntersect(aS, nS, pSW, pNE);
-		} else {
+			collision = this.doIntersect(aP, nP, pSW, pNE);
+		} else {	// ↗ ↙
 			let pNW = new Point(x, y);
-			let pSE = new Point(x + l, y + l)
-			if (puck.vX > 0) // ↗
-				collision = this.doIntersect(aN, nN, pNW, pSE);
-			if (!collision) // ↙
-				collision = this.doIntersect(aS, nS, pNW, pSE);
+			let pSE = new Point(x + l, y + l);
+			collision = this.doIntersect(aP, nP, pNW, pSE);
 		}
 		return collision;
 	}
@@ -217,7 +210,7 @@ export class MatchesOnGoingService {
 
 	roof(game: Game) {
 		if (game.ball.y + game.ball.vY <= 0 || game.ball.y + game.ball.vY >= game.const.height) {
-			// console.error("ROOF");
+			// //console.error("ROOF");
 			game.ball.y = game.ball.vY <= 0 ? 0 + game.ball.r  + 1 : game.const.height - game.ball.r - 1;
 			game.ball.vY *= -1;
 			return true;
@@ -227,7 +220,7 @@ export class MatchesOnGoingService {
 
 	goal(game: Game) {
 		if (game.ball.x + game.ball.vX <= 0 || game.ball.x + game.ball.vX >= game.const.width) {
-			// console.error("GOAL");
+			// //console.error("GOAL");
 			game.ball.vX > 0 ? ++game.result.scoreP1 : ++game.result.scoreP2;
 			if (game.result.scoreP1 === game.const.scoreMax || game.result.scoreP2 === game.const.scoreMax) {
 				if (game.result.scoreP1 === game.const.scoreMax) {
@@ -252,7 +245,7 @@ export class MatchesOnGoingService {
 	/*			Pallet			*/
 	collisionLeftPallet(pallet: Coord, puck: Ball)
 	{
-	//   console.error("LEFT PALLET");
+	//   //console.error("LEFT PALLET");
     let middlePallet = pallet.y + (pallet.h / 2);
 	  let absPuckVX = Math.abs(puck.vX);
 	  let restDistX = puck.x - puck.r - pallet.x - START_PALLET_WIDTH;                  // dist x remaining
@@ -273,7 +266,7 @@ export class MatchesOnGoingService {
 
 	collisionRightPallet(pallet: Coord, puck: Ball)
 	{
-	//   console.error("RIGHT PALLET");
+	//   //console.error("RIGHT PALLET");
     let middlePallet = pallet.y + (pallet.h / 2);
 	  let absPuckVX = Math.abs(puck.vX);
 	  let restDistX = pallet.x - puck.x - puck.r;                                      // dist x remaining
@@ -345,11 +338,11 @@ export class MatchesOnGoingService {
 	}
 
 	pringGameState(game: Game, msg: string) {
-		console.error(msg);
-		console.error("Id: ", game.id);
-		console.error("Ball: x: ", game.ball.x, ", y: ",  game.ball.y, ", r: ", game.ball.r, ", vX: ", game.ball.vX, ", vY: ", game.ball.vY);
-		console.error("Points: p1: ", game.result.scoreP1, ",  p2: ", game.result.scoreP2);
-		console.error("Msg: has:", game.msg.hasMessageToDisplay, ", msg: " , game.msg.messageToDisplay);
-		console.error("--------------------------------------------------------------------------")
+		//console.error(msg);
+		//console.error("Id: ", game.id);
+		//console.error("Ball: x: ", game.ball.x, ", y: ",  game.ball.y, ", r: ", game.ball.r, ", vX: ", game.ball.vX, ", vY: ", game.ball.vY);
+		//console.error("Points: p1: ", game.result.scoreP1, ",  p2: ", game.result.scoreP2);
+		//console.error("Msg: has:", game.msg.hasMessageToDisplay, ", msg: " , game.msg.messageToDisplay);
+		//console.error("--------------------------------------------------------------------------")
 	}
 }

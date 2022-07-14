@@ -3,13 +3,6 @@ import LoginInfos from './loginInfos/loginInfos';
 import { connect } from 'react-redux';
 import { DispatchType, storeState } from '../store/types';
 import { userState } from '../store/userSlice/userSliceTypes';
-import UserAlert from "./userAlert/userAlert";
-// import { DISCONNECTING_URL } from '../urlConstString';
-// import { useState } from 'react';
-// import { DISCONNECT_USER } from '../store/userSlice/userSliceActionTypes';
-// import SearchBar from './searchBar/searchBar';
-// import store from "../store/store";
-
 import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -21,6 +14,7 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import UserAlertBundle from "./userAlert/UserAlertBundle";
 
 interface IProps {
 	user: userState;
@@ -129,7 +123,7 @@ const Header = (props: IProps) => {
 					Ft_transcendence
 			</Typography>
 
-			{ props.user.isConnected && <UserAlert /> }
+			{ props.user.isConnected && <UserAlertBundle /> }
 
 			<Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
 				<IconButton	size="large" aria-label="account of current user" aria-controls="menu-appbar" 

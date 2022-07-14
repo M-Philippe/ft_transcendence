@@ -19,7 +19,7 @@ function assembleUnblockButton(nameUserFetched: string, countKeys: number, setRe
         if (response.status === 403)
           window.location.assign(DISCONNECTING_URL);
         else if (response.status === 201) {
-          console.error("SET_REFRESH");
+          //console.error("SET_REFRESH");
           setRefresh(Date.now());
         }
       })

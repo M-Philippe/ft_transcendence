@@ -99,7 +99,7 @@ function UserProfile(props: UserProfileProps) {
 			</Modal>
 			{
 				status2fa &&
-				<Button variant="contained" onClick={() => { disable2fa(); }}>Disable 2fa</Button>
+				<Button variant="contained" onClick={() => { disable2fa(setStatus2fa); }}>Disable 2fa</Button>
 			}
 			{
 				!status2fa &&

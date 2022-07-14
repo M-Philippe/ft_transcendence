@@ -16,10 +16,7 @@ async function fetch2fa() {
 	.then(async payload => {
 		let qCode = await payload.text();
 		var t = require("qrcode");
-		t.toCanvas(document.getElementById("canvasQr"), qCode, function(error: any) {
-			if (error)
-				console.error(error);
-		})
+		t.toCanvas(document.getElementById("canvasQr"), qCode, function(error: any) {});
 	})
 	.catch(error => {});
 }

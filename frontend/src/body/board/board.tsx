@@ -88,7 +88,7 @@ function Board(props: BoardProps) {
 		if (palletAssigned === -1) {
 			setPalletAssigned(args[0].palletAssigned);
 		}
-		// console.error("PALLET_ASSIGNED_UPDATE: ", palletAssigned);
+		// //console.error("PALLET_ASSIGNED_UPDATE: ", palletAssigned);
 		setCoordinates(args[0].positions);
 		// if first positions dispatch inGame
 		if (!props.user.isInGame) {
@@ -128,9 +128,13 @@ function Board(props: BoardProps) {
 			</div>
 		);
 	}
+	
+	var boardGame = document.getElementById("board"); 
+    boardGame?.focus();
 
 	return (
 			<div>
+
 				<canvas
 					ref={canvasRef}
 					id="board"
@@ -138,7 +142,7 @@ function Board(props: BoardProps) {
 					height={coordinates.height}
 					onKeyDown={(e) => keyDown(e)}
 					onKeyUp={(e) => keyUp(e)}
-					tabIndex={0}
+					tabIndex={1}
 				>
 				</canvas>
 			</div>

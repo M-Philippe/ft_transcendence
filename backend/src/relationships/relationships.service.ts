@@ -18,7 +18,6 @@ export class RelationshipsService {
   @HttpCode(201)
   async create(createRelationshipDto: CreateRelationshipDto) {
     // Add protection to check that two similar friendships can't be created.
-    // Check here if bug.
     let checkRelationship = await this.checkRelationshipExistWithId(parseInt(createRelationshipDto.requesteeId), parseInt(createRelationshipDto.requesterId));
     if (checkRelationship !== null)
       return;
@@ -109,7 +108,7 @@ export class RelationshipsService {
     try {
       user = await this.usersService.findOneWithRelations(idUser);
     } catch (error) {
-      console.error("ERROR [getAcceptedRelationships]: ", error);
+      //console.error("ERROR [getAcceptedRelationships]: ", error);
       return ([]);
     }
     for (let i = 0; i < user.requesteeRelationships.length; i++)
@@ -126,7 +125,7 @@ export class RelationshipsService {
     try {
       user = await this.usersService.findOneWithRelations(idUser);
     } catch (error) {
-      console.error("ERROR [getAllFriendships]: ", error);
+      //console.error("ERROR [getAllFriendships]: ", error);
       return;
     }
     for (let i = 0; i < user.requesteeRelationships.length; i++) {
@@ -167,7 +166,7 @@ export class RelationshipsService {
     try {
       user = await this.usersService.findOneByNameWithRelations(username);
     } catch (error) {
-      console.error("ERROR [getAcceptedRelationships]: ", error);
+      //console.error("ERROR [getAcceptedRelationships]: ", error);
       return ([]);
     }
     for (let i = 0; i < user.requesteeRelationships.length; i++)

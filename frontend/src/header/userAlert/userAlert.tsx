@@ -2,9 +2,9 @@ import { storeState } from "../../store/types";
 import { userState } from "../../store/userSlice/userSliceTypes";
 import { connect } from "react-redux";
 import { useState } from "react";
-import { io, Socket } from "socket.io-client";
-import { API_URL, API_USER_RESPONSE_ALERT, DISCONNECTING_URL, URL_INVITATION_GAME } from "../../urlConstString";
-
+import { Socket } from "socket.io-client";
+import { API_USER_RESPONSE_ALERT, DISCONNECTING_URL, URL_INVITATION_GAME } from "../../urlConstString";
+import { DefaultEventsMap } from '@socket.io/component-emitter/index';
 import Badge from '@mui/material/Badge';
 import MailIcon from '@mui/icons-material/Mail';
 import IconButton from '@mui/material/IconButton';
@@ -104,56 +104,43 @@ function assembleAlertToHtml(alert: {message: string, needResponse: boolean, req
 	return (alertsHtml);
 }
 
-function UserAlert(props: {user: userState}) {
-	// Connect Socket.
-	const [socket, setSocket] = useState<Socket>();
+function UserAlert(props: {socket: Socket<DefaultEventsMap, DefaultEventsMap>,  user: userState}) {
 	const [showPopUp, setShowPopUp] = useState<{show: boolean, message: string}>({show: false, message: ""});
 	const [alert, setAlert] = useState<Array<{message: string, needResponse: boolean, requesterId: number, requesteeId: number}>>([]);
 	const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
 	const [alertNbr, setIcon] = useState(0);
 
-	if (socket === undefined) {
-		setSocket(io(API_URL, {
-			path: "/user/userAlert",
-			transports: ["websocket"],
-			withCredentials: true,
-			reconnection: false,
-		}));
-	} else if (socket !== undefined) {
-			socket.off("disconnectManual");
-			socket.on("disconnectManual", () => {
-				socket.disconnect();
-				window.location.assign(DISCONNECTING_URL);
+	props.socket.off("disconnectManual");
+	props.socket.on("disconnectManual", () => {
+		props.socket.disconnect();
+		window.location.assign(DISCONNECTING_URL);
+	})
+
+	props.socket.off("getUserAlert");
+	props.socket.on("getUserAlert", (...args: any) => {
+		setAlert(args[0].data);
+		if (args[0].data !== undefined)
+			setIcon(args[0].data.length);
+	})
+
+	props.socket.off("messageReceived");
+	props.socket.on("messageReceived", (...args: any) => {
+		setShowPopUp({
+			show: true,
+			message: args[0].message,
+		});
+		setTimeout(() => {
+			setShowPopUp({
+				show: false,
+				message: ""
 			})
+		}, 5000)
+	})
 
-			socket.off("getUserAlert");
-			socket.on("getUserAlert", (...args) => {
-				setAlert(args[0].data);
-				if (args[0].data !== undefined)
-					setIcon(args[0].data.length);
-			})
-
-			socket.off("messageReceived");
-			socket.on("messageReceived", (...args) => {
-				setShowPopUp({
-					show: true,
-					message: args[0].message,
-				});
-				setTimeout(() => {
-					setShowPopUp({
-						show: false,
-						message: ""
-					})
-				}, 5000)
-			})
-
-			socket.off("redirectionToBoard");
-			socket.on("redirectionToBoard", (...args) => {
-				window.location.assign(URL_INVITATION_GAME);
-			});
-
-			socket.on("connect_error", (error) => {});
-	}
+	props.socket.off("redirectionToBoard");
+	props.socket.on("redirectionToBoard", (...args: any) => {
+		window.location.assign(URL_INVITATION_GAME);
+	});
 
 	const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
 		setIcon(0);
@@ -167,7 +154,6 @@ function UserAlert(props: {user: userState}) {
   
 	const open = Boolean(anchorEl);
 	const id = open ? 'simple-popover' : undefined;
-
 	if (props.user.isInGame)
 		return (null);
 
@@ -202,9 +188,10 @@ function UserAlert(props: {user: userState}) {
 	);
 }
 
-function mapStateToProps(state: storeState) {
+function mapStateToProps(state: storeState, props: {socket: Socket<DefaultEventsMap, DefaultEventsMap> }) {
 	return ({
 		user: state.user,
+		socket: props.socket,
 	});
 }
 

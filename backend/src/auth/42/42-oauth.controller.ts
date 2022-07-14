@@ -1,5 +1,5 @@
 import { Controller, Get, HttpCode, Req, Res, UseGuards } from "@nestjs/common";
-import { Response } from "express";
+import e, { Response } from "express";
 import { FRONT_42_FIRST_LOGIN_CHANGE_NAME, FRONT_42_LOGIN_FAILED, FRONT_LOGIN_SUCCESS, FRONT_QUERY_2FA_CODE } from "src/urlConstString";
 import { UsersService } from "src/users/users.service";
 import { JwtAuthService } from "../jwt/jwt-auth.service";
@@ -33,10 +33,24 @@ export class OAuth42Controller {
         response.redirect(FRONT_42_LOGIN_FAILED);
         return response;
       }
+      // //console.error("STATE_LOGIN_42: ", userReturned);
+      ////console.error(request.user.username, " has been attribute id: ", userReturned.user.id);
       let jwt = await this.jwtAuthService.getAccessToken(userReturned.user.id, userReturned.user.twoFactorIsEnabled);
-      response.cookie("authentication", jwt.access_token, { httpOnly: true, sameSite: "strict"});
+      let p = await this.jwtAuthService.verify(jwt.access_token);
+      ////console.error("which give in token id: ", p.idUser);
+
+      if (request.headers["user-agent"] !== undefined &&
+      (request.headers["user-agent"].indexOf("Chrome") !== -1 || request.headers["user-agent"].indexOf("Firefox") !== -1))
+        response.cookie("authentication", jwt.access_token, { httpOnly: true, sameSite: "strict", secure: false });
+      else if (request.headers["user-agent"] !== undefined && request.headers["user-agent"].indexOf("Safari") !== -1)
+        response.cookie("authentication", jwt.access_token, { httpOnly: true, secure: true });
+      else
+        response.cookie("authentication", jwt.access_token, { httpOnly: true, sameSite: "none"});
+
+      // //console.error("Aut42Redirect. reasponse:  ", response);
       if (userReturned.state === "exist" && !userReturned.user.twoFactorIsEnabled) {
         let queryString = "?id=" + userReturned.user.id + "&username=" + userReturned.user.name + "&avatar=" + userReturned.user.avatar;
+        //console.error("user 42 already register, redirect to: ", FRONT_LOGIN_SUCCESS + queryString);
         response.redirect(FRONT_LOGIN_SUCCESS + queryString);
       } else if (userReturned.state === "exist" && userReturned.user.twoFactorIsEnabled) {
         response.redirect(FRONT_QUERY_2FA_CODE);
@@ -46,10 +60,3 @@ export class OAuth42Controller {
       return response;
     }
 }
-
-/*
-VALIDATE:  cdbbc71fc1d5b068738c8631768e756917d4eef4a65f18da69ce4a03e5a1c212
-return url
-GUARD_HANDLE_REQUESt
-auth42_REDIRECT
-*/

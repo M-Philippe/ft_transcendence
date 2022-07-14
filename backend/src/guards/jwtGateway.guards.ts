@@ -27,17 +27,17 @@ export class JwtGatewayGuard implements CanActivate {
 
 	canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
 		// It is also possible to get data from context.
-		// console.error("\n\n\tJWT_GATEWAY_GUARD\n\n");
+		// //console.error("\n\n\tJWT_GATEWAY_GUARD\n\n");
 		let contextSocket = context.switchToWs().getClient();
 		//console.log("CONTEXT: ", contextSocket);
 		let cookie: string | undefined = contextSocket.handshake.headers.cookie;
-		//console.error("COOKIE: ", cookie);
+		////console.error("COOKIE: ", cookie);
 		if (cookie === undefined)
 			return (false);
 		let jwt = extractJwtFromCookie(cookie);
-		// console.error("JWT_TOKEN: ", jwt);
+		// //console.error("JWT_TOKEN: ", jwt);
 		if (jwt === "") {
-			console.error("JWT_EMPTY: ");
+			//console.error("JWT_EMPTY: ");
 			return (false);
 		}
 		let payload;

@@ -53,10 +53,11 @@ export function draw(ctx: CanvasRenderingContext2D | null, coordinates: BoardPos
   if (coordinates.puckR !== 0)
     drawCircle(ctx, coordinates.puckX, coordinates.puckY, coordinates.puckR, coordinates.objectColor);
   // middle line
-  ctx.fillRect(coordinates.width / 2, 0, 1, coordinates.height);
+  if (!coordinates.hasMessageToDisplay)
+    ctx.fillRect(coordinates.width / 2, 0, 1, coordinates.height);
 
   // Text
-  ctx.font = "30px Arial";
+  ctx.font = "bold 30px Helvetica";
   ctx.fillText(coordinates.scoreA.toString(), 30, 30);
   ctx.fillText(coordinates.scoreB.toString(), coordinates.width - 30, 30);
   // PowerUpFilling
@@ -74,10 +75,21 @@ export function draw(ctx: CanvasRenderingContext2D | null, coordinates: BoardPos
       }
     }
   }
-  if (coordinates.hasMessageToDisplay) {
-    ctx.fillStyle = "green";
+  if (coordinates.hasMessageToDisplay) 
+  {
+    if (coordinates.messageToDisplay === "3" || coordinates.messageToDisplay === "2" || coordinates.messageToDisplay === "1")
+    {
+      if (coordinates.messageToDisplay === "3")
+        ctx.font = "bold 50px Helvetica";
+      if (coordinates.messageToDisplay === "2")
+        ctx.font = "bold 60px Helvetica";
+      if (coordinates.messageToDisplay === "1")
+        ctx.font = "bold 90px Helvetica";
+    }
+
+    ctx.fillStyle = "#90EE90";
     ctx.textAlign = "center";
-    ctx.fillText(coordinates.messageToDisplay, 250, 200);
+    ctx.fillText(coordinates.messageToDisplay, 510, 250);
   }
 }
 
@@ -116,7 +128,6 @@ export function useCanvas() {
   useEffect(() => {
     const canvasObj = canvasRef.current;
     if (canvasObj == null) {
-      //console.log("CanvasObj NULL");
       return;
     }
     const ctx = canvasObj.getContext("2d");

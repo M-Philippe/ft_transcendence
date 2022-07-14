@@ -22,6 +22,12 @@ export default function SpectateGame(props: SpectateGameProps) {
 		setFirstRender(false);
 	}, []);
 
+	useEffect(() => {
+		return () => {
+			props.socket.disconnect();
+		} // eslint-disable-next-line
+	}, []);
+
 	if (firstRender)
 		props.socket.emit("fetchListGame");
 
@@ -36,6 +42,11 @@ export default function SpectateGame(props: SpectateGameProps) {
 	props.socket.off("updatePositions");
 	props.socket.on("updatePositions", (...args: any) => {
 		setCoordinates(args[0].positions);
+	});
+
+	props.socket.off("endGame")
+	props.socket.on("endGame", (...args: any) => {
+		props.socket.disconnect();
 	});
 
 	if (coordinates.height !== 0)
@@ -55,20 +66,20 @@ export default function SpectateGame(props: SpectateGameProps) {
 	// ListGame & refreshButton
 	return (
 		<div>
-			<p>Choose a game to spectate :</p>
+			<p>Choose a game to spectate :</p><br/>
 			<Button variant="contained" onClick={() => { props.socket.emit("fetchListGame"); }}>Refresh</Button>
 			{listGame.length !== 0 &&
 				listGame.map((element: ListGame, index: number) => (
 					<div key={index}>
-						<p style={{display:"inline"}}>{element.idGame} | {element.playerOne} vs {element.playerTwo}</p>
 						<Button variant="contained"
 							key={index}
 							onClick={() => {
 								props.socket.emit("addSpectator", {
-									idGame: element.idGame,
+									playerOne: element.playerOne,
+									playerTwo: element.playerTwo,
 								});
 							}}>
-							Spectate
+							<p style={{display:"inline"}}>{element.idGame} | {element.playerOne} vs {element.playerTwo}</p>
 						</Button>
 					</div>
 				))

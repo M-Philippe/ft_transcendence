@@ -17,17 +17,17 @@ function convertJsonObjectToBuffer(objectToConvert: Object) {
   return (Buffer.from(transitionObject["data"]));
 }
 
-export async function comparePassword(encryptedPassword: password | undefined, tryPassword: string) {
+export async function comparePassword(username: string, encryptedPassword: password | undefined, tryPassword: string) {
   if (encryptedPassword === undefined)
     return false;
-  const tryEncryptedPassword = await encryptPassword(encryptedPassword.randomIv , tryPassword);
+  const tryEncryptedPassword = await encryptPassword(username, encryptedPassword.randomIv , tryPassword);
   let encryptedPasswordAsBuffer = convertJsonObjectToBuffer(encryptedPassword.encryptedPassword);
   return (encryptedPasswordAsBuffer.equals(tryEncryptedPassword));
 }
 
-export async function encryptPassword(randomIv: Buffer, tryPassword: string) {
+export async function encryptPassword(username: string, randomIv: Buffer, tryPassword: string) {
   const iv = convertJsonObjectToBuffer(randomIv);
-  const key = (await promisify(scrypt)(tryPassword, "salt", 32)) as Buffer;
+  const key = (await promisify(scrypt)(tryPassword, username + process.env.SEED_SALT, 32)) as Buffer;
   const cipher = createCipheriv("aes-256-ctr", key, iv);
   const encryptedText = Buffer.concat([
     cipher.update(tryPassword),
@@ -36,9 +36,9 @@ export async function encryptPassword(randomIv: Buffer, tryPassword: string) {
   return (encryptedText);
 }
 
-export async function encryptPasswordToStoreInDb(passwordObject: password | undefined, password: string) {
+export async function encryptPasswordToStoreInDb(username: string, passwordObject: password | undefined, password: string) {
 	const iv = randomBytes(16);
-  const key = (await promisify(scrypt)(password, "salt", 32)) as Buffer;
+  const key = (await promisify(scrypt)(password, username + process.env.SEED_SALT, 32)) as Buffer;
   const cipher = createCipheriv("aes-256-ctr", key, iv);
 
   const encryptedText = Buffer.concat([

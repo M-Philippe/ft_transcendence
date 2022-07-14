@@ -61,7 +61,7 @@ export class Chat {
   mutedUsers: Array<Muted>;
 
   @ManyToMany(() => User, user => user.listChat, {
-    cascade: true,
+    //cascade: true,
     nullable: true,
   })
   @JoinTable()
